@@ -1,0 +1,266 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { course, glossary, validateCourse } from '../index'
+import type { NetworkLab, Topology } from '../types'
+import { LessonPage } from '../../pages/LessonPage'
+import { memoryStorage } from '../../pages/fixture'
+import { saveProgress } from '../../progress/progress'
+import { LabView } from '../../lab/LabView'
+import { simulateSend } from '../../lab/sim'
+import { checkGoal } from '../../lab/goals'
+import { initialState, applyScene } from '../../scenes/timeline'
+import { lesson } from './p0-l4'
+
+const lab = lesson.lab as NetworkLab
+/** ตั้ง IP ให้ eth0 ของเครื่อง เหมือนที่ผู้เรียนพิมพ์ในช่อง IP แล้วกด บันทึก */
+const setIp = (t: Topology, dev: string, ip: string): Topology => ({
+  ...t,
+  devices: t.devices.map((d) => (d.id === dev ? { ...d, ifaces: d.ifaces.map((i) => ({ ...i, ip })) } : d)),
+})
+const dupTopo = setIp(lab.start, 'pc2', '192.168.1.10')
+const fixedTopo = setIp(dupTopo, 'pc2', '192.168.1.20')
+
+describe('lesson p0-l4', () => {
+  it('อยู่ใน course เป็นบทที่สี่ และ validateCourse ผ่าน', () => {
+    const l = course[0].lessons[3]
+    expect(l).toBe(lesson)
+    expect(l.status).toBe('ready')
+    expect(l.titleTh).toBe('ที่อยู่ 2 แบบ: MAC กับ IP')
+    expect(l.ciscoModules).toEqual(['ITN 7', 'ITN 9'])
+    expect(l.videos.map((v) => v.youtubeId)).toEqual(['u6W4u0R5P0w', 'iAecBW8rflc'])
+    for (const v of l.videos) expect(v.channel).toBe('9hua Training')
+    expect(l.videos[0].noteTh).toContain('ภาค 1')
+    expect(validateCourse(course, glossary)).toEqual([])
+  })
+
+  it('ศัพท์ใหม่ MAC address, IPv4, ARP, NIC อยู่ในคลังศัพท์ (ไม่ซ้ำ) และอยู่ใน terms ของบท', () => {
+    for (const id of ['mac-address', 'ipv4', 'arp', 'nic', 'ip-address', 'gateway', 'switch', 'router']) {
+      expect(glossary.filter((g) => g.id === id)).toHaveLength(1)
+      expect(lesson.terms).toContain(id)
+    }
+    expect(new Set(glossary.map((g) => g.en.toLowerCase())).size).toBe(glossary.length)
+    expect(glossary.find((g) => g.id === 'mac-address')!.explainTh).toContain('เลขบัตรประชาชน')
+    expect(glossary.find((g) => g.id === 'ip-address')!.explainTh).toContain('บ้านเลขที่')
+    expect(glossary.find((g) => g.id === 'arp')!.explainTh).toContain('Gateway')
+  })
+
+  it('บทพูด: 6-10 ฉาก ไม่เกิน 170 ตัวอักษร ไม่มีวงเล็บ (TTS อ่านวงเล็บตรง ๆ) ไม่มีตัวเลขให้ TTS อ่านเพี้ยน', () => {
+    const scenes = lesson.scenes!.scenes
+    expect(scenes.length).toBeGreaterThanOrEqual(6)
+    expect(scenes.length).toBeLessThanOrEqual(10)
+    for (const s of scenes) {
+      expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(170)
+      expect(s.narrationTh, s.id).not.toMatch(/[()]/)
+      expect(s.narrationTh.replace(/IPv4/g, ''), s.id).not.toMatch(/\d/) // IPv4 อ่านด้วยตาราง PRONOUNCE
+    }
+  })
+
+  it('ยังไม่ใช้เรื่องที่สอนบทหลัง (OSI, port, TCP, layer) และไม่สอน Subnet ลึก', () => {
+    const texts: string[] = []
+    const walk = (v: unknown) => {
+      if (typeof v === 'string') texts.push(v)
+      else if (v && typeof v === 'object') Object.values(v).forEach(walk)
+    }
+    walk(lesson)
+    const all = texts.join('\n')
+    for (const w of [/\bOSI\b/, /\bTCP\b/, /\bports?\b/i, /พอร์ต/, /\blayers?\b/i, /เลเยอร์/, /\/24/, /255\.255\./]) expect(all).not.toMatch(w)
+    // พูดถึงเลขสามชุดแรก ได้ก็ต่อเมื่อบอกว่ากฎจริงอยู่ภาค 1
+    for (const t of texts.filter((x) => x.includes('สามชุดแรก'))) expect(t).toContain('ภาค 1')
+  })
+
+  it('ทุกฉาก: ไอคอนที่โชว์อยู่ห่างกัน ≥ 120 และป้ายข้อความไม่ทับกัน', () => {
+    const set = lesson.scenes!
+    let st = initialState(set)
+    for (const sc of set.scenes) {
+      st = applyScene(st, sc)
+      const vis = Object.values(st.actors).filter((a) => !a.hidden && a.kind !== 'cable')
+      const icons = vis.filter((a) => a.kind !== 'label' && a.kind !== 'box' && a.kind !== 'envelope')
+      const labels = vis.filter((a) => a.kind === 'label')
+      for (let i = 0; i < icons.length; i++) {
+        for (let j = i + 1; j < icons.length; j++) {
+          const d = Math.hypot(icons[i].x - icons[j].x, icons[i].y - icons[j].y)
+          expect(d, `${sc.id}: ${icons[i].id} กับ ${icons[j].id}`).toBeGreaterThanOrEqual(120)
+        }
+      }
+      for (const a of vis) {
+        expect(a.x, `${sc.id}: ${a.id}`).toBeGreaterThanOrEqual(60)
+        expect(a.x, `${sc.id}: ${a.id}`).toBeLessThanOrEqual(900)
+        expect(a.y, `${sc.id}: ${a.id}`).toBeLessThanOrEqual(510)
+      }
+      for (let i = 0; i < labels.length; i++) {
+        for (let j = i + 1; j < labels.length; j++) {
+          const apart = Math.abs(labels[i].y - labels[j].y) >= 50 || Math.abs(labels[i].x - labels[j].x) >= 400
+          expect(apart, `${sc.id}: ${labels[i].id} กับ ${labels[j].id}`).toBe(true)
+        }
+        for (const ic of icons) {
+          const clash = Math.abs(labels[i].x - ic.x) < 300 && labels[i].y > ic.y - 75 && labels[i].y < ic.y + 110
+          expect(clash, `${sc.id}: ป้าย ${labels[i].id} ทับ ${ic.id}`).toBe(false)
+        }
+      }
+    }
+  })
+
+  it('ฉากย้ายบ้าน: โน้ตบุ๊กย้ายหมู่บ้าน IP เปลี่ยน MAC เดิม / ฉาก ARP ถาม Gateway เมื่อปลายทางอยู่นอกหมู่บ้าน', () => {
+    const all = lesson.scenes!.scenes.map((s) => s.narrationTh)
+    expect(all.some((n) => n.includes('ได้ IP ใหม่') && n.includes('MAC') && n.includes('เลขเดิม'))).toBe(true)
+    expect(all.some((n) => n.includes('ARP'))).toBe(true)
+    expect(all.some((n) => n.includes('MAC ของ Gateway'))).toBe(true)
+  })
+
+  it('คำถาม: th 3-4 ข้อ, en 2-3 ข้อ มีคำแปลและ keywords ครบ และคำอธิบายไม่ไล่ข้อความตัวเลือก', () => {
+    const th = lesson.quiz!.filter((q) => q.layer === 'th')
+    const en = lesson.quiz!.filter((q) => q.layer === 'en')
+    expect(th.length).toBeGreaterThanOrEqual(3)
+    expect(th.length).toBeLessThanOrEqual(4)
+    expect(en.length).toBeGreaterThanOrEqual(2)
+    expect(en.length).toBeLessThanOrEqual(3)
+    for (const q of en) {
+      expect(q.promptTh).toBeTruthy()
+      expect(q.keywords?.length).toBeGreaterThan(0)
+      for (const c of q.choices) expect(c.textTh).toBeTruthy()
+      for (const k of q.keywords!) expect(q.prompt).toContain(k)
+    }
+    for (const q of lesson.quiz!) {
+      for (const c of q.choices) expect(q.explainTh, `${q.id}/${c.id}`).not.toContain(c.textTh ?? c.text)
+    }
+  })
+
+  describe('ห้องทดลองทำสำเร็จได้จริง', () => {
+    const [g1, g2] = lab.goals
+
+    it('มี 2 เป้าหมาย: fail แล้ว fix และทุกเป้าหมายมี taskTh', () => {
+      expect(lab.goals.map((g) => g.type)).toEqual(['fail', 'fix'])
+      for (const g of lab.goals) expect(g.taskTh.trim()).not.toBe('')
+    })
+
+    it('คำแนะนำสอนวิธีพิมพ์ IP: กดที่เครื่อง → พิมพ์ IP → บันทึก (แบ่งบรรทัด)', () => {
+      const lines = lab.introTh.split('\n')
+      expect(lines.length).toBeGreaterThanOrEqual(3)
+      expect(lab.introTh).toMatch(/กดที่รูปคอม[\s\S]*ช่อง IP[\s\S]*บันทึก/)
+      expect(lab.introTh).toContain('วง')
+    })
+
+    it('reasonIncludes ของเป้าหมาย 1 เป็นส่วนหนึ่งของข้อความจริงจาก sim.ts', () => {
+      if (g1.type !== 'fail') throw new Error('goal 1 must be fail')
+      const r = simulateSend(dupTopo, g1.from, g1.toIp)
+      expect(r.ok).toBe(false)
+      expect(r.reasonTh.startsWith('IP ซ้ำ!')).toBe(true)
+      expect(r.reasonTh).toContain(g1.reasonIncludes)
+      expect(g1.reasonIncludes).toContain('IP ซ้ำ')
+    })
+
+    it('เป้าหมาย 1: ตอนเริ่มส่งถึง (ยังไม่ผ่าน) พอตั้ง IP คอม 2 ซ้ำคอม 1 ก็พังเพราะ IP ซ้ำ (ผ่าน)', () => {
+      const r0 = simulateSend(lab.start, g1.from, g1.toIp)
+      expect(r0.ok).toBe(true)
+      expect(checkGoal(g1, lab.start, r0)).toBe(false)
+      const r1 = simulateSend(dupTopo, g1.from, g1.toIp)
+      expect(checkGoal(g1, dupTopo, r1)).toBe(true)
+    })
+
+    it('เป้าหมาย 2: ตอนยัง IP ซ้ำ ส่งไม่ถึง / แก้เป็น 192.168.1.20 ส่งถึง / แก้ไปเลขหมู่บ้านอื่น ไม่ผ่าน', () => {
+      const bad = simulateSend(dupTopo, g2.from, g2.toIp)
+      expect(bad.ok).toBe(false)
+      expect(checkGoal(g2, dupTopo, bad)).toBe(false)
+      const r = simulateSend(fixedTopo, g2.from, g2.toIp)
+      expect(r.ok).toBe(true)
+      expect(r.hops).toEqual(['pc2', 'sw', 'pc1'])
+      expect(checkGoal(g2, fixedTopo, r)).toBe(true)
+      // ซ้ำกับคอม 3 ก็ยังไม่ผ่าน
+      const dup3 = setIp(dupTopo, 'pc2', '192.168.1.12')
+      expect(checkGoal(g2, dup3, simulateSend(dup3, g2.from, g2.toIp))).toBe(false)
+      // ย้ายไปหมู่บ้านอื่น ส่งหาคอม 1 ไม่ถึง
+      const away = setIp(dupTopo, 'pc2', '10.0.0.5')
+      expect(checkGoal(g2, away, simulateSend(away, g2.from, g2.toIp))).toBe(false)
+      expect(g2.hintTh).toContain('ภาค 1')
+    })
+
+    it('ทำผ่านหน้าจอห้องทดลองได้ครบ: กดคอม 2 → พิมพ์ IP → บันทึก → ส่ง', () => {
+      vi.useFakeTimers()
+      try {
+        const onDone = vi.fn()
+        render(<LabView lab={lab} termIds={lesson.terms} onDone={onDone} />)
+        const flush = () => act(() => { vi.advanceTimersByTime(5000) })
+        const typeIp = (ip: string) => {
+          fireEvent.click(screen.getByTestId('device-pc2'))
+          fireEvent.change(screen.getByLabelText('IP ของ eth0'), { target: { value: ip } })
+          fireEvent.click(screen.getByText('บันทึก'))
+        }
+        expect(screen.getByLabelText('ส่งจาก')).toHaveValue('pc3')
+        expect(screen.getByTestId('lab-dest')).toHaveTextContent('(คอม 1)')
+        typeIp('192.168.1.10')
+        fireEvent.click(screen.getByText('ส่งข้อมูล'))
+        flush()
+        expect(screen.getByRole('status')).toHaveTextContent('IP ซ้ำ')
+        expect(screen.getByText(/ผ่านเป้าหมายนี้แล้ว/)).toBeInTheDocument()
+        fireEvent.click(screen.getByText('เป้าหมายต่อไป'))
+
+        expect(screen.getByLabelText('ส่งจาก')).toHaveValue('pc2')
+        expect(screen.getByTestId('lab-dest')).toHaveTextContent('(คอม 1)')
+        typeIp('192.168.1.20')
+        fireEvent.click(screen.getByText('ส่งข้อมูล'))
+        flush()
+        expect(screen.getByText(/ผ่านเป้าหมายนี้แล้ว/)).toBeInTheDocument()
+        expect(onDone).toHaveBeenCalledTimes(1)
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+  })
+
+  describe('เล่นทั้งบท (ไม่ mock อะไร)', () => {
+    let errSpy: ReturnType<typeof vi.spyOn>
+    beforeEach(() => { window.location.hash = ''; errSpy = vi.spyOn(console, 'error') })
+    afterEach(() => { errSpy.mockRestore() })
+
+    it('เล่นได้ครบ: คลิป → ภาพทบทวน → ห้องทดลอง → คำถาม', async () => {
+      const u = userEvent.setup()
+      const storage = memoryStorage()
+      saveProgress({ version: 1, completed: ['p0-l1', 'p0-l2', 'p0-l3'] }, storage)
+      const { container } = render(<LessonPage id="p0-l4" storage={storage} />)
+
+      // 1. คลิป + โน้ตเหนือคลิป
+      expect(screen.getByTitle(lesson.videos[0].titleTh)).toBeInTheDocument()
+      expect(container.querySelector('.video-note')).toHaveTextContent(lesson.videos[0].noteTh!)
+      await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))
+
+      // 2. ภาพทบทวน
+      const scenes = lesson.scenes!.scenes
+      expect(container.querySelector('.sp-caption')).toHaveTextContent(scenes[0].narrationTh)
+      const nextScene = screen.getByRole('button', { name: /ฉากต่อไป/ })
+      while (!(nextScene as HTMLButtonElement).disabled) await u.click(nextScene)
+      fireEvent.ended(container.querySelector('audio')!)
+      await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))
+
+      // 3. ห้องทดลอง: ยังไม่ทำเป้าหมาย ไปขั้นต่อไปไม่ได้
+      expect(container.querySelector('.lab-intro')).toHaveTextContent(/บันทึก/)
+      expect(screen.getByText(/เป้าหมายที่ 1 จาก 2/)).toBeInTheDocument()
+      expect(container.querySelector('.lab-task')).toHaveTextContent(lab.goals[0].taskTh)
+      expect(screen.getByRole('button', { name: 'ไปขั้นต่อไป' })).toBeDisabled()
+      const typeIp = async (ip: string) => {
+        fireEvent.click(screen.getByTestId('device-pc2'))
+        const box = screen.getByLabelText('IP ของ eth0')
+        await u.clear(box)
+        await u.type(box, ip)
+        await u.click(screen.getByText('บันทึก'))
+      }
+      const sendAndPass = async () => {
+        fireEvent.click(screen.getByText('ส่งข้อมูล'))
+        expect(await screen.findByText(/ผ่านเป้าหมายนี้แล้ว/, undefined, { timeout: 4000 })).toBeInTheDocument()
+      }
+      await typeIp('192.168.1.10')
+      await sendAndPass()
+      fireEvent.click(screen.getByText('เป้าหมายต่อไป'))
+      expect(screen.getByRole('button', { name: 'ไปขั้นต่อไป' })).toBeDisabled()
+      await typeIp('192.168.1.20')
+      await sendAndPass()
+      await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))
+
+      // 4. คำถาม: ข้อแรกเป็นชั้น th
+      const firstTh = lesson.quiz!.find((q) => q.layer === 'th')!
+      expect(container.querySelector('.quiz-prompt')).toHaveTextContent(firstTh.prompt)
+      expect(validateCourse(course, glossary)).toEqual([])
+      expect(errSpy).not.toHaveBeenCalled()
+    }, 30000)
+  })
+})

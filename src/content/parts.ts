@@ -2,11 +2,12 @@ import type { Lesson, Part } from './types'
 import { lesson as p0l1 } from './lessons/p0-l1'
 import { lesson as p0l2 } from './lessons/p0-l2'
 import { lesson as p0l3 } from './lessons/p0-l3'
+import { lesson as p0l4 } from './lessons/p0-l4'
 
 type Row = [title: string, analogy?: string, modules?: string[]]
 
 /** บทที่เขียนเสร็จแล้ว แทนที่โครงบทที่ยังไม่เสร็จ (รหัสเดียวกัน) */
-const readyLessons: Lesson[] = [p0l1, p0l2, p0l3]
+const readyLessons: Lesson[] = [p0l1, p0l2, p0l3, p0l4]
 const withReady = (l: Lesson): Lesson => readyLessons.find((r) => r.id === l.id) ?? l
 
 const build = (part: number, rows: Row[]): Lesson[] =>
