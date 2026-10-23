@@ -15,9 +15,9 @@ const actors: Actor[] = [
   hidden({ id: 'truck', kind: 'truck', x: 180, y: 300, label: 'รถส่งของ' }),
   hidden({ id: 'pcA', kind: 'pc', x: 180, y: 170, label: 'คอมเอ' }),
   hidden({ id: 'pcB', kind: 'pc', x: 780, y: 170, label: 'คอมบี' }),
-  hidden({ id: 'roadLbl', kind: 'label', x: 480, y: 360, label: 'ถนน = สาย หรือ สัญญาณไวไฟ' }),
+  hidden({ id: 'roadLbl', kind: 'label', x: 480, y: 400, label: 'ถนน = สาย หรือ สัญญาณไวไฟ' }),
   hidden({ id: 'data', kind: 'envelope', x: 180, y: 300, label: 'ข้อมูล' }),
-  hidden({ id: 'netLbl', kind: 'label', x: 480, y: 460, label: 'Network = เครื่องที่ต่อถึงกัน ส่งข้อมูลหากันได้' }),
+  hidden({ id: 'netLbl', kind: 'label', x: 480, y: 460, label: 'Network = เครื่อง + ทางที่ต่อถึงกัน' }),
 
   // ฉาก 5: บ้านเรา = LAN เล็ก
   hidden({ id: 'home', kind: 'house', x: 480, y: 150, label: 'บ้านเรา' }),
@@ -48,11 +48,11 @@ const actors: Actor[] = [
   hidden({ id: 'bkCab', kind: 'cable', x: 110, y: 240, to: 'bk2' }),
   hidden({ id: 'cmCab', kind: 'cable', x: 710, y: 240, to: 'cm2' }),
   hidden({ id: 'wanCab', kind: 'cable', x: 250, y: 240, to: 'cm1' }),
-  hidden({ id: 'rentLbl', kind: 'label', x: 480, y: 190, label: 'ถนนเส้นยาว เช่าจากค่ายเน็ต' }),
+  hidden({ id: 'rentLbl', kind: 'label', x: 480, y: 190, label: 'สายเส้นยาว เช่าจากค่ายเน็ต' }),
   hidden({ id: 'wanData', kind: 'envelope', x: 300, y: 240 }),
   hidden({ id: 'wanLbl', kind: 'label', x: 480, y: 420, label: 'WAN = ต่อ LAN ที่อยู่ไกลกัน ข้ามเมือง' }),
 
-  // ฉาก 8: Internet = ถนนที่ต่อทั้งโลก
+  // ฉาก 8: Internet = network ทั่วโลกมาต่อกัน
   hidden({ id: 'net', kind: 'cloud', x: 480, y: 250, label: 'Internet' }),
   hidden({ id: 'iHome1', kind: 'house', x: 150, y: 130, label: 'บ้าน' }),
   hidden({ id: 'iHome2', kind: 'house', x: 810, y: 130, label: 'บ้าน' }),
@@ -70,10 +70,10 @@ const actors: Actor[] = [
   hidden({ id: 'why3', kind: 'label', x: 480, y: 390, label: '🌐 ทุกเครื่องออก Internet ได้' }),
 
   // ฉาก 10: สรุป
-  hidden({ id: 'sum1', kind: 'label', x: 480, y: 110, label: 'Network = ถนน   ข้อมูล = ของที่ส่ง' }),
-  hidden({ id: 'sum2', kind: 'label', x: 480, y: 220, label: 'LAN = ถนนในที่เดียว (บ้าน ออฟฟิศ)' }),
-  hidden({ id: 'sum3', kind: 'label', x: 480, y: 330, label: 'WAN = ถนนข้ามเมือง ต่อ LAN ที่ไกลกัน' }),
-  hidden({ id: 'sum4', kind: 'label', x: 480, y: 440, label: 'Internet = ถนนที่ต่อกันทั้งโลก' }),
+  hidden({ id: 'sum1', kind: 'label', x: 480, y: 110, label: 'Network = บ้าน (เครื่อง) + ถนน (สาย/ไวไฟ)' }),
+  hidden({ id: 'sum2', kind: 'label', x: 480, y: 220, label: 'LAN = network ในที่เดียว (บ้าน ออฟฟิศ)' }),
+  hidden({ id: 'sum3', kind: 'label', x: 480, y: 330, label: 'WAN = network ที่ต่อสาขาไกล ๆ ข้ามเมือง' }),
+  hidden({ id: 'sum4', kind: 'label', x: 480, y: 440, label: 'Internet = network ทั่วโลกมาต่อกัน' }),
 ]
 
 export const lesson: Lesson = {
@@ -116,7 +116,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's4',
-        narrationTh: 'เครื่องหลายเครื่อง ที่ต่อถึงกัน จนส่งข้อมูลหากันได้ แบบนี้เรียกว่า network ครับ จำง่าย ๆ ว่า network ก็คือถนน ที่เชื่อมเครื่องเข้าหากัน',
+        narrationTh: 'เครื่องหลายเครื่อง ที่ต่อถึงกัน ด้วยสายหรือไวไฟ จนส่งข้อมูลหากันได้ แบบนี้เรียกว่า network ครับ เหมือนบ้านทั้งหมู่บ้าน ที่มีถนนต่อถึงกันหมด',
         actions: [
           ...hide('data', 'roadLbl'),
           { type: 'highlight', actor: 'road' },
@@ -125,7 +125,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's5',
-        narrationTh: 'network มีหลายขนาดนะ ขนาดเล็กสุด ก็คือในบ้านเรา คอมกับโน้ตบุ๊ก ต่อไวไฟเดียวกัน อยู่ในที่เดียว ระยะใกล้ ๆ แบบนี้เรียกว่า LAN',
+        narrationTh: 'network มีหลายขนาดนะ ขนาดเล็กสุด ก็คือในบ้านเรา คอมกับโน้ตบุ๊ก ต่อสาย หรือไวไฟ เข้าหากัน อยู่ในที่เดียว ระยะใกล้ ๆ แบบนี้เรียกว่า LAN',
         actions: [
           ...hide('pcA', 'pcB', 'road', 'netLbl'),
           ...show('home', 'homePc', 'homeLaptop', 'homeCab1', 'homeCab2', 'homeLbl'),
@@ -133,7 +133,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's6',
-        narrationTh: 'ออฟฟิศ ก็เป็น LAN เหมือนกันครับ แค่มีคอมเยอะขึ้น แต่ยังอยู่ในตึกเดียว บริษัทดูแลถนนเส้นนี้เอง ข้อมูลเลยวิ่งได้เร็ว',
+        narrationTh: 'ออฟฟิศ ก็เป็น LAN เหมือนกันครับ แค่มีคอมเยอะขึ้น แต่ยังอยู่ในตึกเดียว ระยะใกล้ ๆ ข้อมูลเลยวิ่งได้เร็ว และบริษัทดูแลสายพวกนี้เอง',
         actions: [
           ...hide('home', 'homePc', 'homeLaptop', 'homeCab1', 'homeCab2', 'homeLbl'),
           ...show('officeLbl', 'o1', 'o2', 'o3', 'o4', 'oCab1', 'oCab2', 'oCab3', 'officeLan'),
@@ -141,7 +141,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's7',
-        narrationTh: 'ถ้าบริษัท มีสาขาอยู่ไกลกัน เช่น กรุงเทพ กับเชียงใหม่ ต้องมีถนนเส้นยาว ต่อข้ามเมือง แบบนี้เรียกว่า WAN ส่วนมาก ต้องเช่าถนนเส้นนี้ จากค่ายเน็ต',
+        narrationTh: 'ถ้าบริษัท มีสาขาอยู่ไกลกัน เช่น กรุงเทพ กับเชียงใหม่ ต้องต่อสายเส้นยาว ข้ามเมือง แบบนี้เรียกว่า WAN บริษัทเดินสายเองข้ามจังหวัดไม่ไหว เลยต้องเช่าจากค่ายเน็ต',
         actions: [
           ...hide('officeLbl', 'o1', 'o2', 'o3', 'o4', 'oCab1', 'oCab2', 'oCab3', 'officeLan'),
           ...show('bkkLbl', 'cmLbl', 'bk1', 'bk2', 'cm1', 'cm2', 'bkCab', 'cmCab', 'wanCab', 'rentLbl', 'wanData', 'wanLbl'),
@@ -151,7 +151,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's8',
-        narrationTh: 'แล้วถ้าเอา network ทั่วโลก มาต่อกันหมดล่ะ ก็จะได้ถนนใหญ่ ที่ไปได้ทุกที่ เหมือนถนนทั้งประเทศ แต่ใหญ่กว่านั้นอีก นี่แหละครับ คือ Internet',
+        narrationTh: 'แล้วถ้าเอา network ทั่วโลก มาต่อกันหมดล่ะ ก็เหมือนบ้านทั้งประเทศ ที่มีถนนต่อถึงกันหมด แต่ใหญ่กว่านั้นอีก เพราะต่อกันทั้งโลก นี่แหละครับ คือ Internet',
         actions: [
           ...hide('bkkLbl', 'cmLbl', 'bk1', 'bk2', 'cm1', 'cm2', 'bkCab', 'cmCab', 'wanCab', 'rentLbl', 'wanData', 'wanLbl'),
           ...show('net', 'iHome1', 'iHome2', 'iOffice', 'iCafe', 'iCab1', 'iCab2', 'iCab3', 'iCab4', 'iLbl'),
@@ -167,7 +167,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's10',
-        narrationTh: 'สรุปนะครับ network คือถนน ข้อมูลคือของที่ส่ง LAN คือถนนในที่เดียว WAN คือถนนข้ามเมือง และ Internet คือถนนที่ต่อกันทั้งโลก',
+        narrationTh: 'สรุปนะครับ network คือเครื่องที่ต่อถึงกัน เหมือนบ้านกับถนน ข้อมูลคือของที่ส่ง LAN คือในที่เดียว WAN คือข้ามเมือง และ Internet คือต่อกันทั้งโลก',
         actions: [
           ...hide('why1', 'why2', 'why3'),
           ...show('sum1', 'sum2', 'sum3', 'sum4'),
@@ -183,16 +183,16 @@ export const lesson: Lesson = {
       { id: 'road', textTh: 'ถนน' },
       { id: 'parcel', textTh: 'พัสดุที่ส่งไปมา' },
       { id: 'house', textTh: 'บ้านแต่ละหลัง' },
-      { id: 'village', textTh: 'ถนนในหมู่บ้านเดียวกัน' },
-      { id: 'highway', textTh: 'ทางหลวงที่วิ่งข้ามจังหวัด' },
+      { id: 'village', textTh: 'หมู่บ้านเดียวกัน ที่มีถนนต่อถึงกันหมด' },
+      { id: 'highway', textTh: 'หมู่บ้านคนละจังหวัด ที่ต่อกันด้วยทางหลวง' },
       { id: 'cable', textTh: 'สาย หรือ สัญญาณไวไฟ' },
       { id: 'data', textTh: 'ข้อมูล เช่น รูป เพลง ข้อความแชต' },
       { id: 'computer', textTh: 'คอมพิวเตอร์แต่ละเครื่อง' },
       { id: 'lan', textTh: 'LAN (network ในที่เดียว)' },
-      { id: 'wan', textTh: 'WAN (network ที่ต่อที่ที่อยู่ไกลกัน)' },
+      { id: 'wan', textTh: 'WAN (network ที่ต่อสาขาไกล ๆ เข้าหากัน)' },
     ],
     answer: { road: 'cable', parcel: 'data', house: 'computer', village: 'lan', highway: 'wan' },
-    explainTh: 'ถนนเป็นทางให้ของวิ่ง ในคอมก็คือสาย หรือสัญญาณไวไฟ ของที่ส่งก็คือข้อมูล บ้านแต่ละหลังก็คือคอมแต่ละเครื่อง ถนนในหมู่บ้านคือ LAN เพราะอยู่ในที่เดียว ส่วนทางหลวงข้ามจังหวัดคือ WAN เพราะต่อที่ที่อยู่ไกลกัน',
+    explainTh: 'จับคู่ตามหน้าที่นะ ถามตัวเองว่า ของชิ้นนี้ทำหน้าที่อะไร ถนนมีไว้ให้ของวิ่ง แล้วในคอม อะไรเป็นทางให้ข้อมูลวิ่ง ส่วนหมู่บ้าน ให้ดูที่ระยะทาง ใกล้ หรือไกล',
   },
 
   quiz: [
@@ -227,13 +227,13 @@ export const lesson: Lesson = {
       layer: 'th',
       prompt: 'บริษัทมีออฟฟิศที่กรุงเทพ กับเชียงใหม่ อยากให้คอมสองที่ ส่งข้อมูลหากันได้ ต้องใช้ network แบบไหน เพราะอะไร',
       choices: [
-        { id: 'a', text: 'WAN เพราะต้องต่อที่ที่อยู่ไกลกัน ข้ามเมือง' },
+        { id: 'a', text: 'WAN เพราะต้องต่อสองเมืองที่อยู่ไกลกัน' },
         { id: 'b', text: 'LAN เพราะเป็นบริษัทเดียวกัน' },
         { id: 'c', text: 'ไม่ต้องต่ออะไรเลย เพราะเป็นบริษัทเดียวกันอยู่แล้ว' },
         { id: 'd', text: 'LAN เพราะ LAN ต่อได้ไกลกว่า WAN' },
       ],
       correct: ['a'],
-      explainTh: 'ดูที่ระยะทาง ไม่ใช่ดูว่าบริษัทเดียวกันไหม LAN คือถนนในที่เดียว ส่วนกรุงเทพกับเชียงใหม่ไกลกันมาก ต้องใช้ถนนเส้นยาวข้ามเมือง ก็คือ WAN',
+      explainTh: 'ดูที่ระยะทาง ไม่ใช่ดูว่าบริษัทเดียวกันไหม LAN คือ network ในที่เดียว ส่วนกรุงเทพกับเชียงใหม่ไกลกันมาก ต้องต่อสายเส้นยาวข้ามเมือง แบบนี้คือ WAN',
     },
     {
       id: 'q4',
@@ -256,7 +256,7 @@ export const lesson: Lesson = {
       keywords: ['single building'],
       choices: [
         { id: 'a', text: 'LAN', textTh: 'LAN (network ในที่เดียว)' },
-        { id: 'b', text: 'WAN', textTh: 'WAN (network ที่ต่อที่ที่อยู่ไกลกัน)' },
+        { id: 'b', text: 'WAN', textTh: 'WAN (network ที่ต่อสาขาไกล ๆ เข้าหากัน)' },
         { id: 'c', text: 'The Internet', textTh: 'Internet (network ทั่วโลกมาต่อกัน)' },
         { id: 'd', text: 'None. Devices in one building cannot share a network.', textTh: 'ไม่มี อุปกรณ์ในตึกเดียวกัน ต่อ network ร่วมกันไม่ได้' },
       ],
@@ -276,7 +276,7 @@ export const lesson: Lesson = {
         { id: 'd', text: 'It can only send data using wireless signals.', textTh: 'มันส่งข้อมูลได้แค่ทางสัญญาณไร้สาย (ไวไฟ)' },
       ],
       correct: ['a'],
-      explainTh: 'WAN คือถนนเส้นยาวข้ามเมือง ใช้ต่อ LAN หลายที่ที่อยู่ไกลกัน และส่วนมากต้องเช่าจากผู้ให้บริการ ส่วนในบ้าน หรือในห้องเดียว คือ LAN',
+      explainTh: 'WAN คือ network ที่ต่อสาขาไกล ๆ เข้าหากัน ด้วยสายเส้นยาวข้ามเมือง ส่วนมากต้องเช่าจากผู้ให้บริการ เพราะบริษัทเดินสายเองข้ามจังหวัดไม่ไหว ส่วนในบ้าน หรือในห้องเดียว คือ LAN',
     },
     {
       id: 'q7',
@@ -291,7 +291,7 @@ export const lesson: Lesson = {
         { id: 'd', text: 'It is one cable that connects two computers in the same room.', textTh: 'มันคือสายเส้นเดียว ที่ต่อคอมสองเครื่องในห้องเดียวกัน' },
       ],
       correct: ['a', 'b'],
-      explainTh: 'Internet คือการเอา network เล็ก ๆ ทั่วโลกมาต่อกัน เหมือนถนนทุกเส้นที่ต่อกันหมด เลยไม่มีใครเป็นเจ้าของคนเดียว มันไม่ใช่ LAN วงเดียว และไม่ใช่สายเส้นเดียว',
+      explainTh: 'Internet คือการเอา network เล็ก ๆ ทั่วโลกมาต่อกัน เหมือนบ้านทั้งประเทศ ที่มีถนนต่อถึงกันหมด เลยไม่มีใครเป็นเจ้าของคนเดียว มันไม่ใช่ LAN วงเดียว และไม่ใช่สายเส้นเดียว',
     },
   ],
 }
