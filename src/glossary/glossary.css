@@ -1,0 +1,10 @@
+.term { position: relative; display: inline-block; }
+.term-btn { font: inherit; color: var(--accent); background: none; border: 0; border-bottom: 1px dotted var(--accent); padding: 0; cursor: help; }
+.term-pop { position: absolute; left: 0; top: 100%; z-index: 10; margin-top: 0.3rem; min-width: 16rem; max-width: 24rem; display: flex; flex-direction: column; gap: 0.25rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; box-shadow: 0 4px 16px rgba(0,0,0,.35); text-align: left; }
+.term-th { color: var(--text-muted); }
+.glossary { max-width: 48rem; margin: 1rem auto; padding: 0 1.5rem; }
+.glossary-search { width: 100%; font: inherit; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 0.5rem 0.8rem; box-sizing: border-box; }
+.glossary-empty { color: var(--text-muted); }
+.glossary-item { margin: 0.6rem 0; }
+.glossary dt { font-weight: 700; }
+.glossary dd { margin: 0.2rem 0 0; }
