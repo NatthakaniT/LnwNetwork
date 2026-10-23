@@ -91,6 +91,20 @@ describe('lesson p0-l2', () => {
       expect(checkGoal(g3, solved3, r)).toBe(true)
     })
 
+    it('กับดัก: ต่อคอม 1 ตรงไปคอม 2 ผ่านเป้าหมาย 1 ได้ แต่เป้าหมาย 2 ไม่ผ่าน (ตัวช่วยต้องเตือนเรื่องนี้)', () => {
+      const direct = cable(lab.start, 'pc1', 'eth0', 'pc2', 'eth0')
+      expect(checkGoal(g1, direct, sendFor(direct, g1))).toBe(true)
+      const r = sendFor(direct, g2)
+      expect(r.ok).toBe(false)
+      expect(checkGoal(g2, direct, r)).toBe(false)
+      expect(g1.hintTh).toContain('อย่าต่อคอม 1 ตรงไปคอม 2')
+      expect(g2.hintTh).toContain('ไม่ใช่ต่อตรงกับคอม 2')
+    })
+
+    it('งานของทุกเป้าหมาย โชว์ให้เห็นตลอด', () => {
+      for (const g of lab.goals) expect(g.taskTh.trim()).not.toBe('')
+    })
+
     it('ทำผ่านหน้าจอห้องทดลองได้ครบ 3 เป้าหมาย ด้วยการต่อสายอย่างเดียว', () => {
       vi.useFakeTimers()
       try {
@@ -154,6 +168,8 @@ describe('lesson p0-l2', () => {
       // 3. ห้องทดลอง: เห็นคำแนะนำและเป้าหมายแรก แล้วทำให้ครบ 3 เป้าหมาย (ใช้เวลาจริง)
       expect(container.querySelector('.lab-intro')).toHaveTextContent(/หมู่บ้านเอ/)
       expect(screen.getByText(/เป้าหมายที่ 1 จาก 3/)).toBeInTheDocument()
+      expect(container.querySelector('.lab-task')).toHaveTextContent(lab.goals[0].taskTh)
+      expect(screen.getByTestId('lab-dest')).toHaveTextContent('(คอม 2)')
       const link = (a: string, b: string) => {
         fireEvent.click(screen.getByTestId(`device-${a}`))
         fireEvent.click(screen.getByTestId(`device-${b}`))
