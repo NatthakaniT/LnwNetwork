@@ -121,3 +121,11 @@ describe('LessonPage', () => {
     expect(window.location.hash).toBe('#/')
   })
 })
+
+describe('LessonPage terms', () => {
+  it('คำศัพท์ใน analogy กดดูความหมายได้', () => {
+    const parts: Part[] = [{ ...fixture[0], lessons: [mk('t1', 0, 1, { analogyTh: 'เหมือน IP address', terms: ['ip-address'] })] }]
+    render(<LessonPage id="t1" parts={parts} storage={memoryStorage()} />)
+    expect(screen.getByRole('button', { name: 'IP address' })).toBeInTheDocument()
+  })
+})

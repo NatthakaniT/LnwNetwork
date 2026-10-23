@@ -9,9 +9,12 @@ import { isUnlocked, loadProgress, markCompleted, saveProgress } from '../progre
 import type { Progress, StepKey } from '../progress/progress'
 import { navigate } from '../router'
 import { VideoStep } from './VideoStep'
+import { RichText } from '../glossary/RichText'
 
 export const MSG_LOCKED = 'ต้องเรียนบทก่อนหน้าก่อนนะ'
 export const MSG_BUILDING = 'บทนี้กำลังทำอยู่ เร็ว ๆ นี้'
+
+const NO_TERMS: string[] = []
 
 const STEPS: { key: StepKey; label: string }[] = [
   { key: 'video', label: 'ดูคลิป' },
@@ -71,7 +74,7 @@ function TestOut({ lesson, storage }: { lesson: Lesson; storage?: Storage }) {
     <main className="lesson-page">
       <p><a href="#/">← กลับแผนที่</a></p>
       <h1>สอบข้ามบท: {lesson.titleTh}</h1>
-      <QuizView key={lesson.id} questions={lesson.quiz!} mode="testOut" onPass={onPass} />
+      <QuizView key={lesson.id} questions={lesson.quiz!} mode="testOut" termIds={lesson.terms ?? NO_TERMS} onPass={onPass} />
     </main>
   )
 }
@@ -94,6 +97,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   })
   const [passed, setPassed] = useState(completedAtStart)
 
+  const termIds = lesson.terms ?? NO_TERMS
   const markDone = useCallback((k: StepKey) => setDone((d) => (d.has(k) ? d : new Set(d).add(k))), [])
   const step = STEPS[stepIdx].key
 
@@ -126,7 +130,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
       <p><a href="#/">← กลับแผนที่</a></p>
       <header className="lesson-head">
         <h1>{lesson.titleTh}</h1>
-        {lesson.analogyTh && <p className="analogy">{lesson.analogyTh}</p>}
+        {lesson.analogyTh && <p className="analogy"><RichText text={lesson.analogyTh} termIds={termIds} /></p>}
         {lesson.ciscoModules.length > 0 && (
           <span className="badge">ตรงกับ Cisco: {lesson.ciscoModules.join(', ')}</span>
         )}
@@ -150,14 +154,14 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
       <section className="step-body">
         {step === 'video' && <VideoStep videos={lesson.videos} onNext={() => setStepIdx(1)} />}
         {step === 'scenes' && (lesson.scenes
-          ? <ScenePlayer lessonId={lesson.id} set={lesson.scenes} onFinished={onScenesFinished} />
+          ? <ScenePlayer lessonId={lesson.id} set={lesson.scenes} termIds={termIds} onFinished={onScenesFinished} />
           : <p>บทนี้ไม่มีภาพทบทวน ไปขั้นต่อไปได้เลย</p>)}
         {step === 'lab' && (lesson.lab
           ? (lesson.lab.kind === 'network'
-            ? <LabView lab={lesson.lab} onDone={onLabDone} />
-            : <ActivityView lab={lesson.lab} onDone={onLabDone} />)
+            ? <LabView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />
+            : <ActivityView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />)
           : <p>บทนี้ไม่มีให้ลองเล่น ไปขั้นต่อไปได้เลย</p>)}
-        {step === 'quiz' && <QuizView key={lesson.id} questions={lesson.quiz!} onPass={onQuizPass} />}
+        {step === 'quiz' && <QuizView key={lesson.id} questions={lesson.quiz!} termIds={termIds} onPass={onQuizPass} />}
       </section>
 
       {step !== 'video' && step !== 'quiz' && (

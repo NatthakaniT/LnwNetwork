@@ -48,3 +48,17 @@ describe('ActivityView match', () => {
     expect(onDone).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('ActivityView termIds', () => {
+  it('คำศัพท์ใน intro, ข้อ และคำอธิบาย กดดูความหมายได้', async () => {
+    const lab: ActivityLab = {
+      kind: 'order', introTh: 'เรื่อง IP address',
+      items: [{ id: 'a', textTh: 'ตั้ง IP address' }, { id: 'b', textTh: 'ข้อสอง' }],
+      answer: ['a', 'b'], explainTh: 'เพราะ IP address สำคัญ',
+    }
+    render(<ActivityView lab={lab} onDone={() => {}} shuffle={(x) => x} termIds={['ip-address']} />)
+    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(2)
+    await userEvent.setup().click(screen.getByText('ตรวจคำตอบ'))
+    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(3)
+  })
+})

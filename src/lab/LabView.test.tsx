@@ -140,3 +140,13 @@ describe('LabView', () => {
     expect(screen.queryByTestId('device-switch2')).not.toBeInTheDocument()
   })
 })
+
+describe('LabView termIds', () => {
+  it('คำศัพท์ใน intro และตัวช่วย กดดูความหมายได้', () => {
+    const l: NetworkLab = { ...lab, introTh: 'ลองตั้ง IP address', goals: [{ ...lab.goals[0], hintTh: 'ดู IP address ก่อน' }] }
+    render(<LabView lab={l} onDone={() => {}} termIds={['ip-address']} />)
+    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: 'ขอตัวช่วย' }))
+    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(2)
+  })
+})

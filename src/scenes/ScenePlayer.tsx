@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SceneSet } from '../content/types'
+import { RichText } from '../glossary/RichText'
 import { ActorView } from './actors'
 import { applyAction, audioUrl, fallbackDurationMs, stateBeforeScene, type StageState } from './timeline'
 
-interface Props { lessonId: string; set: SceneSet; onFinished: () => void }
+interface Props { lessonId: string; set: SceneSet; onFinished: () => void; termIds?: string[] }
 
 const SETTLE_MS = 30 // let the "before" state render so CSS transitions can run
 
-export function ScenePlayer({ lessonId, set, onFinished }: Props) {
+export function ScenePlayer({ lessonId, set, onFinished, termIds = [] }: Props) {
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [slow, setSlow] = useState(false)
@@ -162,7 +163,7 @@ export function ScenePlayer({ lessonId, set, onFinished }: Props) {
         aria-live="polite"
         style={{ fontSize: '1.4rem', lineHeight: 1.6, margin: 0, padding: '0.75rem 1rem', background: '#000', color: '#fff', borderRadius: 8, minHeight: '3.5em' }}
       >
-        {scene.narrationTh}
+        <RichText text={scene.narrationTh} termIds={termIds} />
       </p>
 
       <audio

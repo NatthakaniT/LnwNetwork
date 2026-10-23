@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Device, DeviceKind, Link, NetworkLab, Topology } from '../content/types'
+import { RichText } from '../glossary/RichText'
 import { ActorView } from '../scenes/actors'
 import { checkGoal } from './goals'
 import { parseIPv4, parsePrefix } from './ip'
@@ -120,7 +121,7 @@ function DevicePanel({ device, onSave }: { device: Device; onSave: (d: Device) =
 
 interface Shown { res: SendResult; met: boolean }
 
-export function LabView({ lab, onDone }: { lab: NetworkLab; onDone: () => void }) {
+export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone: () => void; termIds?: string[] }) {
   const [topo, setTopo] = useState<Topology>(lab.start)
   const [goalIdx, setGoalIdx] = useState(0)
   const [hint, setHint] = useState(false)
@@ -242,12 +243,12 @@ export function LabView({ lab, onDone }: { lab: NetworkLab; onDone: () => void }
 
   return (
     <section className="lab">
-      <p className="lab-intro">{lab.introTh}</p>
+      <p className="lab-intro"><RichText text={lab.introTh} termIds={termIds} /></p>
       {goal && (
         <div className="lab-goal">
           <strong>เป้าหมายที่ {goalIdx + 1} จาก {lab.goals.length}</strong>
           <button type="button" onClick={() => setHint(true)}>ขอตัวช่วย</button>
-          {hint && <p className="lab-hint">{goal.hintTh}</p>}
+          {hint && <p className="lab-hint"><RichText text={goal.hintTh} termIds={termIds} /></p>}
         </div>
       )}
       <div className="lab-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -321,7 +322,7 @@ export function LabView({ lab, onDone }: { lab: NetworkLab; onDone: () => void }
             {sendErr && <p role="alert" className="lab-result warn">{sendErr}</p>}
             {shown && (
               <p role="status" className={`lab-result ${shown.res.ok ? 'ok' : 'warn'}`} style={{ color: shown.res.ok ? '#7CFC9A' : '#ffc857' }}>
-                {shown.res.reasonTh}
+                <RichText text={shown.res.reasonTh} termIds={termIds} />
               </p>
             )}
             {shown?.met && (

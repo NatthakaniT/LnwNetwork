@@ -99,3 +99,15 @@ describe('QuizView', () => {
     expect(screen.getByText(/ถ้าตอบผ่าน จะข้ามบทนี้ได้เลย/)).toBeInTheDocument()
   })
 })
+
+describe('QuizView termIds', () => {
+  it('คำศัพท์ในคำถาม th และคำอธิบาย กดดูความหมายได้', async () => {
+    const u = userEvent.setup()
+    const q = mk('t1', 'th', ['a'], { prompt: 'ทำไมต้องมี IP address', explainTh: 'เพราะ IP address บอกที่อยู่' })
+    render(<QuizView questions={[q]} onPass={() => {}} termIds={['ip-address']} />)
+    expect(screen.getByRole('button', { name: 'IP address' })).toBeInTheDocument()
+    await pick(u, 't1', 'b')
+    await u.click(screen.getByRole('button', { name: 'ส่งคำตอบ' }))
+    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(2)
+  })
+})

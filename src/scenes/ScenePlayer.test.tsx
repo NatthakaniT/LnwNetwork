@@ -153,3 +153,11 @@ describe('ScenePlayer', () => {
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled()
   })
 })
+
+describe('ScenePlayer termIds', () => {
+  it('คำศัพท์ในคำบรรยายกดดูความหมายได้', () => {
+    const s: SceneSet = { ...set, scenes: [{ id: 's0', narrationTh: 'ทุกเครื่องมี IP address', actions: [] }] }
+    render(<ScenePlayer lessonId="l1" set={s} termIds={['ip-address']} onFinished={() => {}} />)
+    expect(screen.getByRole('button', { name: 'IP address' })).toBeInTheDocument()
+  })
+})

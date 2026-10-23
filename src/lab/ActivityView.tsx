@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ActivityLab } from '../content/types'
+import { RichText } from '../glossary/RichText'
 
 function fisherYates<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -16,9 +17,10 @@ export interface ActivityViewProps {
   lab: ActivityLab
   onDone: () => void
   shuffle?: <T>(items: T[]) => T[]
+  termIds?: string[]
 }
 
-export function ActivityView({ lab, onDone, shuffle = fisherYates }: ActivityViewProps) {
+export function ActivityView({ lab, onDone, shuffle = fisherYates, termIds = [] }: ActivityViewProps) {
   const [items] = useState(() => shuffle(lab.items))
   const [order, setOrder] = useState<string[]>(() => items.map(i => i.id))
   const [choice, setChoice] = useState<Record<string, string>>({})
@@ -60,12 +62,12 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates }: ActivityVie
 
   return (
     <section className="activity">
-      <p className="lab-intro">{lab.introTh}</p>
+      <p className="lab-intro"><RichText text={lab.introTh} termIds={termIds} /></p>
       {lab.kind === 'order' ? (
         <ol className="activity-list">
           {order.map((id, idx) => (
             <li key={id}>
-              <span>{text(id)}</span>
+              <span><RichText text={text(id)} termIds={termIds} /></span>
               <button type="button" aria-label={`เลื่อนขึ้น ${text(id)}`} disabled={idx === 0} onClick={() => move(idx, -1)}>⬆</button>
               <button type="button" aria-label={`เลื่อนลง ${text(id)}`} disabled={idx === order.length - 1} onClick={() => move(idx, 1)}>⬇</button>
             </li>
@@ -75,7 +77,7 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates }: ActivityVie
         <ul className="activity-list">
           {leftItems.map(l => (
             <li key={l.id}>
-              <span>{l.textTh}</span>
+              <span><RichText text={l.textTh} termIds={termIds} /></span>
               <select
                 aria-label={`จับคู่ ${l.textTh}`}
                 value={choice[l.id] ?? ''}
@@ -89,8 +91,8 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates }: ActivityVie
         </ul>
       )}
       <button type="button" onClick={check}>ตรวจคำตอบ</button>
-      {result === 'right' && <p className="lab-result ok" role="status">ถูกต้อง! 🎉 {lab.explainTh}</p>}
-      {result === 'wrong' && <p className="lab-result warn" role="status">ยังไม่ถูก ลองใหม่อีกที — {lab.explainTh}</p>}
+      {result === 'right' && <p className="lab-result ok" role="status">ถูกต้อง! 🎉 <RichText text={lab.explainTh} termIds={termIds} /></p>}
+      {result === 'wrong' && <p className="lab-result warn" role="status">ยังไม่ถูก ลองใหม่อีกที — <RichText text={lab.explainTh} termIds={termIds} /></p>}
     </section>
   )
 }

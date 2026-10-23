@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { QuizQuestion } from '../content/types'
+import { RichText } from '../glossary/RichText'
 import { grade, isCorrect } from './grade'
 import './quiz.css'
 
@@ -41,9 +42,10 @@ export interface QuizViewProps {
   onPass: () => void
   mode?: 'lesson' | 'testOut'
   shuffle?: Shuffle
+  termIds?: string[]
 }
 
-export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherYates }: QuizViewProps) {
+export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherYates, termIds = [] }: QuizViewProps) {
   const [list, setList] = useState(() => order(questions))
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
@@ -119,7 +121,9 @@ export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherY
       )}
       <p className="quiz-count">ข้อ {index + 1} จาก {list.length}</p>
       <h3 className="quiz-prompt" lang={q.layer === 'en' ? 'en' : 'th'}>
-        <Highlighted text={q.prompt} keywords={q.layer === 'en' ? q.keywords : undefined} />
+        {q.layer === 'en'
+          ? <Highlighted text={q.prompt} keywords={q.keywords} />
+          : <RichText text={q.prompt} termIds={termIds} />}
       </h3>
       {q.layer === 'en' && q.promptTh && (
         <>
@@ -167,7 +171,7 @@ export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherY
       ) : (
         <>
           <p className={ok ? 'quiz-ok' : 'quiz-bad'}>{ok ? 'ถูกแล้ว!' : 'ยังไม่ถูกนะ'}</p>
-          {!ok && <p className="quiz-explain">{q.explainTh}</p>}
+          {!ok && <p className="quiz-explain"><RichText text={q.explainTh} termIds={termIds} /></p>}
           <button
             type="button"
             className="quiz-btn"
