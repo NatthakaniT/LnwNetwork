@@ -3,3 +3,4 @@ dist/
 tools/tts/models/
 tools/tts/.venv/
 .superpowers/
+tools/tts/narration.json
