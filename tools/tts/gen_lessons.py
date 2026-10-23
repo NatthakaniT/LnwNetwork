@@ -28,6 +28,7 @@ PRONOUNCE = {
     "IP address": "ไอพีแอดเดรส",
     "MAC address": "แม็คแอดเดรส",
     "default gateway": "ดีฟอลต์เกตเวย์",
+    "end device": "เอ็นด์ดีไวซ์",
     "subnet mask": "ซับเน็ตมาสก์",
     "network": "เน็ตเวิร์ค",
     "Switch": "สวิตช์",
