@@ -29,3 +29,9 @@ h1 {
   margin: 0;
   padding: 1rem 1.5rem;
 }
+
+.lab-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.lab-result.ok { color: #7cfc9a; }
+.lab-result.warn { color: #ffc857; }
+.lab-iface { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0; }
+.activity-list li { display: flex; gap: 0.5rem; align-items: center; margin: 0.25rem 0; }
