@@ -31,6 +31,8 @@ h1 {
 }
 
 .lab-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+/* ข้อความในห้องทดลอง/กิจกรรม ขึ้นบรรทัดใหม่ตาม \n */
+.lab-intro, .lab-task, .lab-hint, .activity .lab-result { white-space: pre-line; }
 .lab-result.ok { color: #7cfc9a; }
 .lab-result.warn { color: #ffc857; }
 .lab-iface { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0; }

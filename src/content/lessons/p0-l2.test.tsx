@@ -101,6 +101,15 @@ describe('lesson p0-l2', () => {
       expect(g2.hintTh).toContain('ไม่ใช่ต่อตรงกับคอม 2')
     })
 
+    it('คำแนะนำห้องทดลอง แบ่งเป็น 3 บรรทัด (หมู่บ้าน / ที่ตั้งไว้ให้ / วิธีต่อสาย)', () => {
+      const lines = lab.introTh.split('\n')
+      expect(lines).toHaveLength(3)
+      expect(lines[0]).toContain('หมู่บ้านเอ')
+      expect(lines[1]).toContain('คอมจด Gateway ไว้ให้ด้วย')
+      expect(lines[2]).toContain('🔌 ต่อสาย')
+      expect(lab.introTh).not.toContain('คอมยังจด')
+    })
+
     it('งานของทุกเป้าหมาย โชว์ให้เห็นตลอด', () => {
       for (const g of lab.goals) expect(g.taskTh.trim()).not.toBe('')
     })
