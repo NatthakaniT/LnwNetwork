@@ -141,7 +141,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's7',
-        narrationTh: 'ถ้าบริษัท มีสาขาอยู่ไกลกัน เช่น กรุงเทพ กับเชียงใหม่ ต้องต่อสายเส้นยาว ข้ามเมือง แบบนี้เรียกว่า WAN บริษัทเดินสายเองข้ามจังหวัดไม่ไหว เลยต้องเช่าจากค่ายเน็ต',
+        narrationTh: 'ถ้าบริษัท มีสาขาอยู่ไกลกัน เช่น กรุงเทพ กับเชียงใหม่ ต้องต่อสายเส้นยาว ข้ามเมือง แบบนี้เรียกว่า WAN บริษัทเดินสายเองข้ามจังหวัดไม่ไหว ส่วนมากเลยต้องเช่าจากค่ายเน็ต',
         actions: [
           ...hide('officeLbl', 'o1', 'o2', 'o3', 'o4', 'oCab1', 'oCab2', 'oCab3', 'officeLan'),
           ...show('bkkLbl', 'cmLbl', 'bk1', 'bk2', 'cm1', 'cm2', 'bkCab', 'cmCab', 'wanCab', 'rentLbl', 'wanData', 'wanLbl'),
@@ -167,7 +167,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's10',
-        narrationTh: 'สรุปนะครับ network คือเครื่องที่ต่อถึงกัน เหมือนบ้านกับถนน ข้อมูลคือของที่ส่ง LAN คือในที่เดียว WAN คือข้ามเมือง และ Internet คือต่อกันทั้งโลก',
+        narrationTh: 'สรุปนะครับ network คือเครื่องที่ต่อถึงกัน เหมือนบ้านกับถนน ข้อมูลคือของที่ส่ง LAN คือ network ในที่เดียว WAN คือ network ที่ต่อข้ามเมือง และ Internet คือ network ทั่วโลกมาต่อกัน',
         actions: [
           ...hide('why1', 'why2', 'why3'),
           ...show('sum1', 'sum2', 'sum3', 'sum4'),
@@ -261,7 +261,7 @@ export const lesson: Lesson = {
         { id: 'd', text: 'None. Devices in one building cannot share a network.', textTh: 'ไม่มี อุปกรณ์ในตึกเดียวกัน ต่อ network ร่วมกันไม่ได้' },
       ],
       correct: ['a'],
-      explainTh: 'ตึกเดียว คือที่เดียว ระยะใกล้ ๆ แบบนี้คือ LAN ส่วน WAN ใช้ต่อที่ที่อยู่ไกลกัน',
+      explainTh: 'ตึกเดียว คือที่เดียว ระยะใกล้ ๆ แบบนี้คือ LAN ส่วน WAN ใช้ต่อสาขาไกล ๆ เข้าหากัน',
     },
     {
       id: 'q6',
