@@ -8,7 +8,13 @@ export type Route =
 export function parseHash(hash: string): Route {
   const path = hash.replace(/^#/, '').replace(/\/+$/, '')
   const m = /^\/lesson\/([^/]+)(\/test-out)?$/.exec(path)
-  if (m) return { name: 'lesson', id: decodeURIComponent(m[1]), testOut: !!m[2] }
+  if (m) {
+    try {
+      return { name: 'lesson', id: decodeURIComponent(m[1]), testOut: !!m[2] }
+    } catch {
+      return { name: 'map' } // hash เสียรูปแบบ เช่น %E0%A4%A
+    }
+  }
   if (path === '/glossary') return { name: 'glossary' }
   return { name: 'map' }
 }

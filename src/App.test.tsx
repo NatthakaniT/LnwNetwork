@@ -7,12 +7,19 @@ test('แสดงแผนที่บทเรียนเป็นหน้�
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('เรียน CCNA แบบเข้าใจจริง')
 })
 
-test('เข้าบทที่ยังไม่พร้อม แล้วกลับแผนที่พร้อมข้อความ', async () => {
-  window.location.hash = '#/lesson/p0-l1'
+test('เข้าบทที่ไม่มีจริง แล้วกลับแผนที่พร้อมข้อความ', async () => {
+  window.location.hash = '#/lesson/no-such-lesson'
   render(<App />)
   await act(async () => {})
-  expect(screen.getByText(/บทนี้กำลังทำอยู่ เร็ว ๆ นี้/)).toBeInTheDocument()
+  expect(screen.getByText(/ต้องเรียนบทก่อนหน้าก่อนนะ/)).toBeInTheDocument()
   expect(window.location.hash).toBe('#/')
+})
+
+test('hash เสียรูปแบบ ไม่ทำให้แอปพัง แสดงแผนที่', async () => {
+  window.location.hash = '#/lesson/%E0%A4%A'
+  render(<App />)
+  await act(async () => {})
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('เรียน CCNA แบบเข้าใจจริง')
 })
 
 test('ไปหน้าคลังศัพท์ได้', async () => {

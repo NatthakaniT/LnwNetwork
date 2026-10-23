@@ -9,10 +9,11 @@ let storage: Storage
 beforeEach(() => { storage = memoryStorage(); window.location.hash = '' })
 
 describe('CourseMap', () => {
-  it('real course renders 7 parts, all building, 0%', () => {
+  it('real course renders 7 parts; building chips match non-ready lessons', () => {
     render(<CourseMap storage={storage} />)
     expect(document.querySelectorAll('.part')).toHaveLength(7)
-    expect(screen.getAllByText('กำลังทำ').length).toBe(course.flatMap((p) => p.lessons).length)
+    const notReady = course.flatMap((p) => p.lessons).filter((l) => l.status !== 'ready').length
+    expect(screen.queryAllByText('กำลังทำ')).toHaveLength(notReady)
     expect(screen.getByText('เรียนไปแล้ว 0%')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /คลังศัพท์/ })).toHaveAttribute('href', '#/glossary')
     expect(screen.queryByRole('link', { name: 'เรียนต่อ' })).toBeNull()
