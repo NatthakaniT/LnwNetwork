@@ -1,0 +1,5 @@
+node_modules/
+dist/
+tools/tts/models/
+tools/tts/.venv/
+.superpowers/
