@@ -75,7 +75,8 @@ describe('lesson p0-l3', () => {
   it('ฉาก 7 บอกชัดว่าที่อยู่ผู้รับไม่เปลี่ยนเป็น Gateway / ฉาก 8 เรียกเครื่อง DNS ว่า DNS server', () => {
     const [s7, s8] = [lesson.scenes!.scenes[6], lesson.scenes!.scenes[7]]
     expect(s7.narrationTh).toContain('ไม่เปลี่ยนเป็น Gateway')
-    expect(s8.narrationTh).toContain('เครื่อง DNS (DNS server)')
+    expect(s8.narrationTh).toContain('เครื่อง DNS server')
+    expect(s8.narrationTh).not.toMatch(/[()]/) // TTS อ่านวงเล็บตรง ๆ
     expect(s8.narrationTh).not.toContain('เครื่องที่ชื่อ DNS')
     expect(glossary.find((g) => g.id === 'dns')!.explainTh).toContain('สมุดของคอม ไม่ได้ให้เบอร์โทร แต่ให้เลขที่อยู่ของเว็บ')
   })
