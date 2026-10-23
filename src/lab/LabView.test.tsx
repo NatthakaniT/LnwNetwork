@@ -67,14 +67,35 @@ describe('LabView', () => {
   it('valid edit is applied (prefix accepts a mask)', () => {
     render(<LabView lab={lab} onDone={() => {}} />)
     fireEvent.click(screen.getByTestId('device-pc2'))
-    fireEvent.change(screen.getByLabelText('IP ของ eth0'), { target: { value: '10.0.0.5' } })
+    fireEvent.change(screen.getByLabelText('IP ของ eth0'), { target: { value: '192.168.1.30' } })
     fireEvent.change(screen.getByLabelText('ขนาดวงของ eth0'), { target: { value: '255.255.255.0' } })
     fireEvent.click(screen.getByText('บันทึก'))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText('ไป IP'), { target: { value: '10.0.0.5' } })
+    expect(screen.getByText('บันทึกแล้ว')).toBeInTheDocument()
+    // old IP is gone: sending to it now fails
     fireEvent.click(screen.getByText('ส่งข้อมูล'))
     flush()
-    expect(screen.getByText(/ส่งถึงแล้ว|อยู่คนละวง|ไม่มี/)).toBeInTheDocument()
+    expect(screen.getByText(/ไม่มีเครื่องไหนใช้ IP นี้ \(192\.168\.1\.20\)/)).toBeInTheDocument()
+    // new IP works
+    fireEvent.change(screen.getByLabelText('ไป IP'), { target: { value: '192.168.1.30' } })
+    fireEvent.click(screen.getByText('ส่งข้อมูล'))
+    flush()
+    expect(screen.getByText('ส่งถึงแล้ว! คอม 1 กับ คอม 2 อยู่วงเดียวกันและมีสายต่อถึงกัน')).toBeInTheDocument()
+    expect(screen.getByLabelText('IP ของ eth0')).toHaveValue('192.168.1.30')
+  })
+
+  it('a router gaining a port while its panel is open does not crash', () => {
+    render(<LabView lab={lab} onDone={() => {}} />)
+    fireEvent.click(screen.getByText('➕ Router'))
+    fireEvent.click(screen.getByTestId('device-router1'))
+    fireEvent.click(screen.getByText('🔌 ต่อสาย'))
+    fireEvent.click(screen.getByTestId('device-router1'))
+    fireEvent.click(screen.getByTestId('device-sw1'))
+    expect(screen.getByTestId('cable-router1-sw1')).toBeInTheDocument()
+    expect(screen.getByLabelText('IP ของ g0/0')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('บันทึก'))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getByText('บันทึกแล้ว')).toBeInTheDocument()
   })
 
   it('invalid destination IP shows the reason and does not send', () => {
@@ -101,7 +122,6 @@ describe('LabView', () => {
   it('adds a device from the palette and links two devices', () => {
     render(<LabView lab={lab} onDone={() => {}} />)
     fireEvent.click(screen.getByText('➕ คอม'))
-    expect(screen.getByTestId('device-pc2').textContent).toBeDefined()
     expect(screen.getByTestId('device-pc3')).toBeInTheDocument()
     fireEvent.click(screen.getByText('🔌 ต่อสาย'))
     fireEvent.click(screen.getByTestId('device-pc3'))

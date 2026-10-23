@@ -333,7 +333,7 @@ export function LabView({ lab, onDone }: { lab: NetworkLab; onDone: () => void }
               </div>
             )}
           </div>
-          {selDevice && <DevicePanel key={selDevice.id} device={selDevice} onSave={saveDevice} />}
+          {selDevice && <DevicePanel key={`${selDevice.id}:${selDevice.ifaces.length}`} device={selDevice} onSave={saveDevice} />}
         </aside>
       </div>
     </section>
