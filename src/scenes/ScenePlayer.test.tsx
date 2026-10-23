@@ -115,6 +115,32 @@ describe('ScenePlayer', () => {
     expect(audio(container).playbackRate).toBe(1)
   })
 
+  it('AbortError from a play() interrupted by pause does not advance or finish', async () => {
+    const onFinished = vi.fn()
+    let rejectPlay: (e: unknown) => void = () => {}
+    vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(
+      () => new Promise<void>((_, rej) => { rejectPlay = rej }),
+    )
+    render(<ScenePlayer lessonId="l1" set={set} onFinished={onFinished} />)
+    fireEvent.click(screen.getByRole('button', { name: /เล่น/ }))
+    fireEvent.click(screen.getByRole('button', { name: /หยุด/ }))
+    await act(async () => { rejectPlay(Object.assign(new Error('aborted'), { name: 'AbortError' })) })
+    act(() => { vi.advanceTimersByTime(60000) })
+    expect(screen.getByText('ฉากที่ 1 จาก 3')).toBeInTheDocument()
+    expect(onFinished).not.toHaveBeenCalled()
+  })
+
+  it('resume after pause restarts audio from 0 on the same scene', () => {
+    const { container } = render(<ScenePlayer lessonId="l1" set={set} onFinished={() => {}} />)
+    fireEvent.click(screen.getByRole('button', { name: /เล่น/ }))
+    audio(container).currentTime = 5
+    fireEvent.click(screen.getByRole('button', { name: /หยุด/ }))
+    fireEvent.click(screen.getByRole('button', { name: /เล่น/ }))
+    expect(audio(container).currentTime).toBe(0)
+    expect(screen.getByText('ฉากที่ 1 จาก 3')).toBeInTheDocument()
+    expect(screen.getByText('ฉากแรกนะ')).toBeInTheDocument()
+  })
+
   it('next and prev jump between scenes, preserving paused state', () => {
     const { container } = render(<ScenePlayer lessonId="l1" set={set} onFinished={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: /ฉากต่อไป/ }))

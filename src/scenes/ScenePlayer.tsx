@@ -20,6 +20,7 @@ export function ScenePlayer({ lessonId, set, onFinished }: Props) {
   const failed = useRef<Set<string>>(new Set())
   const fallbackStarted = useRef(false)
   const finishedCalled = useRef(false)
+  const runToken = useRef(0)
   const rate = slow ? 0.75 : 1
   const rateRef = useRef(rate)
   rateRef.current = rate
@@ -66,6 +67,7 @@ export function ScenePlayer({ lessonId, set, onFinished }: Props) {
   // run the current scene while playing
   useEffect(() => {
     if (!playing) return
+    const token = ++runToken.current
     const sc = set.scenes[index]
     const before = stateBeforeScene(set, index)
     setStage(before)
@@ -102,15 +104,21 @@ export function ScenePlayer({ lessonId, set, onFinished }: Props) {
       startFallback()
     } else {
       a.playbackRate = rateRef.current
+      try { a.currentTime = 0 } catch { /* ignore */ }
       try {
         const p = a.play() as Promise<void> | undefined
-        p?.catch?.(() => startFallback())
+        p?.catch?.((e: unknown) => {
+          if ((e as { name?: string } | null)?.name === 'AbortError') return
+          if (token !== runToken.current) return
+          startFallback()
+        })
       } catch {
         startFallback()
       }
     }
 
     return () => {
+      runToken.current++
       clearTimers()
       audioRef.current?.pause()
     }
