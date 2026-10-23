@@ -240,6 +240,8 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
   const byId = (id: string) => topo.devices.find(d => d.id === id)
   const selDevice = selDev ? byId(selDev) : undefined
   const sendable = topo.devices.filter(d => d.kind !== 'switch')
+  const destIp = parseIPv4(toIp)
+  const destDev = destIp.ok ? topo.devices.find(d => d.ifaces.some(i => i.ip === destIp.value)) : undefined
 
   return (
     <section className="lab">
@@ -248,6 +250,7 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
         <div className="lab-goal">
           <strong>เป้าหมายที่ {goalIdx + 1} จาก {lab.goals.length}</strong>
           <button type="button" onClick={() => setHint(true)}>ขอตัวช่วย</button>
+          <p className="lab-task"><RichText text={goal.taskTh} termIds={termIds} /></p>
           {hint && <p className="lab-hint"><RichText text={goal.hintTh} termIds={termIds} /></p>}
         </div>
       )}
@@ -318,6 +321,7 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
             <label>ไป IP{' '}
               <input aria-label="ไป IP" value={toIp} onChange={e => setToIp(e.target.value)} />
             </label>{' '}
+            {destDev && <span className="lab-dest" data-testid="lab-dest">({destDev.label})</span>}{' '}
             <button type="button" onClick={send} disabled={busy}>ส่งข้อมูล</button>
             {sendErr && <p role="alert" className="lab-result warn">{sendErr}</p>}
             {shown && (

@@ -94,7 +94,7 @@ export function simulateSend(t: Topology, fromId: string, toIp: string): SendRes
   }
   const fromRouter = path(t, router.id, outIf.name, dst.id, dstIf.name)
   if (!fromRouter) {
-    return fail(router.label + ' ไปถึงวงของ ' + toIp + ' แต่ไม่มีสายต่อถึง ' + dst.label + ' เลยส่งต่อไม่ได้ ลองเช็กสายฝั่งปลายทาง')
+    return fail(router.label + ' มีช่องสำหรับวงของ ' + toIp + ' แล้ว แต่ช่องนั้นยังไม่มีสายต่อไปถึง ' + dst.label + ' ของเลยไปต่อไม่ได้ ลองต่อสายจากช่องนั้นไปทาง ' + dst.label)
   }
   return {
     ok: true,

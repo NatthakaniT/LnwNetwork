@@ -32,10 +32,11 @@ export interface Iface { name: string; ip?: string; prefix?: number; mac: string
 export interface Device { id: string; kind: DeviceKind; label: string; ifaces: Iface[]; gateway?: string; x: number; y: number }
 export interface Link { a: { device: string; iface: string }; b: { device: string; iface: string } }
 export interface Topology { devices: Device[]; links: Link[] }
+// taskTh = งานของเป้าหมายนี้ (โชว์ตลอด) / hintTh = ตัวช่วย (โชว์เมื่อกดขอ)
 export type LabGoal =
-  | { type: 'deliver'; from: string; toIp: string; hintTh: string }
-  | { type: 'fail'; from: string; toIp: string; reasonIncludes: string; hintTh: string } // ทำให้พังแล้วดูว่าพังเพราะอะไร
-  | { type: 'fix'; from: string; toIp: string; hintTh: string } // เริ่มพัง ต้องซ่อม
+  | { type: 'deliver'; from: string; toIp: string; taskTh: string; hintTh: string }
+  | { type: 'fail'; from: string; toIp: string; reasonIncludes: string; taskTh: string; hintTh: string } // ทำให้พังแล้วดูว่าพังเพราะอะไร
+  | { type: 'fix'; from: string; toIp: string; taskTh: string; hintTh: string } // เริ่มพัง ต้องซ่อม
 export interface NetworkLab { kind: 'network'; introTh: string; start: Topology; palette: DeviceKind[]; goals: LabGoal[] }
 export interface ActivityLab { kind: 'order' | 'match'; introTh: string; items: { id: string; textTh: string }[]; answer: string[] | Record<string, string>; explainTh: string }
 export type Lab = NetworkLab | ActivityLab

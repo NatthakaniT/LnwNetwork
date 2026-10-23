@@ -86,6 +86,13 @@ describe('simulateSend', () => {
     expect(r.ok).toBe(false)
     expect(r.reasonTh).toContain('Router')
   })
+  it('router has a port for the destination network but no cable from it', () => {
+    const t = routed()
+    t.links = t.links.filter((l) => !(l.a.device === 'r1' && l.a.iface === 'g1'))
+    const r = simulateSend(t, 'pc1', '192.168.2.10')
+    expect(r.ok).toBe(false)
+    expect(r.reasonTh).toBe('r1 มีช่องสำหรับวงของ 192.168.2.10 แล้ว แต่ช่องนั้นยังไม่มีสายต่อไปถึง pc3 ของเลยไปต่อไม่ได้ ลองต่อสายจากช่องนั้นไปทาง pc3')
+  })
   it('does not pass through a router in the same-subnet case', () => {
     const t: Topology = {
       devices: [end('pc1', '192.168.1.10'), router('r1', ['192.168.1.1', '192.168.1.2']), end('pc2', '192.168.1.20')],

@@ -103,6 +103,17 @@ describe('validateCourse', () => {
     expect(has(errs, 'nope')).toBe(true)
   })
 
+  it('reports a network lab goal without taskTh', () => {
+    const net = (taskTh: string) => ({
+      kind: 'network' as const, introTh: 'i', start: { devices: [], links: [] }, palette: [],
+      goals: [{ type: 'deliver' as const, from: 'pc1', toIp: '192.168.1.2', hintTh: 'h', taskTh }],
+    })
+    expect(validateCourse(parts(readyOk({ lab: net('ส่งของ') })), gl)).toEqual([])
+    const errs = validateCourse(parts(readyOk({ lab: net('  ') })), gl)
+    expect(errs.length).toBe(1)
+    expect(has(errs, 'taskTh')).toBe(true)
+  })
+
   it('reports scene action referencing missing actor', () => {
     const bad = scenes({ scenes: [{ id: 's1', narrationTh: 'n', actions: [
       { type: 'show', actor: 'ghost' },

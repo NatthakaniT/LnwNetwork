@@ -15,6 +15,11 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
   if (l.videos.length === 0) errs.push(`บท ${id}: ยังไม่มีคลิปวิดีโอ`)
   if (!l.scenes || l.scenes.scenes.length === 0) errs.push(`บท ${id}: ยังไม่มีภาพเคลื่อนไหว (scenes)`)
   if (!l.lab) errs.push(`บท ${id}: ยังไม่มีห้องทดลอง (lab)`)
+  if (l.lab?.kind === 'network') {
+    l.lab.goals.forEach((g, i) => {
+      if (!g.taskTh?.trim()) errs.push(`บท ${id}: เป้าหมายที่ ${i + 1} ของห้องทดลอง ไม่มีคำบอกงาน (taskTh)`)
+    })
+  }
 
   if (!l.quiz || l.quiz.length === 0) {
     errs.push(`บท ${id}: ยังไม่มีคำถาม (quiz)`)

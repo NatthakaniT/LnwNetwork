@@ -21,8 +21,8 @@ const lab: NetworkLab = {
   start: start(),
   palette: ['pc', 'switch', 'router'],
   goals: [
-    { type: 'deliver', from: 'pc1', toIp: '192.168.1.20', hintTh: 'กดส่งข้อมูลได้เลย' },
-    { type: 'deliver', from: 'pc2', toIp: '192.168.1.10', hintTh: 'ส่งกลับไปหา คอม 1' },
+    { type: 'deliver', from: 'pc1', toIp: '192.168.1.20', hintTh: 'กดส่งข้อมูลได้เลย', taskTh: 'ส่งจากคอม 1 ไปคอม 2' },
+    { type: 'deliver', from: 'pc2', toIp: '192.168.1.10', hintTh: 'ส่งกลับไปหา คอม 1', taskTh: 'ส่งกลับไปหาคอม 1' },
   ],
 }
 
@@ -39,6 +39,25 @@ describe('LabView', () => {
     expect(screen.queryByText('กดส่งข้อมูลได้เลย')).not.toBeInTheDocument()
     fireEvent.click(screen.getByText('ขอตัวช่วย'))
     expect(screen.getByText('กดส่งข้อมูลได้เลย')).toBeInTheDocument()
+  })
+
+  it('shows the goal task without asking for a hint, and updates it per goal', () => {
+    render(<LabView lab={lab} onDone={() => {}} />)
+    expect(screen.getByText('ส่งจากคอม 1 ไปคอม 2')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('ส่งข้อมูล'))
+    flush()
+    fireEvent.click(screen.getByText('เป้าหมายต่อไป'))
+    expect(screen.getByText('ส่งกลับไปหาคอม 1')).toBeInTheDocument()
+    expect(screen.queryByText('ส่งจากคอม 1 ไปคอม 2')).not.toBeInTheDocument()
+  })
+
+  it('names the device that owns the destination IP', () => {
+    render(<LabView lab={lab} onDone={() => {}} />)
+    expect(screen.getByTestId('lab-dest')).toHaveTextContent('(คอม 2)')
+    fireEvent.change(screen.getByLabelText('ไป IP'), { target: { value: '192.168.1.10' } })
+    expect(screen.getByTestId('lab-dest')).toHaveTextContent('(คอม 1)')
+    fireEvent.change(screen.getByLabelText('ไป IP'), { target: { value: '10.0.0.1' } })
+    expect(screen.queryByTestId('lab-dest')).not.toBeInTheDocument()
   })
 
   it('send shows the reason after the animation and passes the goal', () => {
@@ -143,10 +162,10 @@ describe('LabView', () => {
 
 describe('LabView termIds', () => {
   it('คำศัพท์ใน intro และตัวช่วย กดดูความหมายได้', () => {
-    const l: NetworkLab = { ...lab, introTh: 'ลองตั้ง IP address', goals: [{ ...lab.goals[0], hintTh: 'ดู IP address ก่อน' }] }
+    const l: NetworkLab = { ...lab, introTh: 'ลองตั้ง IP address', goals: [{ ...lab.goals[0], hintTh: 'ดู IP address ก่อน', taskTh: 'ตั้ง IP address ให้ถูก' }] }
     render(<LabView lab={l} onDone={() => {}} termIds={['ip-address']} />)
-    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(2) // intro + งาน
     fireEvent.click(screen.getByRole('button', { name: 'ขอตัวช่วย' }))
-    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(3)
   })
 })
