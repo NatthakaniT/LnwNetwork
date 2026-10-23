@@ -149,8 +149,41 @@ describe('ScenePlayer', () => {
     expect(group(container, 'a').style.transform).toContain('translate(50px, 70px)')
     fireEvent.click(screen.getByRole('button', { name: /ย้อน/ }))
     expect(screen.getByText('ฉากที่ 1 จาก 3')).toBeInTheDocument()
-    expect(group(container, 'a').style.transform).toContain('translate(10px, 20px)')
+    // paused: prev shows the END state of scene 1 so it matches the caption
+    expect(group(container, 'a').style.transform).toContain('translate(50px, 70px)')
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled()
+  })
+
+  it('paused: next shows the end state of the new scene; play then replays from its start', () => {
+    const { container } = render(<ScenePlayer lessonId="l1" set={set} onFinished={() => {}} />)
+    expect(group(container, 'b').getAttribute('data-highlighted')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /ฉากต่อไป/ }))
+    expect(group(container, 'b').getAttribute('data-highlighted')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: /ฉากต่อไป/ }))
+    expect(screen.getByText('ฉากที่ 3 จาก 3')).toBeInTheDocument()
+    expect(group(container, 'a').style.transform).toContain('translate(50px, 70px)')
+    expect(group(container, 'b').getAttribute('data-highlighted')).toBe('true')
+    // replay scene 2 (index 1) from its start state
+    fireEvent.click(screen.getByRole('button', { name: /ย้อน/ }))
+    fireEvent.click(screen.getByRole('button', { name: /เล่น/ }))
+    expect(group(container, 'b').getAttribute('data-highlighted')).toBeNull()
+    act(() => { vi.advanceTimersByTime(100) })
+    expect(group(container, 'b').getAttribute('data-highlighted')).toBe('true')
+  })
+
+  it('icons are scaled 1.6x around their anchor with labels >= 20 units', () => {
+    const { container } = render(<ScenePlayer lessonId="l1" set={set} onFinished={() => {}} />)
+    const icon = group(container, 'a').querySelector('[data-icon-scale]') as SVGGElement
+    expect(icon.getAttribute('transform')).toBe('scale(1.6)')
+    expect(group(container, 'a').style.transform).toContain('translate(10px, 20px)')
+    const label = group(container, 'a').querySelector('text') as SVGTextElement
+    expect(Number(label.getAttribute('font-size'))).toBeGreaterThanOrEqual(20)
+  })
+
+  it('control buttons use the styled classes; play is primary', () => {
+    render(<ScenePlayer lessonId="l1" set={set} onFinished={() => {}} />)
+    expect(screen.getByRole('button', { name: /เล่น/ })).toHaveClass('sp-btn', 'sp-btn-primary')
+    expect(screen.getByRole('button', { name: /ย้อน/ })).toHaveClass('sp-btn')
   })
 })
 

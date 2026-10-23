@@ -113,7 +113,8 @@ function Icon({ kind }: { kind: ActorKind }) {
   }
 }
 
-const ICON_HALF_HEIGHT = 36
+const ICON_SCALE = 1.6
+const ICON_HALF_HEIGHT = 36 * ICON_SCALE
 
 export function ActorView({
   actor,
@@ -157,10 +158,10 @@ export function ActorView({
     >
       {actor.highlighted && (
         <rect
-          x="-50"
-          y={-ICON_HALF_HEIGHT - 12}
-          width="100"
-          height={ICON_HALF_HEIGHT * 2 + 24}
+          x={-50 * ICON_SCALE}
+          y={-ICON_HALF_HEIGHT - 12 * ICON_SCALE}
+          width={100 * ICON_SCALE}
+          height={ICON_HALF_HEIGHT * 2 + 24 * ICON_SCALE}
           rx="14"
           fill="rgba(255, 216, 74, 0.15)"
           stroke="#ffd84a"
@@ -168,12 +169,14 @@ export function ActorView({
           style={{ filter: 'drop-shadow(0 0 8px #ffd84a)' }}
         />
       )}
-      <Icon kind={actor.kind} />
+      <g data-icon-scale={ICON_SCALE} transform={`scale(${ICON_SCALE})`}>
+        <Icon kind={actor.kind} />
+      </g>
       {actor.label && (
         <text
-          y={actor.kind === 'label' ? 0 : ICON_HALF_HEIGHT + 18}
+          y={actor.kind === 'label' ? 0 : ICON_HALF_HEIGHT + 26}
           textAnchor="middle"
-          fontSize={actor.kind === 'label' ? 22 : 18}
+          fontSize={actor.kind === 'label' ? 26 : 24}
           fontWeight={600}
           fill="#e6edf3"
           stroke="#0f1419"

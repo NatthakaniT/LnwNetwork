@@ -46,7 +46,7 @@ export interface QuizViewProps {
 }
 
 export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherYates, termIds = [] }: QuizViewProps) {
-  const [list, setList] = useState(() => order(questions))
+  const [list, setList] = useState(() => order(questions, shuffle))
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [selected, setSelected] = useState<string[]>([])

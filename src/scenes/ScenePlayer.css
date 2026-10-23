@@ -1,0 +1,10 @@
+.sp { display: grid; gap: 0.6rem; }
+.sp-stage { display: block; width: auto; max-width: 100%; max-height: 52vh; height: auto; margin: 0 auto; background: #16202c; border-radius: 12px; border: 1px solid #2a3441; }
+.sp-caption { font-size: 1.4rem; line-height: 1.5; margin: 0; padding: 0.6rem 1rem; background: #000; color: #fff; border-radius: 8px; min-height: 3em; }
+.sp-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.sp-btn { font: inherit; font-size: 18px; padding: 10px 16px; color: #e6edf3; background: #263445; border: 2px solid #4a5b70; border-radius: 8px; cursor: pointer; }
+.sp-btn:hover:not(:disabled) { background: #31445a; }
+.sp-btn[aria-pressed='true'] { border-color: #ffd84a; }
+.sp-btn:disabled { color: #8b97a5; background: #1b2531; border-color: #2f3b4a; cursor: not-allowed; }
+.sp-btn-primary { color: #fff; background: #1f6feb; border-color: #1f6feb; font-weight: 700; }
+.sp-btn-primary:hover:not(:disabled) { background: #2f7cf5; }

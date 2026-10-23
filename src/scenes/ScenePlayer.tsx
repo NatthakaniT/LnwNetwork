@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SceneSet } from '../content/types'
 import { RichText } from '../glossary/RichText'
 import { ActorView } from './actors'
-import { applyAction, audioUrl, fallbackDurationMs, stateBeforeScene, type StageState } from './timeline'
+import './ScenePlayer.css'
+import { applyAction, applyScene, audioUrl, fallbackDurationMs, stateBeforeScene, type StageState } from './timeline'
 
 interface Props { lessonId: string; set: SceneSet; onFinished: () => void; termIds?: string[] }
 
@@ -128,7 +129,9 @@ export function ScenePlayer({ lessonId, set, onFinished, termIds = [] }: Props) 
   const jump = (to: number) => {
     clearTimers()
     setIndex(to)
-    setStage(stateBeforeScene(set, to))
+    const before = stateBeforeScene(set, to)
+    // paused: show where the scene ends so the visuals match the caption
+    setStage(playing ? before : applyScene(before, set.scenes[to]))
     setMoveMs({})
     setRunId(r => r + 1)
   }
@@ -140,10 +143,11 @@ export function ScenePlayer({ lessonId, set, onFinished, termIds = [] }: Props) 
   }
 
   return (
-    <section aria-label="ภาพเคลื่อนไหวสรุปบทเรียน" style={{ display: 'grid', gap: '0.75rem' }}>
+    <section aria-label="ภาพเคลื่อนไหวสรุปบทเรียน" className="sp">
       <svg
         viewBox={`0 0 ${set.stage.width} ${set.stage.height}`}
-        style={{ width: '100%', height: 'auto', background: '#16202c', borderRadius: 12, border: '1px solid #2a3441' }}
+        className="sp-stage"
+        style={{ aspectRatio: `${set.stage.width} / ${set.stage.height}` }}
         role="img"
         aria-label="เวทีภาพเคลื่อนไหว"
       >
@@ -161,7 +165,7 @@ export function ScenePlayer({ lessonId, set, onFinished, termIds = [] }: Props) 
 
       <p
         aria-live="polite"
-        style={{ fontSize: '1.4rem', lineHeight: 1.6, margin: 0, padding: '0.75rem 1rem', background: '#000', color: '#fff', borderRadius: 8, minHeight: '3.5em' }}
+        className="sp-caption"
       >
         <RichText text={scene.narrationTh} termIds={termIds} />
       </p>
@@ -177,11 +181,11 @@ export function ScenePlayer({ lessonId, set, onFinished, termIds = [] }: Props) 
         }}
       />
 
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <button type="button" onClick={togglePlay}>{playing ? '⏸ หยุด' : '▶ เล่น'}</button>
-        <button type="button" onClick={() => jump(Math.max(0, index - 1))}>⏮ ย้อน</button>
-        <button type="button" onClick={() => jump(index + 1)} disabled={index >= last}>⏭ ฉากต่อไป</button>
-        <button type="button" aria-pressed={slow} onClick={() => setSlow(s => !s)}>
+      <div className="sp-controls">
+        <button type="button" className="sp-btn sp-btn-primary" onClick={togglePlay}>{playing ? '⏸ หยุด' : '▶ เล่น'}</button>
+        <button type="button" className="sp-btn" onClick={() => jump(Math.max(0, index - 1))}>⏮ ย้อน</button>
+        <button type="button" className="sp-btn" onClick={() => jump(index + 1)} disabled={index >= last}>⏭ ฉากต่อไป</button>
+        <button type="button" className="sp-btn" aria-pressed={slow} onClick={() => setSlow(s => !s)}>
           {slow ? '🐢 ช้าลงอยู่' : '🐢 ช้าลง'}
         </button>
         <span>{`ฉากที่ ${index + 1} จาก ${set.scenes.length}`}</span>

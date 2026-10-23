@@ -94,6 +94,22 @@ describe('QuizView', () => {
     expect(order()).toEqual(['ตัวเลือก c 1', 'ตัวเลือก b 1', 'ตัวเลือก a 1'])
   })
 
+  it('สลับตัวเลือกตั้งแต่การแสดงครั้งแรก ไม่เรียงตามที่เขียนไว้', () => {
+    const shuffle = vi.fn((xs: unknown[]) => [...xs].reverse()) as unknown as <T>(xs: T[]) => T[]
+    render(<QuizView questions={[mk('1', 'th', ['a'])]} onPass={() => {}} shuffle={shuffle} />)
+    const texts = screen.getAllByRole('button').filter((b) => /ตัวเลือก/.test(b.textContent ?? '')).map((b) => (b.textContent ?? '').replace(/^[○◉☐☑]/, ''))
+    expect(shuffle).toHaveBeenCalled()
+    expect(texts).toEqual(['ตัวเลือก c 1', 'ตัวเลือก b 1', 'ตัวเลือก a 1'])
+  })
+
+  it('สลับตัวเลือกตั้งแต่การแสดงครั้งแรก ไม่เรียงตามที่เขียนไว้', () => {
+    const shuffle = vi.fn((xs: unknown[]) => [...xs].reverse()) as unknown as <T>(xs: T[]) => T[]
+    render(<QuizView questions={[mk('1', 'th', ['a'])]} onPass={() => {}} shuffle={shuffle} />)
+    const texts = screen.getAllByRole('button').filter((b) => /ตัวเลือก/.test(b.textContent ?? '')).map((b) => (b.textContent ?? '').replace(/^[○◉☐☑]/, ''))
+    expect(shuffle).toHaveBeenCalled()
+    expect(texts).toEqual(['ตัวเลือก c 1', 'ตัวเลือก b 1', 'ตัวเลือก a 1'])
+  })
+
   it('testOut แสดงข้อความนำ', () => {
     render(<QuizView questions={[mk('1', 'th', ['a'])]} onPass={() => {}} mode="testOut" />)
     expect(screen.getByText(/ถ้าตอบผ่าน จะข้ามบทนี้ได้เลย/)).toBeInTheDocument()
