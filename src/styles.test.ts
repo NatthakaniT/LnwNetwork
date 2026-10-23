@@ -5,10 +5,12 @@ import { beforeAll, describe, expect, it } from 'vitest'
 describe('styles: ข้อความหลายบรรทัด', () => {
   let css = ''
   beforeAll(async () => {
+    // ใช้ URL ของ node (URL ของ jsdom ต่อ path แบบ http) จึงไม่ขึ้นกับโฟลเดอร์ที่รันเทสต์
     const fsModule = 'node:fs'
+    const urlModule = 'node:url'
     const { readFileSync } = await import(/* @vite-ignore */ fsModule)
-    const cwd = (globalThis as unknown as { process: { cwd(): string } }).process.cwd()
-    css = readFileSync(`${cwd}/src/styles.css`, 'utf-8')
+    const { URL: NodeURL } = await import(/* @vite-ignore */ urlModule)
+    css = readFileSync(new NodeURL('./styles.css', import.meta.url), 'utf-8')
   })
   const rule = (sel: string) =>
     (css.replace(/\/\*[\s\S]*?\*\//g, '').match(/[^{}]*\{[^}]*\}/g) ?? [])

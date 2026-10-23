@@ -152,7 +152,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
       </nav>
 
       <section className="step-body">
-        {step === 'video' && <VideoStep videos={lesson.videos} onNext={() => setStepIdx(1)} />}
+        {step === 'video' && <VideoStep videos={lesson.videos} termIds={termIds} onNext={() => setStepIdx(1)} />}
         {step === 'scenes' && (lesson.scenes
           ? <ScenePlayer lessonId={lesson.id} set={lesson.scenes} termIds={termIds} onFinished={onScenesFinished} />
           : <p>บทนี้ไม่มีภาพทบทวน ไปขั้นต่อไปได้เลย</p>)}

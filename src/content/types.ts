@@ -1,7 +1,8 @@
 export type LessonId = string // 'p0-l1' … 'p6-l4'
 export type LessonStatus = 'ready' | 'building'
 
-export interface VideoRef { youtubeId: string; titleTh: string; channel: string; startSec?: number }
+// noteTh = คำแนะนำสั้น ๆ ก่อนดูคลิป (โชว์เหนือคลิป)
+export interface VideoRef { youtubeId: string; titleTh: string; channel: string; startSec?: number; noteTh?: string }
 
 export type ActorKind = 'house' | 'pc' | 'laptop' | 'switch' | 'router' | 'server' | 'cloud'
   | 'envelope' | 'box' | 'truck' | 'person' | 'label' | 'cable'

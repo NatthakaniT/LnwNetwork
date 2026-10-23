@@ -54,3 +54,19 @@ describe('VideoStep', () => {
     expect(screen.getByRole('button', { name: 'ไปขั้นต่อไป' })).toBeEnabled()
   })
 })
+
+describe('VideoStep note', () => {
+  it('shows noteTh above the player, with glossary terms clickable', () => {
+    const v = [{ youtubeId: 'n1', titleTh: 'คลิปมีโน้ต', channel: 'ก', noteTh: 'ช่วง Subnet mask ดูผ่าน ๆ ได้ IP address ไว้บทหน้า' }]
+    const { container } = render(<VideoStep videos={v} termIds={['ip-address']} onNext={() => {}} />)
+    const note = container.querySelector('.video-note')!
+    expect(note).toHaveTextContent('ช่วง Subnet mask ดูผ่าน ๆ ได้')
+    expect(note.compareDocumentPosition(container.querySelector('.video-frame')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'IP address' })).toBeInTheDocument()
+  })
+
+  it('no note element when noteTh is missing', () => {
+    const { container } = render(<VideoStep videos={vids} onNext={() => {}} />)
+    expect(container.querySelector('.video-note')).toBeNull()
+  })
+})

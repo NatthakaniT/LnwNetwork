@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { VideoRef } from '../content/types'
+import { RichText } from '../glossary/RichText'
 
 export const VIDEO_TIMEOUT_MS = 15000
 
 const embedUrl = (v: VideoRef) =>
   `https://www.youtube-nocookie.com/embed/${v.youtubeId}${v.startSec ? `?start=${v.startSec}` : ''}`
 
-export function VideoStep({ videos, onNext }: { videos: VideoRef[]; onNext: () => void }) {
+export function VideoStep({ videos, onNext, termIds = [] }: { videos: VideoRef[]; onNext: () => void; termIds?: string[] }) {
   const [idx, setIdx] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
@@ -27,6 +28,7 @@ export function VideoStep({ videos, onNext }: { videos: VideoRef[]; onNext: () =
     <section className="video-step">
       {video ? (
         <>
+          {video.noteTh && <p className="video-note">ℹ️ <RichText text={video.noteTh} termIds={termIds} /></p>}
           <div className="video-frame">
             <iframe
               key={video.youtubeId + (video.startSec ?? '')}
