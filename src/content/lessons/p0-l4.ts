@@ -12,7 +12,7 @@ const routeIds = ['rVA', 'rVB', 'rPc', 'rSwA', 'rR', 'rSwB', 'rDst', 'rc1', 'rc2
 const lastIds = ['tR', 'tSw', 't1', 't2', 't3', 'tc0', 'tc1', 'tc2', 'tc3', 'tBox', 'tLbl']
 const arpIds = ['aAsk', 'aSw', 'a1', 'a2', 'a3', 'ac0', 'ac1', 'ac2', 'ac3', 'aQ1', 'aQ2', 'aQ3', 'aAns', 'aLbl1', 'aLbl2']
 const gwIds = ['gPc', 'gSw', 'gR', 'gNet', 'gc1', 'gc2', 'gc3', 'gAsk', 'gBox', 'gLbl1', 'gLbl2']
-const dupIds = ['dSend', 'dSw', 'd1', 'd2', 'dc0', 'dc1', 'dc2', 'dBox', 'dLbl1', 'dLbl2']
+const dupIds = ['dSend', 'dSw', 'd1', 'd2', 'dc0', 'dc1', 'dc2', 'dQ1', 'dQ2', 'dA1', 'dA2', 'dLbl1', 'dLbl2']
 
 const actors: Actor[] = [
   // ฉาก 1: คนหนึ่งคน มีเลขสองแบบ
@@ -100,7 +100,7 @@ const actors: Actor[] = [
   hidden({ id: 'gBox', kind: 'box', x: 130, y: 280 }),
 
   // ฉาก 9: IP ซ้ำ
-  hidden({ id: 'dLbl1', kind: 'label', x: 480, y: 40, label: '❓ IP ซ้ำ: ไม่รู้ว่าต้องส่งให้เครื่องไหน' }),
+  hidden({ id: 'dLbl1', kind: 'label', x: 480, y: 40, label: '❓ IP ซ้ำ: สองเครื่องตอบ ARP · คอมไม่รู้จะส่งให้ใคร' }),
   hidden({ id: 'dLbl2', kind: 'label', x: 480, y: 95, label: '✅ ใน network เดียวกัน IP ต้องไม่ซ้ำกัน' }),
   hidden({ id: 'dSend', kind: 'pc', x: 140, y: 300, label: 'คอม 3' }),
   hidden({ id: 'dSw', kind: 'switch', x: 400, y: 300, label: 'Switch' }),
@@ -109,7 +109,10 @@ const actors: Actor[] = [
   hidden({ id: 'dc0', kind: 'cable', x: 140, y: 300, to: 'dSw' }),
   hidden({ id: 'dc1', kind: 'cable', x: 400, y: 300, to: 'd1' }),
   hidden({ id: 'dc2', kind: 'cable', x: 400, y: 300, to: 'd2' }),
-  hidden({ id: 'dBox', kind: 'box', x: 140, y: 300, label: 'ไปเครื่องไหน?' }),
+  hidden({ id: 'dQ1', kind: 'envelope', x: 140, y: 300 }),
+  hidden({ id: 'dQ2', kind: 'envelope', x: 140, y: 300 }),
+  hidden({ id: 'dA1', kind: 'envelope', x: 700, y: 190 }),
+  hidden({ id: 'dA2', kind: 'envelope', x: 700, y: 400 }),
 
   // ฉาก 10: สรุป
   hidden({ id: 'sum1', kind: 'label', x: 480, y: 70, label: 'MAC address = เลขบัตรประชาชน ฝังในการ์ดแลน ติดเครื่องตลอด' }),
@@ -140,11 +143,12 @@ export const lesson: Lesson = {
   status: 'ready',
   titleTh: 'ที่อยู่ 2 แบบ: MAC กับ IP',
   analogyTh: 'เลขบัตรประชาชน กับบ้านเลขที่',
-  ciscoModules: ['ITN 7', 'ITN 9'],
+  ciscoModules: ['ITN 7', 'ITN 9', 'ITN 11'],
   videos: [
     { youtubeId: 'u6W4u0R5P0w', titleTh: 'Basic Network ตอนที่ 2 : ทำความรู้จักกับ IP Address Version 4', channel: '9hua Training',
-      noteTh: 'ตอนนี้จับแค่ว่า IPv4 เป็นเลข 4 ชุด คั่นด้วยจุด แต่ละชุด 0 ถึง 255 ถ้าคลิปเล่าเรื่อง Class ของ IP เลขฐานสอง หรือ Subnet ช่วงนั้นดูผ่าน ๆ ได้เลย ภาค 1 เล่าให้ฟังทีละขั้น' },
-    { youtubeId: 'iAecBW8rflc', titleTh: 'ARP (Address Resolution Protocol)', channel: '9hua Training' },
+      noteTh: 'ตอนนี้จับแค่ว่า IPv4 เป็นเลข 4 ชุด คั่นด้วยจุด แต่ละชุด 0 ถึง 255 ช่วงที่คลิปพูดเรื่องเลข 0 กับ 1 (เลขฐานสอง) เรื่อง Class A B C หรือ Subnet ดูผ่าน ๆ ได้เลย ภาค 1 เล่าให้ฟังทีละขั้น' },
+    { youtubeId: 'iAecBW8rflc', titleTh: 'ARP (Address Resolution Protocol)', channel: '9hua Training',
+      noteTh: 'ถ้าคลิปพูดเรื่อง Layer หรือเปิดโปรแกรมดูข้อมูล ดูผ่าน ๆ ได้ จับแค่ว่า ARP = ตะโกนถามหา MAC ในหมู่บ้าน' },
   ],
   terms: ['mac-address', 'ip-address', 'ipv4', 'arp', 'nic', 'network', 'switch', 'router', 'gateway', 'packet'],
 
@@ -164,7 +168,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's3',
-        narrationTh: 'แบบที่สอง คือ IP address เหมือนบ้านเลขที่ ของเครื่อง เป็นเลขสี่ชุด คั่นด้วยจุด แต่ละชุด เป็นเลขศูนย์ ถึงสองร้อยห้าสิบห้า แบบนี้เรียกว่า IPv4 ในหมู่บ้านเดียวกัน ห้ามซ้ำ',
+        narrationTh: 'แบบที่สอง คือ IP address เหมือนบ้านเลขที่ เป็นเลขสี่ชุด คั่นด้วยจุด แต่ละชุด ศูนย์ ถึงสองร้อยห้าสิบห้า เรียกว่า IPv4 และในหมู่บ้านเดียวกัน เลขนี้ห้ามซ้ำกันนะ',
         actions: [...hide(...macIds), ...show(...ipIds)],
       },
       {
@@ -179,7 +183,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's5',
-        narrationTh: 'ทำไมต้องมีสองแบบ เพราะ IP บอกได้ ว่าเครื่องอยู่หมู่บ้านไหน Router ไปรษณีย์กลาง เลยดู IP ผู้รับ แล้วส่งกล่องไปถูกหมู่บ้าน ส่วน MAC บอกไม่ได้เลย ว่าเครื่องอยู่ที่ไหน',
+        narrationTh: 'ทำไมต้องมีสองแบบ เพราะ IP บอกได้ ว่าเครื่องอยู่หมู่บ้านไหน Router หรือไปรษณีย์กลาง เลยดู IP ผู้รับ แล้วส่งกล่องไปถูกหมู่บ้าน ส่วน MAC บอกไม่ได้ ว่าเครื่องอยู่ที่ไหน',
         actions: [
           ...hide(...moveIds),
           ...show(...routeIds),
@@ -189,7 +193,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's6',
-        narrationTh: 'พอกล่องถึงหมู่บ้านแล้ว ขั้นสุดท้าย ต้องยื่นให้ถูกเครื่อง ในหมู่บ้าน เลยใช้ MAC Switch ดู MAC บนกล่อง แล้วส่งไปช่อง ที่เครื่องนั้นเสียบอยู่',
+        narrationTh: 'พอกล่องถึงหมู่บ้านแล้ว ขั้นสุดท้าย ต้องยื่นให้ถูกเครื่อง เลยใช้ MAC โดย Switch จะดู MAC ผู้รับบนกล่อง แล้วส่งไปช่อง ที่เครื่องนั้นเสียบอยู่',
         actions: [
           ...hide(...routeIds),
           ...show(...lastIds),
@@ -199,7 +203,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's7',
-        narrationTh: 'แล้วคอมรู้ MAC ของเพื่อนได้ไง ก็ตะโกนถามทั้งหมู่บ้าน ว่าใครใช้ IP นี้ ขอ MAC หน่อย ทุกเครื่องได้ยิน แต่ตอบแค่เจ้าของ IP นั้น วิธีนี้ เรียกว่า ARP',
+        narrationTh: 'คนส่งต้องเขียน MAC ผู้รับบนกล่องด้วย แล้วคอมรู้ MAC ของเพื่อนได้ไง ก็ตะโกนถามทั้งหมู่บ้าน ว่าใครใช้ IP นี้ ทุกเครื่องได้ยิน แต่ตอบแค่เจ้าของ IP นั้น เรียกว่า ARP',
         actions: [
           ...hide(...lastIds),
           ...show(...arpIds),
@@ -224,13 +228,18 @@ export const lesson: Lesson = {
       },
       {
         id: 's9',
-        narrationTh: 'แล้วถ้าสองเครื่อง ใช้ IP เดียวกันล่ะ เหมือนสองบ้าน มีเลขที่เดียวกัน ไปรษณีย์ไม่รู้ว่าต้องส่งหลังไหน ของก็ส่งไม่ถึง หรือไปผิดเครื่อง เดี๋ยวลองทำในห้องทดลองกัน',
+        narrationTh: 'แล้วถ้าสองเครื่อง ใช้ IP เดียวกันล่ะ พอคอมคนส่ง ตะโกนถามหา MAC ก็มีสองเครื่องตอบ คอมเลยไม่รู้ว่าเครื่องไหนตัวจริง ของอาจไปผิดเครื่อง หรือส่งไม่ถึง เดี๋ยวลองในห้องทดลองกัน',
         actions: [
           ...hide(...gwIds),
           ...show(...dupIds),
           { type: 'highlight', actor: 'd1' },
           { type: 'highlight', actor: 'd2' },
-          { type: 'moveAlong', actor: 'dBox', path: ['dSend', 'dSw'], msPerHop: 1500 },
+          { type: 'setLabel', actor: 'dSend', label: 'คอม 3: MAC ไหนดี?' },
+          // ตะโกนถามหา MAC ของ 192.168.1.10 แล้วได้คำตอบกลับมาสองซอง
+          { type: 'moveAlong', actor: 'dQ1', path: ['dSend', 'dSw', 'd1'], msPerHop: 1100 },
+          { type: 'moveAlong', actor: 'dQ2', path: ['dSend', 'dSw', 'd2'], msPerHop: 1100 },
+          { type: 'moveAlong', actor: 'dA1', path: ['d1', 'd1', 'd1', 'dSw', 'dSend'], msPerHop: 1100 },
+          { type: 'moveAlong', actor: 'dA2', path: ['d2', 'd2', 'd2', 'd2', 'dSw', 'dSend'], msPerHop: 1100 },
         ],
       },
       {
@@ -265,7 +274,7 @@ export const lesson: Lesson = {
         toIp: '192.168.1.10',
         reasonIncludes: 'IP ซ้ำ! มี 2 เครื่องใช้ 192.168.1.10 พร้อมกัน',
         taskTh: 'ตั้ง IP ของคอม 2 ให้ซ้ำกับคอม 1 คือ 192.168.1.10 แล้วกด ส่งข้อมูล จากคอม 3 ไปคอม 1 ดูว่าเกิดอะไรขึ้น',
-        hintTh: 'กดที่รูปคอม 2 ช่องตั้งค่าจะโผล่ทางขวา ลบเลขเดิมในช่อง IP แล้วพิมพ์ 192.168.1.10 กด บันทึก\nจากนั้นกด ส่งข้อมูล ตอนนี้มีสองเครื่อง อ้างบ้านเลขที่เดียวกัน ไปรษณีย์เลยไม่รู้ว่าต้องยื่นให้เครื่องไหน',
+        hintTh: 'กดที่รูปคอม 2 ช่องตั้งค่าจะโผล่ทางขวา ลบเลขเดิมในช่อง IP แล้วพิมพ์ 192.168.1.10 กด บันทึก\nจากนั้นกด ส่งข้อมูล ตอนนี้มีสองเครื่อง อ้างบ้านเลขที่เดียวกัน พอถามหา MAC ก็ตอบมาสองเครื่อง คอมเลยไม่รู้ว่าต้องส่งให้เครื่องไหน',
       },
       {
         type: 'fix',
@@ -274,7 +283,8 @@ export const lesson: Lesson = {
         taskTh: 'แก้ IP ของคอม 2 ให้ไม่ซ้ำกับใคร แต่ยังอยู่หมู่บ้านเดิม แล้วส่งจากคอม 2 ไปคอม 1 ให้ถึง',
         hintTh: 'ในตัวอย่างนี้ เครื่องในหมู่บ้านเดียวกัน ใช้เลขสามชุดแรกเหมือนกัน คือ 192.168.1 กฎจริงว่าดูกี่ชุด เรียนในภาค 1 เรื่อง Subnet\n'
           + 'เลยเปลี่ยนแค่ชุดสุดท้าย ให้ไม่ซ้ำ เช่น 192.168.1.20 ห้ามใช้ .10 กับ .12 เพราะคอม 1 กับคอม 3 ใช้อยู่\n'
-          + 'ถ้าเปลี่ยนชุดแรก ๆ ด้วย คอม 2 จะหลุดไปอยู่หมู่บ้านอื่น แล้วส่งหาคอม 1 ไม่ถึง',
+          + 'ถ้าเปลี่ยนชุดแรก ๆ ด้วย คอม 2 จะหลุดไปอยู่หมู่บ้านอื่น แล้วส่งหาคอม 1 ไม่ถึง\n'
+          + 'ถ้าคอม 3 ก็ใช้ .10 อยู่ด้วย ให้กด เริ่มใหม่ ก่อน แล้วค่อยแก้คอม 2',
       },
     ],
   },

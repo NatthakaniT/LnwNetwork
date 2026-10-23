@@ -27,10 +27,12 @@ describe('lesson p0-l4', () => {
     expect(l).toBe(lesson)
     expect(l.status).toBe('ready')
     expect(l.titleTh).toBe('ที่อยู่ 2 แบบ: MAC กับ IP')
-    expect(l.ciscoModules).toEqual(['ITN 7', 'ITN 9'])
+    expect(l.ciscoModules).toEqual(['ITN 7', 'ITN 9', 'ITN 11'])
     expect(l.videos.map((v) => v.youtubeId)).toEqual(['u6W4u0R5P0w', 'iAecBW8rflc'])
     for (const v of l.videos) expect(v.channel).toBe('9hua Training')
     expect(l.videos[0].noteTh).toContain('ภาค 1')
+    expect(l.videos[0].noteTh).not.toContain('ถ้าคลิป') // บอกชัด ไม่ใช่ถ้า
+    expect(l.videos[1].noteTh).toContain('ARP = ตะโกนถามหา MAC ในหมู่บ้าน')
     expect(validateCourse(course, glossary)).toEqual([])
   })
 
@@ -62,7 +64,7 @@ describe('lesson p0-l4', () => {
       if (typeof v === 'string') texts.push(v)
       else if (v && typeof v === 'object') Object.values(v).forEach(walk)
     }
-    walk(lesson)
+    walk({ ...lesson, videos: [] }) // โน้ตคลิปเตือนให้ข้ามช่วง Layer ได้
     const all = texts.join('\n')
     for (const w of [/\bOSI\b/, /\bTCP\b/, /\bports?\b/i, /พอร์ต/, /\blayers?\b/i, /เลเยอร์/, /\/24/, /255\.255\./]) expect(all).not.toMatch(w)
     // พูดถึงเลขสามชุดแรก ได้ก็ต่อเมื่อบอกว่ากฎจริงอยู่ภาค 1
@@ -126,6 +128,30 @@ describe('lesson p0-l4', () => {
     }
   })
 
+  it('IP ซ้ำ: อธิบายด้วย ARP ได้คำตอบสองเครื่อง ไม่ใช่ไปรษณีย์ (Switch) งง', () => {
+    const scenes = lesson.scenes!.scenes
+    const s9 = scenes.find((s) => s.id === 's9')!
+    expect(s9.narrationTh).not.toContain('ไปรษณีย์')
+    expect(s9.narrationTh).toContain('สองเครื่องตอบ')
+    expect((lesson.lab as NetworkLab).goals[0].hintTh).not.toContain('ไปรษณีย์')
+    expect((lesson.lab as NetworkLab).goals[0].hintTh).toContain('พอถามหา MAC ก็ตอบมาสองเครื่อง')
+    // คำตอบสองซองวิ่งจากคอม 1 และคอม 2 กลับไปที่คนส่ง และเครื่องหมายคำถามอยู่ที่คนส่ง
+    const along = s9.actions.filter((a) => a.type === 'moveAlong') as { actor: string; path: string[] }[]
+    for (const from of ['d1', 'd2']) expect(along.some((a) => a.path[0] === from && a.path[a.path.length - 1] === 'dSend')).toBe(true)
+    expect(s9.actions).toContainEqual({ type: 'setLabel', actor: 'dSend', label: 'คอม 3: MAC ไหนดี?' })
+    expect(lesson.scenes!.actors.find((a) => a.id === 'dLbl1')!.label).toBe('❓ IP ซ้ำ: สองเครื่องตอบ ARP · คอมไม่รู้จะส่งให้ใคร')
+  })
+
+  it('ฉาก 6 บอกว่าทำไมต้องรู้ MAC / ฉาก 7 เริ่มจากคนส่งต้องเขียน MAC ผู้รับ / ไม่มีศัพท์อังกฤษสองคำติดกัน', () => {
+    const [s3, s5, s6, s7] = ['s3', 's5', 's6', 's7'].map((id) => lesson.scenes!.scenes.find((s) => s.id === id)!.narrationTh)
+    expect(s6).toContain('Switch จะดู MAC ผู้รับบนกล่อง')
+    expect(s6).not.toContain('MAC Switch')
+    expect(s7.startsWith('คนส่งต้องเขียน MAC ผู้รับบนกล่องด้วย')).toBe(true)
+    expect(s3).toContain('เลขนี้ห้ามซ้ำกันนะ')
+    expect(s5).toContain('Router หรือไปรษณีย์กลาง')
+    expect(glossary.find((g) => g.id === 'mac-address')!.explainTh).toContain('ตามปกติ')
+  })
+
   describe('ห้องทดลองทำสำเร็จได้จริง', () => {
     const [g1, g2] = lab.goals
 
@@ -173,6 +199,17 @@ describe('lesson p0-l4', () => {
       const away = setIp(dupTopo, 'pc2', '10.0.0.5')
       expect(checkGoal(g2, away, simulateSend(away, g2.from, g2.toIp))).toBe(false)
       expect(g2.hintTh).toContain('ภาค 1')
+    })
+
+    it('ทางตัน: ถ้าเป้าหมาย 1 ผ่านด้วยการตั้งคอม 3 เป็น .10 เป้าหมาย 2 ทำไม่ได้ ตัวช่วยต้องบอกให้กด เริ่มใหม่', () => {
+      const via3 = setIp(lab.start, 'pc3', '192.168.1.10')
+      expect(checkGoal(g1, via3, simulateSend(via3, g1.from, g1.toIp))).toBe(true)
+      const still = setIp(via3, 'pc2', '192.168.1.20')
+      expect(checkGoal(g2, still, simulateSend(still, g2.from, g2.toIp))).toBe(false)
+      expect(g2.hintTh).toContain('ถ้าคอม 3 ก็ใช้ .10 อยู่ด้วย ให้กด เริ่มใหม่ ก่อน')
+      // กด เริ่มใหม่ = กลับไป lab.start แล้วแก้คอม 2 ก็ผ่าน
+      const again = setIp(lab.start, 'pc2', '192.168.1.20')
+      expect(checkGoal(g2, again, simulateSend(again, g2.from, g2.toIp))).toBe(true)
     })
 
     it('ทำผ่านหน้าจอห้องทดลองได้ครบ: กดคอม 2 → พิมพ์ IP → บันทึก → ส่ง', () => {
