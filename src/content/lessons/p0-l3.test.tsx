@@ -40,7 +40,7 @@ describe('lesson p0-l3', () => {
   })
 
   it('ศัพท์ใหม่ packet, source, destination, DNS อยู่ในคลังศัพท์ และอยู่ใน terms ของบท', () => {
-    for (const id of ['packet', 'source', 'destination', 'dns', 'gateway']) {
+    for (const id of ['packet', 'source', 'destination', 'dns', 'gateway', 'domain-name', 'lan', 'end-device']) {
       expect(glossary.some((g) => g.id === id)).toBe(true)
       expect(lesson.terms).toContain(id)
     }
@@ -66,9 +66,18 @@ describe('lesson p0-l3', () => {
     for (const w of [/\bMAC\b/, /\bOSI\b/, /\bTCP\b/, /\bports?\b/i, /พอร์ต/, /\blayers?\b/i, /เลเยอร์/]) expect(all).not.toMatch(w)
   })
 
-  it('บอกผู้เรียนว่าคลิปมีเรื่อง Subnet mask ซึ่งข้ามไปก่อนได้', () => {
+  it('บอกก่อนดูคลิปว่าช่วง Subnet mask ดูผ่าน ๆ ได้ (โน้ตเหนือคลิป ไม่ใช่บนเวทีฉาก 1)', () => {
+    expect(lesson.videos[0].noteTh).toBe('คลิปนี้มีเรื่องเลข IP กับ Subnet mask แบบละเอียดด้วย ช่วงนั้นดูผ่าน ๆ ได้เลย ไม่ต้องเข้าใจตอนนี้ เดี๋ยวบทที่ 4 เล่าให้ฟังทีละขั้น')
     const labels = lesson.scenes!.actors.map((a) => a.label ?? '').join(' ')
-    expect(labels).toMatch(/Subnet mask.*ข้าม/)
+    expect(labels).not.toMatch(/Subnet mask/)
+  })
+
+  it('ฉาก 7 บอกชัดว่าที่อยู่ผู้รับไม่เปลี่ยนเป็น Gateway / ฉาก 8 เรียกเครื่อง DNS ว่า DNS server', () => {
+    const [s7, s8] = [lesson.scenes!.scenes[6], lesson.scenes!.scenes[7]]
+    expect(s7.narrationTh).toContain('ไม่เปลี่ยนเป็น Gateway')
+    expect(s8.narrationTh).toContain('เครื่อง DNS (DNS server)')
+    expect(s8.narrationTh).not.toContain('เครื่องที่ชื่อ DNS')
+    expect(glossary.find((g) => g.id === 'dns')!.explainTh).toContain('สมุดของคอม ไม่ได้ให้เบอร์โทร แต่ให้เลขที่อยู่ของเว็บ')
   })
 
   it('ทุกฉาก: ไอคอนที่โชว์อยู่ห่างกัน ≥ 120 และป้ายข้อความไม่ทับกัน', () => {
@@ -156,8 +165,9 @@ describe('lesson p0-l3', () => {
       saveProgress({ version: 1, completed: ['p0-l1', 'p0-l2'] }, storage)
       const { container } = render(<LessonPage id="p0-l3" storage={storage} />)
 
-      // 1. คลิป
+      // 1. คลิป (มีโน้ตเหนือคลิป)
       expect(screen.getByTitle(lesson.videos[0].titleTh)).toBeInTheDocument()
+      expect(container.querySelector('.video-note')).toHaveTextContent(lesson.videos[0].noteTh!)
       await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))
 
       // 2. ภาพทบทวน
@@ -169,7 +179,8 @@ describe('lesson p0-l3', () => {
       fireEvent.ended(container.querySelector('audio')!)
       await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))
 
-      // 3. กิจกรรมเรียงขั้นตอน
+      // 3. กิจกรรมเรียงขั้นตอน: ยังไม่เรียง ไปขั้นต่อไปไม่ได้
+      expect(screen.getByRole('button', { name: 'ไปขั้นต่อไป' })).toBeDisabled()
       for (const it of lab.items) expect(container.querySelector('.activity-list')).toHaveTextContent(it.textTh)
       await solveWithButtons(u, container)
       await u.click(screen.getByRole('button', { name: 'ตรวจคำตอบ' }))

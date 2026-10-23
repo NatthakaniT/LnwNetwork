@@ -39,6 +39,7 @@ PRONOUNCE = {
     "destination": "เดสทิเนชัน",
     "huggingface.co": "ฮักกิ้งเฟซ ดอท ซีโอ",
     "Chrome": "โครม",
+    "server": "เซิร์ฟเวอร์",
     "cable": "เคเบิล",
     "Internet": "อินเทอร์เน็ต",
     "LAN": "แลน",

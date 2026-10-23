@@ -4,7 +4,7 @@ const hidden = (a: Actor): Actor => ({ ...a, hidden: true })
 const show = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'show', actor }))
 const hide = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'hide', actor }))
 
-const moveIds = ['hA', 'hB', 'big', 'mLbl1', 'mLbl2', 'note']
+const moveIds = ['hA', 'hB', 'big', 'mLbl1', 'mLbl2']
 const splitIds = ['fA', 'fB', 'fCab', 'fFile', 'f1', 'f2', 'f3', 'fLbl']
 const shareIds = ['rA', 'rC', 'rSw', 'rSv', 'rc1', 'rc2', 'rc3', 'ra1', 'ra2', 'rb1', 'rb2', 'rLbl']
 const lostIds = ['lA', 'lB', 'lCab', 'l1', 'l2', 'l4', 'lNew', 'lGone', 'lLbl']
@@ -16,7 +16,6 @@ const storyIds = ['sPc', 'sBad', 'sGood', 'sWeb', 'sc1', 'sc2', 'sc3', 'sAsk1', 
 
 const actors: Actor[] = [
   // ฉาก 1: ย้ายของทั้งห้อง
-  { id: 'note', kind: 'label', x: 480, y: 40, label: 'ℹ️ คลิปมีเรื่อง Subnet mask ด้วย ส่วนนั้นข้ามไปก่อนได้ เรียนทีหลัง' },
   { id: 'hA', kind: 'house', x: 180, y: 210, label: 'บ้านเรา' },
   { id: 'hB', kind: 'house', x: 780, y: 210, label: 'บ้านเพื่อน' },
   { id: 'big', kind: 'box', x: 480, y: 210, label: 'ของทั้งห้อง' },
@@ -100,7 +99,7 @@ const actors: Actor[] = [
   hidden({ id: 'dc2', kind: 'cable', x: 150, y: 260, to: 'dWeb' }),
   hidden({ id: 'dAsk', kind: 'envelope', x: 150, y: 260 }),
   hidden({ id: 'dLbl1', kind: 'label', x: 480, y: 420, label: '1. ถาม DNS: huggingface.co เลขที่อยู่อะไร' }),
-  hidden({ id: 'dLbl2', kind: 'label', x: 480, y: 480, label: '2. ได้เลขที่อยู่ แล้วค่อยส่งกล่องไปที่เว็บ' }),
+  hidden({ id: 'dLbl2', kind: 'label', x: 480, y: 480, label: '2. ได้เลขที่อยู่ของเว็บ (ไม่ใช่เบอร์โทร) แล้วค่อยส่งกล่อง' }),
 
   // ฉาก 9: เรื่องจริง สมุดให้เลขผิด
   hidden({ id: 'sPc', kind: 'pc', x: 150, y: 290, label: 'คอมเรา' }),
@@ -132,9 +131,10 @@ export const lesson: Lesson = {
   analogyTh: 'กล่องพัสดุ',
   ciscoModules: ['ITN 3'],
   videos: [
-    { youtubeId: 'jjs02wLiXmQ', titleTh: 'IPv4, Subnet mask, Gateway, DNS คืออะไร ทำงานอย่างไร', channel: '9hua Training' },
+    { youtubeId: 'jjs02wLiXmQ', titleTh: 'IPv4, Subnet mask, Gateway, DNS คืออะไร ทำงานอย่างไร', channel: '9hua Training',
+      noteTh: 'คลิปนี้มีเรื่องเลข IP กับ Subnet mask แบบละเอียดด้วย ช่วงนั้นดูผ่าน ๆ ได้เลย ไม่ต้องเข้าใจตอนนี้ เดี๋ยวบทที่ 4 เล่าให้ฟังทีละขั้น' },
   ],
-  terms: ['packet', 'source', 'destination', 'dns', 'gateway', 'router', 'switch', 'internet', 'ip-address', 'network'],
+  terms: ['packet', 'source', 'destination', 'dns', 'domain-name', 'gateway', 'router', 'switch', 'internet', 'ip-address', 'network', 'lan', 'end-device'],
 
   scenes: {
     stage: { width: 960, height: 540 },
@@ -198,7 +198,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's7',
-        narrationTh: 'ถ้าผู้รับอยู่นอกหมู่บ้าน คอมจะส่งกล่องไปที่ Gateway ก่อน คือประตูออกหมู่บ้าน บนกล่อง ที่อยู่ผู้รับ เป็นเครื่องเว็บเหมือนเดิมนะ แล้ว Router ส่งต่อไป จนถึงเว็บ',
+        narrationTh: 'ถ้าผู้รับอยู่นอกหมู่บ้าน คอมจะส่งกล่องไปที่ Gateway ก่อน คือประตูออกหมู่บ้าน ที่อยู่ผู้รับบนกล่อง ไม่เปลี่ยนเป็น Gateway นะ เป็นเครื่องเว็บตลอดทาง แล้ว Gateway ก็ส่งต่อไป จนถึงเว็บ',
         actions: [
           ...hide(...replyIds),
           ...show(...gwIds),
@@ -208,7 +208,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's8',
-        narrationTh: 'เวลาจะโทรหาร้าน แต่รู้แค่ชื่อ เราก็เปิดสมุดโทรศัพท์หาเบอร์ คอมก็เหมือนกัน เรารู้แค่ชื่อเว็บ แต่คอมต้องใช้เลขที่อยู่ เลยถามเครื่องที่ชื่อ DNS ให้บอกเลขที่อยู่ของเว็บ',
+        narrationTh: 'เวลาจะโทรหาร้าน แต่รู้แค่ชื่อ เราก็เปิดสมุดโทรศัพท์หาเบอร์ คอมก็เหมือนกัน เรารู้แค่ชื่อเว็บ แต่คอมต้องใช้เลขที่อยู่ เลยถามเครื่อง DNS (DNS server) ให้บอกเลขที่อยู่ของเว็บ',
         actions: [
           ...hide(...gwIds),
           ...show(...dnsIds),
@@ -227,7 +227,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's10',
-        narrationTh: 'สรุปนะครับ ไฟล์ใหญ่ถูกแบ่งเป็น packet ทุกกล่องมีที่อยู่ผู้ส่ง และผู้รับ จะออกนอกหมู่บ้าน ต้องผ่าน Gateway และก่อนส่ง ต้องถาม DNS ให้ได้เลขที่อยู่ของเว็บ',
+        narrationTh: 'สรุปนะครับ ไฟล์ใหญ่ถูกแบ่งเป็น packet ทุกกล่องมีที่อยู่ผู้ส่ง และผู้รับ จะออกนอกหมู่บ้าน ต้องผ่าน Gateway และถ้ารู้แค่ชื่อเว็บ ต้องถาม DNS ก่อน ให้ได้เลขที่อยู่ของเว็บ',
         actions: [
           ...hide(...storyIds),
           ...show('sum1', 'sum2', 'sum3', 'sum4', 'sum5'),
@@ -238,7 +238,7 @@ export const lesson: Lesson = {
 
   lab: {
     kind: 'order',
-    introTh: 'เราพิมพ์ชื่อเว็บ จนหน้าเว็บขึ้นจอ คอมทำอะไรบ้าง\nกดปุ่ม ⬆ ⬇ เลื่อนขั้นตอน ให้ขั้นแรกอยู่บนสุด\nเรียงเสร็จแล้ว กด ตรวจคำตอบ',
+    introTh: 'ตั้งแต่เราพิมพ์ชื่อเว็บ จนหน้าเว็บขึ้นจอ คอมทำอะไรบ้าง\nกดปุ่ม ⬆ ⬇ เลื่อนขั้นตอน ให้ขั้นแรกอยู่บนสุด\nเรียงเสร็จแล้ว กด ตรวจคำตอบ',
     items: [
       { id: 'type', textTh: 'พิมพ์ชื่อเว็บ เช่น huggingface.co' },
       { id: 'ask', textTh: 'ถาม DNS ว่าเว็บนี้ เลขที่อยู่อะไร' },
@@ -318,7 +318,7 @@ export const lesson: Lesson = {
         { id: 'd', text: 'It splits large files into packets.', textTh: 'แบ่งไฟล์ใหญ่ เป็น packet' },
       ],
       correct: ['a'],
-      explainTh: 'DNS คือสมุดโทรศัพท์ เรารู้ชื่อเว็บ แต่คอมต้องใช้เลขที่อยู่ ถึงจะส่งกล่องได้ DNS เลยบอกเลขให้ ส่วนการพาของข้ามหมู่บ้าน เป็นงานของไปรษณีย์กลาง และการต่อเครื่องในหมู่บ้าน เป็นงานของไปรษณีย์ในหมู่บ้าน',
+      explainTh: 'DNS คือสมุดโทรศัพท์ เรารู้ชื่อเว็บ (domain name) แต่คอมต้องใช้เลขที่อยู่ ถึงจะส่งกล่องได้ DNS เลยบอกเลขให้ ส่วนการพาของข้ามหมู่บ้าน เป็นงานของไปรษณีย์กลาง การต่อเครื่องในหมู่บ้าน เป็นงานของไปรษณีย์ในหมู่บ้าน ส่วนการแบ่งไฟล์เป็นกล่อง คอมทำเอง ไม่ใช่งานของ DNS',
     },
     {
       id: 'q6',
