@@ -3,11 +3,12 @@ import { lesson as p0l1 } from './lessons/p0-l1'
 import { lesson as p0l2 } from './lessons/p0-l2'
 import { lesson as p0l3 } from './lessons/p0-l3'
 import { lesson as p0l4 } from './lessons/p0-l4'
+import { lesson as p0l5 } from './lessons/p0-l5'
 
 type Row = [title: string, analogy?: string, modules?: string[]]
 
 /** บทที่เขียนเสร็จแล้ว แทนที่โครงบทที่ยังไม่เสร็จ (รหัสเดียวกัน) */
-const readyLessons: Lesson[] = [p0l1, p0l2, p0l3, p0l4]
+const readyLessons: Lesson[] = [p0l1, p0l2, p0l3, p0l4, p0l5]
 const withReady = (l: Lesson): Lesson => readyLessons.find((r) => r.id === l.id) ?? l
 
 const build = (part: number, rows: Row[]): Lesson[] =>
@@ -30,7 +31,7 @@ export const parts: Part[] = [
       ['อุปกรณ์มีอะไรบ้าง', 'คอม สาย Switch Router', ['ITN 1', 'ITN 11']],
       ['ข้อมูลเดินทางยังไง', 'กล่องพัสดุ', ['ITN 3']],
       ['ที่อยู่ 2 แบบ: MAC กับ IP', 'เลขบัตรประชาชน กับบ้านเลขที่', ['ITN 7', 'ITN 9']],
-      ['การห่อของเป็นชั้น ๆ', 'OSI / TCP-IP', ['ITN 3']],
+      ['การห่อของเป็นชั้น ๆ', 'ห่อพัสดุทีละชั้น', ['ITN 3']],
     ]),
   },
   {
