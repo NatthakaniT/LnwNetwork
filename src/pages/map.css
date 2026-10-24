@@ -1,7 +1,8 @@
 /* หน้าแผนที่บทเรียน: การ์ดสีสดเอียงนิด ๆ บนพื้นมืด (สีมาจาก token ใน styles.css เท่านั้น)
-   หมายเหตุ: map.css โหลดก่อน styles.css จึงใช้ main.map-page ให้ชนะกฎกว้างของ .map-page */
+   หมายเหตุ: map.css โหลดก่อน styles.css จึงใช้ .map-page.map-page--home ให้ชนะกฎกว้างของ .map-page
+   (เฉพาะหน้าแผนที่ หน้าอื่นที่ใช้ .map-page เช่น ErrorBoundary ไม่โดน) */
 
-main.map-page { max-width: 76rem; position: relative; }
+.map-page.map-page--home { max-width: 76rem; position: relative; }
 
 /* ---------- หัวหน้า ---------- */
 .map-head { position: relative; padding-top: 0.5rem; }
@@ -144,12 +145,14 @@ main.map-page { max-width: 76rem; position: relative; }
   line-height: 1.5;
   color: var(--part-fg);
   text-decoration: none;
-  background: color-mix(in srgb, var(--bg) 12%, transparent);
-  transition: background-color .2s, transform .25s var(--ease-bounce);
+  /* พื้นสว่างขึ้นนิดเดียว (ไม่ทำให้มืดลง) ตัวหนังสือดำจึงยังอ่านชัด ≥ 4.5 ทุกภาค */
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bg) 22%, transparent);
+  transition: box-shadow .2s, transform .25s var(--ease-bounce);
 }
-a.l:hover { background: color-mix(in srgb, var(--bg) 22%, transparent); transform: translateX(3px); }
+/* ชี้แล้วขยับและมีวงขอบ ไม่เปลี่ยนสีพื้น */
+a.l:hover { transform: translateX(3px); box-shadow: 0 0 0 2px var(--bg); }
 .l.now { background: var(--bg); color: var(--text); font-weight: 700; }
-a.l.now:hover { background: var(--bg); }
 .l.building { background: transparent; border: 2px dashed color-mix(in srgb, var(--bg) 45%, transparent); }
 .l.building small { font-weight: 700; font-size: 0.8rem; }
 .l.lock .btn.small {

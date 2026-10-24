@@ -143,6 +143,42 @@ describe('CourseMap', () => {
     }
   })
 
+  it('map.css: lesson rows keep dark text ≥ 4.5 at rest and on hover, on normal and locked cards', async () => {
+    const css = await readCss('./map.css')
+    const hex = (h: string) => [1, 3, 5].map((k) => parseInt(h.slice(k, k + 2), 16))
+    const toHex = (c: number[]) => '#' + c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
+    const TOKENS: Record<string, number[]> = { text: hex('#f1f1ee'), bg: hex('#0e0f13'), 'text-muted': hex('#a3a6b0') }
+    // พื้นแถว = color-mix(in srgb, var(--token) N%, transparent) วางทับสีการ์ด
+    const overlay = (decl: string) => {
+      const m = decl.match(/background:\s*color-mix\(in srgb,\s*var\(--([\w-]+)\)\s*(\d+)%,\s*transparent\)/)
+      return m ? { c: TOKENS[m[1]], a: Number(m[2]) / 100 } : null
+    }
+    const rest = overlay(rulesFor(css, '.l'))
+    expect(rest, '.l ต้องมีพื้นแบบ color-mix ทับสีการ์ด').not.toBeNull()
+    const hoverDecl = rulesFor(css, 'a.l:hover')
+    expect(hoverDecl).not.toMatch(/background:(?!\s*color-mix)/)
+    const hover = overlay(hoverDecl) ?? rest!
+    const w = Number(css.match(/--part-bg-muted:\s*color-mix\(in srgb,\s*var\(--part\)\s*(\d+)%/)![1]) / 100
+    for (const [i, c] of Object.entries(PART_COLORS)) {
+      const base = hex(c.bg)
+      const muted = base.map((v, j) => v * w + TOKENS['text-muted'][j] * (1 - w))
+      for (const [card, b] of [['normal', base], ['locked', muted]] as const) {
+        for (const [state, o] of [['rest', rest!], ['hover', hover]] as const) {
+          const bg = toHex(b.map((v, j) => v * (1 - o.a) + o.c[j] * o.a))
+          expect(contrastRatio(c.fg, bg), `part ${i} ${card} ${state}`).toBeGreaterThanOrEqual(4.5)
+        }
+      }
+    }
+  })
+
+  it('map width is scoped to the home map, not every .map-page', async () => {
+    const css = await readCss('./map.css')
+    expect(css).not.toMatch(/(^|[\s,}])main\.map-page\s*[{,]/)
+    expect(css).toMatch(/\.map-page--home[^{]*\{[^}]*max-width:\s*76rem/)
+    render(<CourseMap parts={fixture} storage={storage} />)
+    expect(document.querySelector('main')).toHaveClass('map-page', 'map-page--home')
+  })
+
   it('styles.css no longer holds map rules (moved to map.css)', async () => {
     const css = await readCss('../styles.css')
     for (const sel of ['.part', '.l', '.l.now', '.bar', '.map', '.notice']) expect(rulesFor(css, sel), sel).toBe('')

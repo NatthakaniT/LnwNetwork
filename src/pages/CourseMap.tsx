@@ -39,7 +39,7 @@ export function CourseMap({ parts = course, storage, notice, onDismissNotice }: 
   }
 
   return (
-    <main className="map-page">
+    <main className="map-page map-page--home">
       {notice && (
         <p className="notice pop-in" role="status">
           <span>{notice}</span>
