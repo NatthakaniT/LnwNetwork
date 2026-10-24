@@ -103,22 +103,8 @@ a { color: var(--link); }
 .btn.primary { background: var(--part, var(--p2)); border-color: var(--part, var(--p2)); color: var(--bg); font-weight: 700; }
 .btn.small { padding: 0.05rem 0.6rem; font-size: 0.8rem; }
 .muted { color: var(--text-muted); }
-.notice { background: var(--surface); border-left: 4px solid var(--warn); padding: 0.5rem 1rem; margin: 0 0 1rem; }
 
 .map-page, .lesson-page, .glossary-wrap { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem 3rem; }
-.map-head h1 { padding: 1rem 0 0; }
-.map-progress-text { margin: 0.25rem 0; color: var(--text-muted); }
-.bar { height: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.2); overflow: hidden; margin: 6px 0 14px; }
-.bar > div { height: 100%; background: var(--ok); }
-.map { display: flex; flex-direction: column; gap: 14px; }
-.part { border-radius: 12px; padding: 12px 14px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.25); }
-.part h3 { margin: 0 0 4px; font-size: 1rem; }
-.part .why { font-size: 0.8rem; opacity: 0.75; margin-bottom: 8px; }
-.ls { display: flex; flex-wrap: wrap; gap: 8px; }
-.l { border-radius: 8px; padding: 6px 10px; font-size: 0.85rem; background: rgba(148, 163, 184, 0.15); display: flex; gap: 6px; align-items: center; color: var(--text); text-decoration: none; }
-.l.done { background: rgba(34, 197, 94, 0.2); }
-.l.now { background: rgba(56, 189, 248, 0.3); outline: 2px solid var(--p5); font-weight: 600; }
-.l.lock, .l.building { opacity: 0.55; }
 
 .lesson-head .analogy { color: var(--text-muted); margin: 0; }
 .lesson-head h1 { padding: 0.5rem 0 0; }

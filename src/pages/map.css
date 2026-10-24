@@ -1,0 +1,178 @@
+/* หน้าแผนที่บทเรียน: การ์ดสีสดเอียงนิด ๆ บนพื้นมืด (สีมาจาก token ใน styles.css เท่านั้น)
+   หมายเหตุ: map.css โหลดก่อน styles.css จึงใช้ main.map-page ให้ชนะกฎกว้างของ .map-page */
+
+main.map-page { max-width: 76rem; position: relative; }
+
+/* ---------- หัวหน้า ---------- */
+.map-head { position: relative; padding-top: 0.5rem; }
+.map-head h1 {
+  font-size: 2.6rem;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  padding: 1.4rem 0 0.5rem;
+}
+.map-head .h1-line { display: block; }
+.map-progress-text { margin: 0.25rem 0 0; color: var(--text-muted); }
+
+.bar {
+  height: 12px;
+  max-width: 28rem;
+  border-radius: 99px;
+  background: var(--border);
+  overflow: hidden;
+  margin: 0.6rem 0 1.2rem;
+}
+.bar > div {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--p0), var(--p5));
+  animation: bar-grow 1.4s .3s var(--ease-out) both;
+}
+@keyframes bar-grow { from { width: 0; } }
+
+.map-actions { margin: 0; }
+.map-actions .btn:focus-visible { outline: 3px solid var(--p5); outline-offset: 3px; }
+
+/* สติกเกอร์ลอยมุมขวาบน (ลอยวนได้เฉพาะหน้านี้ ไม่ใช่หน้าบทเรียน) */
+.sticker {
+  position: absolute;
+  right: 0.5rem;
+  top: 1.8rem;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--p3), var(--p1));
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  padding: 0.4rem 0.9rem;
+  border-radius: 99px;
+  transform: rotate(8deg);
+  box-shadow: 0 10px 30px -10px var(--p3);
+  animation: bob 3s ease-in-out infinite;
+}
+@keyframes bob { 50% { transform: rotate(4deg) translateY(-5px); } }
+
+/* ---------- ประกาศ (ลอยค้างด้านบนตอนเลื่อน) ---------- */
+.notice {
+  position: sticky;
+  top: 1rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding: 0.7rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--warn);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px -16px var(--warn);
+}
+.notice .btn { margin-right: 0; flex-shrink: 0; }
+.notice .btn:focus-visible { outline: 3px solid var(--p5); outline-offset: 2px; }
+
+/* ---------- กริดการ์ด 4 คอลัมน์ (7 ภาค = 4 + 3) ---------- */
+.map {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.1rem;
+  margin-top: 1.6rem;
+}
+
+.part-card {
+  --part-bg-muted: color-mix(in srgb, var(--part) 45%, var(--text-muted));
+  position: relative;
+  min-width: 0;
+  border-radius: 18px;
+  padding: 0.9rem 0.9rem 1rem;
+  background: var(--part);
+  color: var(--part-fg);
+  overflow-wrap: anywhere;
+  transition: transform .35s var(--ease-bounce), box-shadow .35s var(--ease-out);
+}
+/* ลอยเข้าทีละใบ: ใช้ translate แยกจาก transform มุมเอียง จึงไม่ทับกัน */
+.part-card.rise { animation: card-in .6s var(--ease-out) both; }
+@keyframes card-in { from { opacity: 0; translate: 0 22px; } to { opacity: 1; translate: none; } }
+.part-card:nth-child(1) { animation-delay: .25s; }
+.part-card:nth-child(2) { animation-delay: .34s; }
+.part-card:nth-child(3) { animation-delay: .43s; }
+.part-card:nth-child(4) { animation-delay: .52s; }
+.part-card:nth-child(5) { animation-delay: .61s; }
+.part-card:nth-child(6) { animation-delay: .70s; }
+.part-card:nth-child(n+7) { animation-delay: .79s; }
+
+/* มุมเอียงวน −2°, 1.5°, −1°, 2° */
+.part-card:nth-child(4n+1) { transform: rotate(-2deg); }
+.part-card:nth-child(4n+2) { transform: rotate(1.5deg); }
+.part-card:nth-child(4n+3) { transform: rotate(-1deg); }
+.part-card:nth-child(4n+4) { transform: rotate(2deg); }
+.map .part-card:hover, .map .part-card:focus-within {
+  transform: rotate(0) translateY(-8px) scale(1.03);
+  box-shadow: 0 22px 40px -22px var(--part);
+}
+
+/* ภาคที่ยังไปไม่ถึง: พื้นจางลงด้วย token แต่ตัวหนังสือยังเข้มอ่านชัด (ไม่ใช้ filter/opacity) */
+.part-card.locked { background: var(--part-bg-muted); }
+
+.part-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 1.6rem; }
+.part-no { font-weight: 700; font-size: 0.8rem; }
+.lock-pill {
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 0.1rem 0.6rem;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.part-card h2 { margin: 0.1rem 0 0.15rem; font-size: 1.35rem; line-height: 1.15; }
+.part-card .why { font-size: 0.8rem; font-weight: 700; margin-bottom: 0.7rem; }
+
+/* ---------- แถวบทเรียนในการ์ด ---------- */
+.ls { display: flex; flex-direction: column; gap: 6px; }
+.l {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  min-width: 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: 9px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--part-fg);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--bg) 12%, transparent);
+  transition: background-color .2s, transform .25s var(--ease-bounce);
+}
+a.l:hover { background: color-mix(in srgb, var(--bg) 22%, transparent); transform: translateX(3px); }
+.l.now { background: var(--bg); color: var(--text); font-weight: 700; }
+a.l.now:hover { background: var(--bg); }
+.l.building { background: transparent; border: 2px dashed color-mix(in srgb, var(--bg) 45%, transparent); }
+.l.building small { font-weight: 700; font-size: 0.8rem; }
+.l.lock .btn.small {
+  margin-right: 0;
+  background: var(--bg);
+  border-color: var(--bg);
+  color: var(--text);
+}
+.part-card .l:focus-visible, .part-card .btn:focus-visible { outline: 3px solid var(--bg); outline-offset: 2px; }
+.part-card .l.now:focus-visible { outline-offset: 3px; }
+
+/* ---------- จอแคบ ---------- */
+@media (max-width: 62rem) {
+  .map { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 40rem) {
+  .map { grid-template-columns: minmax(0, 1fr); }
+  .map-head h1 { font-size: 2.1rem; }
+  .sticker { position: static; display: inline-block; margin-top: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker, .bar > div, .part-card.rise { animation: none; }
+  .part-card.rise { opacity: 1; translate: none; }
+  .map .part-card:hover, .map .part-card:focus-within, a.l:hover { transform: none; }
+}
