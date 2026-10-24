@@ -33,3 +33,23 @@ describe('contrastRatio', () => {
     expect(contrastRatio(get('text-muted'), get('surface'))).toBeGreaterThanOrEqual(4.5)
   })
 })
+
+describe('semantic tokens', () => {
+  it('ไม่มี token ใน :root ที่อ้างตัวเอง', async () => {
+    const fsModule = 'node:fs'
+    const urlModule = 'node:url'
+    const { readFileSync } = await import(/* @vite-ignore */ fsModule)
+    const { URL: NodeURL } = await import(/* @vite-ignore */ urlModule)
+    const css: string = readFileSync(new NodeURL('../styles.css', import.meta.url), 'utf-8')
+    const root = css.match(/:root\s*\{([^}]*)\}/)![1]
+    for (const m of root.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
+      expect(m[2], m[1]).not.toContain('var(' + m[1] + ')')
+    }
+  })
+  it('--ok และ --bad เป็น hex และอ่านออกบน --surface (≥ 4.5)', async () => {
+    const get = await tokens()
+    for (const n of ['ok', 'bad']) {
+      expect(contrastRatio(get(n), get('surface')), n).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+})

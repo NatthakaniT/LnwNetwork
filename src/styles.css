@@ -14,7 +14,7 @@
   --p6: #b58cff;
   --accent: #4c7dff;
   --link: #8fb0ff;
-  --ok: var(--ok);
+  --ok: #3fb950;
   --bad: #f85149;
   --warn: #ffd23f;
   --white: #ffffff;
@@ -147,14 +147,14 @@ a { color: var(--link); }
 .rise.d2 { animation-delay: .2s; }
 .rise.d3 { animation-delay: .3s; }
 .rise.d4 { animation-delay: .4s; }
-/* เลื่อนมาเห็นแล้วค่อยลอยขึ้น (useReveal ใส่ .is-in) */
+/* เลื่อนมาเห็นแล้วค่อยลอยขึ้น (useReveal ใส่ data-revealed; .is-in ใช้แทนได้) */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
-.reveal.is-in { opacity: 1; transform: none; }
+.reveal.is-in, .reveal[data-revealed] { opacity: 1; transform: none; }
 .pop-in { animation: pop-in .35s var(--ease-bounce) both; }
 .shake { animation: shake .4s ease-in-out; }
 .celebrate { animation: celebrate .55s var(--ease-bounce); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-  .rise, .reveal, .reveal.is-in, .pop-in { opacity: 1; transform: none; }
+  .rise, .reveal, .reveal.is-in, .reveal[data-revealed], .pop-in { opacity: 1; transform: none; }
 }

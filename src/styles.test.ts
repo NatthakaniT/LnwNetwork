@@ -72,7 +72,7 @@ describe('styles: ข้อความหลายบรรทัด', () => {
   })
   it('motion classes มีครบ', () => {
     const c = flat()
-    for (const k of ['.rise', '.d1', '.d4', '.reveal', '.reveal.is-in', '.pop-in', '.shake', '.celebrate']) {
+    for (const k of ['.rise', '.d1', '.d4', '.reveal', '.reveal[data-revealed]', '.pop-in', '.shake', '.celebrate']) {
       expect(c).toContain(k)
     }
   })
