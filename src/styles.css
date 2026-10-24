@@ -23,6 +23,9 @@
   --bad: #f85149;
   --warn: #ffd23f;
   --white: #ffffff;
+  --black: #000000;
+  /* พื้นเวที (ภาพเคลื่อนไหว/ห้องทดลอง): เข้มกว่า --surface นิดหนึ่ง ป้ายใต้ไอคอนยังอ่านชัด (มี test) */
+  --stage: #13151b;
   --disabled-fg: #70737e;
   --disabled-bg: #1d1f27;
   --disabled-border: #2a2d38;
@@ -95,19 +98,27 @@ h1 {
   padding: 1rem 1.5rem;
 }
 
-.lab-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
-/* ข้อความในห้องทดลอง/กิจกรรม ขึ้นบรรทัดใหม่ตาม \n */
-.lab-intro, .lab-task, .lab-hint, .activity .lab-result { white-space: pre-line; }
-.lab-result.ok { color: var(--ok); }
-.lab-result.warn { color: var(--warn); }
-.lab-iface { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0; }
-.activity-list li { display: flex; gap: 0.5rem; align-items: center; margin: 0.25rem 0; }
+/* กฎของห้องทดลอง/กิจกรรมอยู่ที่ src/lab/lab.css */
 
 a { color: var(--link); }
 .btn { display: inline-block; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.35rem 1rem; cursor: pointer; text-decoration: none; margin-right: 0.5rem; }
 .btn.primary { background: var(--part, var(--p2)); border-color: var(--part, var(--p2)); color: var(--bg); font-weight: 700; }
 .btn.small { padding: 0.05rem 0.6rem; font-size: 0.8rem; }
 .muted { color: var(--text-muted); }
+
+/* การ์ดข้อผิดพลาด (ErrorBoundary) มุม/สี/เงาชุดเดียวกับการ์ดอื่น */
+.error-card {
+  margin: 2rem 0 0;
+  padding: 1rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--bad);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px -16px var(--shadow);
+}
+.error-card p { margin: 0.3rem 0; }
+.error-card .btn { border-radius: 99px; padding: 0.45rem 1.2rem; }
+.error-card .btn:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 
 .map-page, .glossary-wrap { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem 3rem; }
 

@@ -1,6 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ActivityLab } from '../content/types'
 import { RichText } from '../glossary/RichText'
+import './lab.css'
+
+const MOVED_MS = 350
 
 function fisherYates<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -26,6 +29,12 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates, termIds = [] 
   const [choice, setChoice] = useState<Record<string, string>>({})
   const [result, setResult] = useState<'idle' | 'wrong' | 'right'>('idle')
   const doneRef = useRef(false)
+  // รายการที่เพิ่งขยับ ได้ class moved สั้น ๆ (เลื่อน + กะพริบ) แล้วหายไปเอง
+  const [moved, setMoved] = useState<{ id: string; dir: 'up' | 'down' } | null>(null)
+  const movedTimer = useRef<ReturnType<typeof setTimeout>>()
+  useEffect(() => () => clearTimeout(movedTimer.current), [])
+  // ลำดับการตรวจ ใช้เป็น key ให้การ์ดผลสร้างใหม่ (.pop-in เล่นซ้ำ) ทุกครั้งที่ตรวจ
+  const [checkNo, setCheckNo] = useState(0)
   const text = (id: string) => lab.items.find(i => i.id === id)?.textTh ?? id
 
   const move = (idx: number, d: number) => {
@@ -37,6 +46,9 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates, termIds = [] 
     next[j] = tmp
     setOrder(next)
     setResult('idle')
+    clearTimeout(movedTimer.current)
+    setMoved({ id: order[idx], dir: d < 0 ? 'up' : 'down' })
+    movedTimer.current = setTimeout(() => setMoved(null), MOVED_MS)
   }
 
   const check = () => {
@@ -49,6 +61,7 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates, termIds = [] 
       ok = Object.entries(ans).every(([l, r]) => choice[l] === r)
     }
     setResult(ok ? 'right' : 'wrong')
+    setCheckNo(n => n + 1)
     if (ok && !doneRef.current) {
       doneRef.current = true
       onDone()
@@ -66,7 +79,7 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates, termIds = [] 
       {lab.kind === 'order' ? (
         <ol className="activity-list">
           {order.map((id, idx) => (
-            <li key={id}>
+            <li key={id} className={moved?.id === id ? `moved ${moved.dir}` : undefined}>
               <span><RichText text={text(id)} termIds={termIds} /></span>
               <button type="button" aria-label={`เลื่อนขึ้น ${text(id)}`} disabled={idx === 0} onClick={() => move(idx, -1)}>⬆</button>
               <button type="button" aria-label={`เลื่อนลง ${text(id)}`} disabled={idx === order.length - 1} onClick={() => move(idx, 1)}>⬇</button>
@@ -90,9 +103,9 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates, termIds = [] 
           ))}
         </ul>
       )}
-      <button type="button" onClick={check}>ตรวจคำตอบ</button>
-      {result === 'right' && <p className="lab-result ok" role="status">ถูกต้อง! 🎉 <RichText text={lab.rightTh ?? lab.explainTh} termIds={termIds} /></p>}
-      {result === 'wrong' && <p className="lab-result warn" role="status">ยังไม่ถูก ลองใหม่อีกที — <RichText text={lab.explainTh} termIds={termIds} /></p>}
+      <button type="button" className="activity-check" onClick={check}>ตรวจคำตอบ</button>
+      {result === 'right' && <p key={checkNo} className="lab-result ok pop-in" role="status">ถูกต้อง! 🎉 <RichText text={lab.rightTh ?? lab.explainTh} termIds={termIds} /></p>}
+      {result === 'wrong' && <p key={checkNo} className="lab-result bad pop-in" role="status">ยังไม่ถูก ลองใหม่อีกที — <RichText text={lab.explainTh} termIds={termIds} /></p>}
     </section>
   )
 }

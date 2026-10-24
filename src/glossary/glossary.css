@@ -1,8 +1,37 @@
-/* ---------- คำศัพท์ในเนื้อหา (Term popover) — Task 5 จะแต่งใหม่ ตอนนี้แค่เปลี่ยนเป็น token ---------- */
+/* ---------- คำศัพท์ในเนื้อหา (Term popover): มุม/สี/เงาชุดเดียวกับการ์ดอื่น ---------- */
 .term { position: relative; display: inline-block; }
-.term-btn { font: inherit; color: var(--accent); background: none; border: 0; border-bottom: 1px dotted var(--accent); padding: 0; border-radius: 0; cursor: help; }
-.term-pop { position: absolute; left: 0; top: 100%; z-index: 10; margin-top: 0.3rem; min-width: 16rem; max-width: 24rem; display: flex; flex-direction: column; gap: 0.25rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; box-shadow: 0 4px 16px var(--shadow); text-align: left; }
-.term-th { color: var(--text-muted); }
+.term-btn { font: inherit; color: var(--link); background: none; border: 0; border-bottom: 2px dotted var(--link); padding: 0; border-radius: 0; cursor: help; }
+/* เปลี่ยนแค่สีเส้นใต้ (ไม่เปลี่ยนสีตัวหนังสือ เพราะบางที่อย่างโน้ตสติกเกอร์ตั้งสีเอง) */
+.term-btn:hover, .term-btn[aria-expanded='true'] { border-bottom-style: solid; }
+.term-btn:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; border-radius: 4px; }
+.term-pop {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 10;
+  margin-top: 0.4rem;
+  min-width: 16rem;
+  max-width: min(24rem, 80vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--part, var(--p5));
+  border-radius: 14px;
+  padding: 0.7rem 1rem 0.8rem;
+  box-shadow: 0 18px 40px -12px var(--shadow);
+  text-align: left;
+  font-family: 'Noto Sans Thai', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  transform-origin: top left;
+  animation: pop-in .25s var(--ease-bounce) both;
+}
+.term-en { font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; }
+.term-th { color: var(--text-muted); font-weight: 700; }
 
 /* ---------- หน้าคลังศัพท์ (สีมาจาก token ใน styles.css เท่านั้น) ----------
    main.glossary-wrap ชนะ .glossary-wrap ใน styles.css (ความจำเพาะสูงกว่า) จึงกว้างได้ 64rem เฉพาะหน้านี้ */

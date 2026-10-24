@@ -74,8 +74,8 @@ export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherY
 
   if (done) {
     return (
-      <section className="quiz">
-        <h2 className="quiz-score">ได้ {result.correct} จาก {result.total} ข้อ</h2>
+      <section className={`quiz quiz-done ${result.passed ? 'pass' : 'fail'}`}>
+        <h2 className={`quiz-score${result.passed ? ' celebrate' : ''}`}>ได้ {result.correct} จาก {result.total} ข้อ</h2>
         {result.passed ? (
           <p>เก่งมาก ผ่านแล้ว!</p>
         ) : (
@@ -138,11 +138,13 @@ export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherY
         {q.choices.map((c) => {
           const on = selected.includes(c.id)
           const state = submitted ? (q.correct.includes(c.id) ? 'right' : on ? 'wrong' : '') : ''
+          // ถูก: ข้อที่ถูกเรืองเขียว / ผิด: ข้อที่เลือกผิดสั่น
+          const motion = state === 'right' && ok ? 'celebrate' : state === 'wrong' ? 'shake' : ''
           return (
             <button
               key={c.id}
               type="button"
-              className={`quiz-choice ${on ? 'on' : ''} ${state}`}
+              className={`quiz-choice ${on ? 'on' : ''} ${state} ${motion}`}
               aria-pressed={on}
               disabled={submitted}
               onClick={() => toggle(c.id)}
@@ -152,6 +154,7 @@ export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherY
                 <span lang={q.layer === 'en' ? 'en' : 'th'}>{c.text}</span>
                 {showTh && c.textTh && <span className="quiz-choice-th">{c.textTh}</span>}
               </span>
+              {state && <span className="quiz-verdict">{state === 'right' ? '✓' : '✗'}</span>}
             </button>
           )
         })}

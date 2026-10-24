@@ -5,6 +5,7 @@ import { ActorView } from '../scenes/actors'
 import { checkGoal } from './goals'
 import { parseIPv4, parsePrefix } from './ip'
 import { simulateSend, type SendResult } from './sim'
+import './lab.css'
 
 const STAGE_W = 800
 const STAGE_H = 480
@@ -119,7 +120,8 @@ function DevicePanel({ device, onSave }: { device: Device; onSave: (d: Device) =
   )
 }
 
-interface Shown { res: SendResult; met: boolean }
+// no = ลำดับการส่ง ใช้เป็น key ให้การ์ดผลสร้างใหม่ (.pop-in เล่นซ้ำ) ทุกครั้งที่ส่ง
+interface Shown { res: SendResult; met: boolean; no: number }
 
 export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone: () => void; termIds?: string[] }) {
   const [topo, setTopo] = useState<Topology>(lab.start)
@@ -138,6 +140,7 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
   const [sendErr, setSendErr] = useState('')
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const doneRef = useRef(false)
+  const sendNo = useRef(0)
   const svgRef = useRef<SVGSVGElement>(null)
   const drag = useRef<{ id: string; moved: boolean; sx: number; sy: number } | null>(null)
 
@@ -167,7 +170,7 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
     const reveal = () => {
       setEnvAt(null)
       setBusy(false)
-      setShown({ res, met })
+      setShown({ res, met, no: ++sendNo.current })
       if (met && goalIdx === lab.goals.length - 1 && !doneRef.current) {
         doneRef.current = true
         onDone()
@@ -271,7 +274,8 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
           <svg
             ref={svgRef}
             viewBox={`0 0 ${STAGE_W} ${STAGE_H}`}
-            style={{ width: '100%', background: '#121a24', borderRadius: 12, touchAction: 'none' }}
+            className="lab-svg"
+            style={{ width: '100%', touchAction: 'none' }}
             onPointerMove={onMove}
             onPointerUp={onUp}
           >
@@ -283,7 +287,7 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
               return (
                 <g key={key} data-testid={`cable-${key}`} onClick={() => { setSelLink(key); setSelDev(null) }} style={{ cursor: 'pointer' }}>
                   <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="transparent" strokeWidth={16} />
-                  <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={selLink === key ? '#ffd84a' : '#9aa7b4'} strokeWidth={5} strokeLinecap="round" />
+                  <line className={`lab-cable${selLink === key ? ' sel' : ''}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeWidth={5} strokeLinecap="round" />
                 </g>
               )
             })}
@@ -325,12 +329,12 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
             <button type="button" onClick={send} disabled={busy}>ส่งข้อมูล</button>
             {sendErr && <p role="alert" className="lab-result warn">{sendErr}</p>}
             {shown && (
-              <p role="status" className={`lab-result ${shown.res.ok ? 'ok' : 'warn'}`} style={{ color: shown.res.ok ? '#7CFC9A' : '#ffc857' }}>
+              <p key={`r${shown.no}`} role="status" className={`lab-result ${shown.res.ok ? 'ok' : 'bad'} pop-in`}>
                 <RichText text={shown.res.reasonTh} termIds={termIds} />
               </p>
             )}
             {shown?.met && (
-              <div className="lab-pass">
+              <div key={`p${shown.no}`} className="lab-pass pop-in">
                 <p>ผ่านเป้าหมายนี้แล้ว 🎉</p>
                 {goalIdx < lab.goals.length - 1 && (
                   <button type="button" onClick={() => gotoGoal(goalIdx + 1)}>เป้าหมายต่อไป</button>

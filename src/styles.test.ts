@@ -17,10 +17,7 @@ describe('styles: ข้อความหลายบรรทัด', () => {
       .filter((r) => r.split('{')[0].split(',').map((s) => s.trim()).includes(sel))
       .join(' ')
 
-  it('อ่านไฟล์ css ได้จริง', () => { expect(css).toContain('.lab-toolbar') })
-  it.each(['.lab-intro', '.lab-task', '.lab-hint', '.activity .lab-result'])('%s ใช้ white-space: pre-line', (sel) => {
-    expect(rule(sel)).toMatch(/white-space:\s*pre-line/)
-  })
+  it('อ่านไฟล์ css ได้จริง', () => { expect(css).toContain(':root') })
   const flat = () => css.replace(/\/\*[\s\S]*?\*\//g, '')
   it('ฐานปุ่ม/ช่องเลือก/ช่องพิมพ์ใช้ :where() (ความจำเพาะศูนย์ ไม่ทับคลาสอื่น)', () => {
     const c = flat()
@@ -143,5 +140,101 @@ describe('pages/lesson.css', () => {
   })
   it('ไม่มี animation วนไม่หยุด', () => {
     expect(css).not.toMatch(/infinite/)
+  })
+})
+
+// Task 5: คำถาม ห้องทดลอง กิจกรรม เวที ป๊อปอัปศัพท์
+describe('quiz / lab / scene css (token เท่านั้น + motion)', () => {
+  const files: Record<string, string> = {}
+  let base = ''
+  let actors = ''
+  beforeAll(async () => {
+    const fsModule = 'node:fs'
+    const urlModule = 'node:url'
+    const { readFileSync } = await import(/* @vite-ignore */ fsModule)
+    const { URL: NodeURL } = await import(/* @vite-ignore */ urlModule)
+    const read = (p: string) => readFileSync(new NodeURL(p, import.meta.url), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '')
+    for (const f of ['quiz/quiz.css', 'lab/lab.css', 'scenes/ScenePlayer.css', 'glossary/glossary.css']) files[f] = read('./' + f)
+    base = read('./styles.css')
+    actors = readFileSync(new NodeURL('./scenes/actors.tsx', import.meta.url), 'utf-8')
+  })
+  const rule = (css: string, sel: string) =>
+    (css.match(/[^{}]*\{[^}]*\}/g) ?? [])
+      .filter((r) => r.split('{')[0].split(',').map((s) => s.trim()).includes(sel))
+      .join(' ')
+  const root = () => base.match(/:root\s*\{([^}]*)\}/)![1]
+  const token = (name: string) => root().match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`))![1]
+
+  it.each(['quiz/quiz.css', 'lab/lab.css', 'scenes/ScenePlayer.css', 'glossary/glossary.css'])('%s ไม่มี hex/rgba และไม่มี animation วน', (f) => {
+    expect(files[f]).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
+    expect(files[f]).not.toMatch(/rgba?\(/)
+    expect(files[f]).not.toMatch(/infinite/)
+  })
+  it.each(['quiz/quiz.css', 'lab/lab.css', 'scenes/ScenePlayer.css'])('%s ปิดการขยับเมื่อ prefers-reduced-motion', (f) => {
+    expect(files[f]).toMatch(/@media \(prefers-reduced-motion: reduce\)/)
+  })
+
+  it('กฎห้องทดลอง/กิจกรรมย้ายจาก styles.css ไป lab/lab.css', () => {
+    for (const k of ['.lab-toolbar', '.lab-result', '.lab-iface', '.activity-list', '.lab-intro']) expect(base, k).not.toContain(k)
+    const lab = files['lab/lab.css']
+    for (const sel of ['.lab-intro', '.lab-task', '.lab-hint', '.activity .lab-result']) {
+      expect(rule(lab, sel), sel).toMatch(/white-space:\s*pre-line/)
+    }
+  })
+  it('lab: ผลถูก/ผิดใช้ --ok/--bad, การ์ดเป้าหมายมีเส้นซ้ายสีภาค, รายการที่ขยับมี animation ~350ms, มี focus-visible', () => {
+    const lab = files['lab/lab.css']
+    expect(rule(lab, '.lab-result.ok')).toMatch(/var\(--ok\)/)
+    expect(rule(lab, '.lab-result.bad')).toMatch(/var\(--bad\)/)
+    expect(rule(lab, '.lab-goal')).toMatch(/border-left:\s*\d+px solid var\(--part/)
+    expect(rule(lab, '.activity-list li.moved')).toMatch(/animation:[^;]*0?\.3\ds/)
+    expect(lab).toMatch(/:focus-visible/)
+  })
+  it('quiz: การ์ดโค้ง 14px ชี้แล้วยก, shake .4s, celebrate เรืองเขียว .6s, ตอบแล้วไม่จาง, มี focus-visible', () => {
+    const q = files['quiz/quiz.css']
+    expect(rule(q, '.quiz-choice')).toMatch(/border-radius:\s*14px/)
+    expect(q).toMatch(/\.quiz-choice:hover:not\(:disabled\)[^{]*\{[^}]*translateY\(-\d+px\)/)
+    expect(rule(q, '.quiz-choice.shake')).toMatch(/animation:[^;]*\.4s/)
+    const cel = rule(q, '.quiz-choice.celebrate')
+    expect(cel).toMatch(/animation:\s*([a-z-]+)\s+\.6s/)
+    const name = cel.match(/animation:\s*([a-z-]+)/)![1]
+    expect(q).toMatch(new RegExp(`@keyframes ${name}[^@]*var\\(--ok\\)`))
+    expect(rule(q, '.quiz-choice:disabled')).toMatch(/opacity:\s*1/)
+    expect(q).toMatch(/\.quiz-choice:focus-visible/)
+    expect(q).toMatch(/\.quiz-btn:focus-visible/)
+  })
+  it('เวที: พื้น --stage กรอบ --border มุม 16px; คำบรรยายพื้นดำตัวขาว ≥22px; ปุ่มมี focus-visible', () => {
+    const sp = files['scenes/ScenePlayer.css']
+    const st = rule(sp, '.sp-stage')
+    expect(st).toMatch(/background:\s*var\(--stage\)/)
+    expect(st).toMatch(/border:\s*1px solid var\(--border\)/)
+    expect(st).toMatch(/border-radius:\s*16px/)
+    const cap = rule(sp, '.sp-caption')
+    expect(cap).toMatch(/background:\s*var\(--black\)/)
+    expect(cap).toMatch(/color:\s*var\(--white\)/)
+    const rem = Number(cap.match(/font-size:\s*([\d.]+)rem/)![1])
+    expect(rem * 18).toBeGreaterThanOrEqual(22)
+    expect(token('black')).toBe('#000000')
+    expect(token('white').toLowerCase()).toBe('#ffffff')
+    expect(sp).toMatch(/\.sp-btn:focus-visible/)
+  })
+  it('ป้ายใต้ไอคอนใน actors.tsx ยังอ่านชัดบนพื้นเวทีใหม่ (contrast ≥ 4.5) และพื้นเวทีอยู่ระหว่าง --bg กับ --surface', async () => {
+    const { contrastRatio } = await import('./ui/contrast')
+    const label = actors.match(/<text[\s\S]*?fill="(#[0-9a-fA-F]{6})"/)![1]
+    const stage = token('stage')
+    expect(contrastRatio(label, stage)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(stage, token('text'))).toBeGreaterThan(contrastRatio(token('surface'), token('text')))
+    expect(contrastRatio(stage, token('text'))).toBeLessThan(contrastRatio(token('bg'), token('text')))
+  })
+  it('ป๊อปอัปศัพท์ มุม 14px มีเงา และปุ่มมี focus-visible', () => {
+    const g = files['glossary/glossary.css']
+    expect(rule(g, '.term-pop')).toMatch(/border-radius:\s*14px/)
+    expect(rule(g, '.term-pop')).toMatch(/box-shadow:[^;]*var\(--shadow\)/)
+    expect(g).toMatch(/\.term-btn:focus-visible/)
+  })
+  it('การ์ดข้อผิดพลาด (ErrorBoundary) ใช้มุม/สีเดียวกัน', () => {
+    const r = rule(base, '.error-card')
+    expect(r).toMatch(/border-radius:\s*14px/)
+    expect(r).toMatch(/border-left:\s*6px solid var\(--bad\)/)
+    expect(base).toMatch(/\.error-card \.btn:focus-visible/)
   })
 })

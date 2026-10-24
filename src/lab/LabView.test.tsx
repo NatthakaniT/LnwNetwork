@@ -169,3 +169,31 @@ describe('LabView termIds', () => {
     expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(3)
   })
 })
+
+describe('LabView result card', () => {
+  it('ผลการส่งเป็นการ์ด .pop-in สีถูก/ผิด และสร้างใหม่ทุกครั้งที่ส่ง', () => {
+    render(<LabView lab={lab} onDone={() => {}} />)
+    fireEvent.click(screen.getByText('ส่งข้อมูล'))
+    flush()
+    const first = screen.getByRole('status')
+    expect(first).toHaveClass('lab-result', 'ok', 'pop-in')
+    expect(first.getAttribute('style') ?? '').not.toMatch(/color/)
+    fireEvent.click(screen.getByText('ส่งข้อมูล'))
+    flush()
+    const second = screen.getByRole('status')
+    expect(second).toHaveClass('pop-in')
+    expect(second).not.toBe(first) // key ใหม่ = element ใหม่ animation จึงเล่นซ้ำ
+    fireEvent.change(screen.getByLabelText('ไป IP'), { target: { value: '192.168.1.99' } })
+    fireEvent.click(screen.getByText('ส่งข้อมูล'))
+    flush()
+    expect(screen.getByRole('status')).toHaveClass('lab-result', 'bad', 'pop-in')
+  })
+
+  it('การ์ดเป้าหมายมีคลาส lab-goal และเวทีไม่ใส่สีพื้นแบบ inline', () => {
+    const { container } = render(<LabView lab={lab} onDone={() => {}} />)
+    expect(container.querySelector('.lab-goal')).not.toBeNull()
+    const svg = container.querySelector('svg.lab-svg') as SVGSVGElement
+    expect(svg).not.toBeNull()
+    expect(svg.getAttribute('style') ?? '').not.toMatch(/background|#/)
+  })
+})

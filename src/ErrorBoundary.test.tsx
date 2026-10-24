@@ -9,6 +9,7 @@ test('แสดงข้อความภาษาไทยเมื่อม�
   window.location.hash = '#/lesson/p0-l1'
   render(<ErrorBoundary><Boom /></ErrorBoundary>)
   expect(screen.getByRole('alert')).toHaveTextContent('มีอะไรผิดพลาด ลองกดรีเฟรชนะ')
+  expect(screen.getByRole('alert').closest('.error-card')).not.toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'กลับไปแผนที่' }))
   expect(window.location.hash).toBe('#/')
   spy.mockRestore()

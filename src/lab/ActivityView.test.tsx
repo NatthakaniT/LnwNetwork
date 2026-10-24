@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ActivityView } from './ActivityView'
 import type { ActivityLab } from '../content/types'
@@ -85,5 +85,29 @@ describe('ActivityView termIds', () => {
     expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(2)
     await userEvent.setup().click(screen.getByText('ตรวจคำตอบ'))
     expect(screen.getAllByRole('button', { name: 'IP address' })).toHaveLength(3)
+  })
+})
+
+describe('ActivityView motion', () => {
+  it('กด ⬆/⬇ แล้วรายการที่ขยับได้ class moved ชั่วคราว', async () => {
+    vi.useFakeTimers()
+    try {
+      render(<ActivityView lab={order} onDone={() => {}} shuffle={reverse} />)
+      fireEvent.click(screen.getByLabelText('เลื่อนขึ้น ข้อหนึ่ง'))
+      const li = screen.getByText('ข้อหนึ่ง').closest('li')!
+      expect(li).toHaveClass('moved')
+      expect(screen.getByText('ข้อสอง').closest('li')).not.toHaveClass('moved')
+      act(() => { vi.advanceTimersByTime(400) })
+      expect(li).not.toHaveClass('moved')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('ผลตรวจเป็นการ์ด .pop-in สีถูก/ผิด', async () => {
+    render(<ActivityView lab={order} onDone={() => {}} shuffle={reverse} />)
+    const user = userEvent.setup()
+    await user.click(screen.getByText('ตรวจคำตอบ'))
+    expect(screen.getByRole('status')).toHaveClass('lab-result', 'bad', 'pop-in')
   })
 })

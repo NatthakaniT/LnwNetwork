@@ -1,0 +1,139 @@
+/* ห้องทดลองเครือข่าย (LabView) + กิจกรรมเรียง/จับคู่ (ActivityView)
+   สีมาจาก token ใน styles.css เท่านั้น; --part/--part-fg มาจาก .lesson-page (ไม่มีก็ใช้ --p2)
+   ไม่มี animation วนไม่หยุด และไม่มีของตกแต่งขยับบนเวที */
+
+/* ข้อความในห้องทดลอง/กิจกรรม ขึ้นบรรทัดใหม่ตาม \n */
+.lab-intro, .lab-task, .lab-hint, .activity .lab-result { white-space: pre-line; }
+.lab-intro { margin: 0 0 1rem; }
+
+/* ---------- การ์ดเป้าหมาย: เด่นด้วยเส้นสีภาคด้านซ้าย ---------- */
+.lab-goal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0.8rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--part, var(--p2));
+  border-radius: 14px;
+  box-shadow: 0 16px 34px -22px var(--part, var(--p2));
+}
+.lab-goal > strong { font-family: var(--font-head); font-weight: 800; font-size: 1.05rem; }
+.lab-goal .lab-task { flex-basis: 100%; margin: 0; font-weight: 700; }
+.lab-hint {
+  flex-basis: 100%;
+  margin: 0.2rem 0 0;
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--warn) 12%, var(--surface));
+  border: 1px dashed var(--warn);
+}
+
+/* ---------- ปุ่มในห้องทดลอง/กิจกรรม: แคปซูล ชี้แล้วยก (ยกเว้นปุ่มคำศัพท์ในเนื้อหา .term-btn) ---------- */
+.lab button:not(.term-btn), .activity button:not(.term-btn) {
+  border-radius: 99px;
+  padding: 0.35rem 1rem;
+  transition: transform .25s var(--ease-bounce), border-color .2s, background-color .2s;
+}
+.lab button:not(.term-btn):hover:not(:disabled), .activity button:not(.term-btn):hover:not(:disabled) { transform: translateY(-2px); border-color: var(--part, var(--p2)); }
+.lab button[aria-pressed='true'] {
+  color: var(--part-fg, var(--bg));
+  background: var(--part, var(--p2));
+  border-color: var(--part, var(--p2));
+  font-weight: 700;
+}
+.lab button:not(.term-btn):focus-visible, .activity button:not(.term-btn):focus-visible,
+.lab input:focus-visible, .lab select:focus-visible,
+.activity select:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+.lab input, .lab select, .activity select { border-radius: 10px; }
+
+/* ---------- เครื่องมือ + เวที ---------- */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.lab-toolbar button { background: var(--bg); }
+.lab-svg {
+  display: block;
+  background: var(--stage);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.lab-cable { stroke: var(--text-muted); }
+.lab-cable.sel { stroke: var(--warn); }
+.lab-note { color: var(--text-muted); margin: 0.4rem 0 0; }
+
+/* ---------- แผงด้านข้าง: ส่งของ + ตั้งค่าเครื่อง ---------- */
+.lab-send, .lab-device-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0.8rem 1rem 1rem;
+  margin-bottom: 0.9rem;
+}
+.lab-send h3, .lab-device-panel h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+.lab-send label { display: inline-block; margin: 0.2rem 0; }
+.lab-send > button { margin-top: 0.5rem; color: var(--part-fg, var(--bg)); background: var(--part, var(--p2)); border-color: var(--part, var(--p2)); font-weight: 700; }
+.lab-send > button:disabled { color: var(--disabled-fg); background: var(--disabled-bg); border-color: var(--disabled-border); }
+.lab-dest { color: var(--text-muted); }
+.lab-iface { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0; }
+.lab-device-panel input { width: 100%; }
+
+/* ---------- การ์ดผล: ถูก (--ok) / ผิด (--bad) พร้อมเครื่องหมาย ไม่บอกด้วยสีอย่างเดียว ---------- */
+.lab-result {
+  margin: 0.7rem 0 0;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--warn);
+  border-radius: 14px;
+  color: var(--text);
+}
+.lab-result::before { font-weight: 900; margin-right: 0.4rem; }
+.lab-result.ok { color: var(--ok); border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--surface)); }
+.lab-result.ok::before { content: '✓'; }
+.lab-result.bad { color: var(--bad); border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--surface)); }
+.lab-result.bad::before { content: '✗'; }
+.lab-result.warn { color: var(--warn); }
+.lab-result.warn::before { content: '!'; }
+.lab-pass { margin-top: 0.6rem; font-weight: 700; }
+.lab-pass p { margin: 0 0 0.4rem; }
+
+/* ---------- กิจกรรม ---------- */
+.activity-list { padding-left: 1.6rem; margin: 0 0 1rem; }
+.activity-list li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.4rem 0;
+  padding: 0.45rem 0.6rem 0.45rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.activity-list li > span { flex: 1 1 auto; min-width: 0; }
+.activity-list li button:not(.term-btn) { padding: 0.15rem 0.7rem; }
+/* รายการที่เพิ่งกด ⬆/⬇: เลื่อนเข้าที่ + กะพริบสีภาค 350ms (ไม่วน) */
+@keyframes moved-up { from { transform: translateY(12px); background: color-mix(in srgb, var(--part, var(--p2)) 30%, var(--surface)); } to { transform: none; } }
+@keyframes moved-down { from { transform: translateY(-12px); background: color-mix(in srgb, var(--part, var(--p2)) 30%, var(--surface)); } to { transform: none; } }
+.activity-list li.moved { animation: moved-up .35s var(--ease-out); border-color: var(--part, var(--p2)); }
+.activity-list li.moved.down { animation-name: moved-down; }
+.activity-check { color: var(--part-fg, var(--bg)); background: var(--part, var(--p2)); border-color: var(--part, var(--p2)); font-weight: 700; }
+
+@media (max-width: 48rem) {
+  .lab-layout { flex-direction: column; }
+  .lab-side { flex-basis: auto !important; width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab button:not(.term-btn), .activity button:not(.term-btn) { transition: none; }
+  .lab button:not(.term-btn):hover:not(:disabled), .activity button:not(.term-btn):hover:not(:disabled) { transform: none; }
+}
