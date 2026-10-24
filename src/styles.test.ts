@@ -26,8 +26,10 @@ describe('styles: ข้อความหลายบรรทัด', () => {
     const c = flat()
     expect(c).toContain(':where(button, select) {')
     expect(c).toContain(":where(input[type='text'], input:not([type])) {")
-    expect(c).toContain(':where(button, select):hover:not(:disabled)')
-    expect(c).toContain(':where(button, select):disabled')
+    expect(c).toContain(':where(button:hover:not(:disabled), select:hover:not(:disabled))')
+    expect(c).toContain(':where(button:disabled, select:disabled)')
+    // pseudo-class ต้องอยู่ในวงเล็บ :where() ไม่ใช่ต่อท้าย (ไม่งั้นความจำเพาะไม่เป็นศูนย์)
+    expect(c).not.toMatch(/:where[(][^)]*[)][ ]*:[a-z]/)
     // ต้องไม่มี selector ฐานเปล่า ๆ (button:disabled ฯลฯ) ที่ทับ .quiz-choice ได้
     expect(c).not.toMatch(/(^|\n)\s*(button|select)(:[a-z:()]+)?\s*[,{]/)
   })

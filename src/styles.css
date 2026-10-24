@@ -46,9 +46,9 @@ body {
   border-radius: 8px;
   padding: 0.3rem 0.6rem;
 }
-:where(button, select):hover:not(:disabled) { border-color: var(--accent); }
+:where(button:hover:not(:disabled), select:hover:not(:disabled)) { border-color: var(--accent); }
 /* ปุ่มที่กดไม่ได้ ต้องดูออกทันทีว่ากดไม่ได้ (เทาจาง แม้เป็นปุ่มสีน้ำเงินหลักก็ตาม) */
-:where(button, select):disabled, .btn:disabled, .btn.primary:disabled {
+:where(button:disabled, select:disabled), .btn:disabled, .btn.primary:disabled {
   color: #6b7785;
   background: #232b36;
   border-color: #2f3946;
