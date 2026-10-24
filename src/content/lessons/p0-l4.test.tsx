@@ -64,9 +64,13 @@ describe('lesson p0-l4', () => {
       if (typeof v === 'string') texts.push(v)
       else if (v && typeof v === 'object') Object.values(v).forEach(walk)
     }
-    walk({ ...lesson, videos: [] }) // โน้ตคลิปเตือนให้ข้ามช่วง Layer ได้
+    walk({ ...lesson, videos: [] })
+    const later = [/\bOSI\b/, /\bTCP\b/, /\bports?\b/i, /พอร์ต/, /\blayers?\b/i, /เลเยอร์/, /\/24/, /255\.255\./]
     const all = texts.join('\n')
-    for (const w of [/\bOSI\b/, /\bTCP\b/, /\bports?\b/i, /พอร์ต/, /\blayers?\b/i, /เลเยอร์/, /\/24/, /255\.255\./]) expect(all).not.toMatch(w)
+    for (const w of later) expect(all).not.toMatch(w)
+    // โน้ตคลิปก็ตรวจด้วย ยกเว้นคำว่า Layer คำเดียว (โน้ตเตือนให้ข้ามช่วง Layer ได้)
+    const videoAll = lesson.videos.map((v) => `${v.titleTh}\n${v.noteTh ?? ''}`).join('\n').replace(/\bLayer\b/g, '')
+    for (const w of later) expect(videoAll, String(w)).not.toMatch(w)
     // พูดถึงเลขสามชุดแรก ได้ก็ต่อเมื่อบอกว่ากฎจริงอยู่ภาค 1
     for (const t of texts.filter((x) => x.includes('สามชุดแรก'))) expect(t).toContain('ภาค 1')
   })
@@ -206,7 +210,7 @@ describe('lesson p0-l4', () => {
       expect(checkGoal(g1, via3, simulateSend(via3, g1.from, g1.toIp))).toBe(true)
       const still = setIp(via3, 'pc2', '192.168.1.20')
       expect(checkGoal(g2, still, simulateSend(still, g2.from, g2.toIp))).toBe(false)
-      expect(g2.hintTh).toContain('ถ้าคอม 3 ก็ใช้ .10 อยู่ด้วย ให้กด เริ่มใหม่ ก่อน')
+      expect(g2.hintTh).toContain('ถ้าคอม 3 ก็ใช้ .10 อยู่ด้วย ให้กด เริ่มใหม่ ก่อน เพราะ .10 ยังซ้ำอยู่ที่คอม 3')
       // กด เริ่มใหม่ = กลับไป lab.start แล้วแก้คอม 2 ก็ผ่าน
       const again = setIp(lab.start, 'pc2', '192.168.1.20')
       expect(checkGoal(g2, again, simulateSend(again, g2.from, g2.toIp))).toBe(true)
