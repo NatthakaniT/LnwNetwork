@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { course } from '../content'
 import type { Lesson, Part } from '../content/types'
 import { QuizView } from '../quiz/QuizView'
@@ -10,11 +11,19 @@ import type { Progress, StepKey } from '../progress/progress'
 import { navigate } from '../router'
 import { VideoStep } from './VideoStep'
 import { RichText } from '../glossary/RichText'
+import { PART_COLORS } from '../ui/contrast'
+import './lesson.css'
 
 export const MSG_LOCKED = 'ต้องเรียนบทก่อนหน้าก่อนนะ'
 export const MSG_BUILDING = 'บทนี้กำลังทำอยู่ เร็ว ๆ นี้'
 
 const NO_TERMS: string[] = []
+
+/** สีของภาคบนหน้าบทเรียน: ปุ่มหลักและแท็บขั้นปัจจุบันใช้ --part (ตัวหนังสือ --part-fg) */
+function partVars(n: number): CSSProperties {
+  const c = PART_COLORS[n] ?? PART_COLORS[((n % 7) + 7) % 7]
+  return { '--part': c.bg, '--part-fg': c.fg } as CSSProperties
+}
 
 const STEPS: { key: StepKey; label: string }[] = [
   { key: 'video', label: 'ดูคลิป' },
@@ -73,10 +82,14 @@ function TestOut({ lesson, storage, onPassed }: { lesson: Lesson; storage?: Stor
     navigate('#/')
   }, [lesson.id, lesson.titleTh, storage, onPassed])
   return (
-    <main className="lesson-page">
-      <p><a href="#/">← กลับแผนที่</a></p>
-      <h1>สอบข้ามบท: {lesson.titleTh}</h1>
-      <QuizView key={lesson.id} questions={lesson.quiz!} mode="testOut" termIds={lesson.terms ?? NO_TERMS} onPass={onPass} />
+    <main className="lesson-page" style={partVars(lesson.part)}>
+      <p className="lesson-back rise"><a href="#/">← กลับแผนที่</a></p>
+      <header className="lesson-head rise d1">
+        <h1>สอบข้ามบท: {lesson.titleTh}</h1>
+      </header>
+      <section className="step-body rise d2">
+        <QuizView key={lesson.id} questions={lesson.quiz!} mode="testOut" termIds={lesson.terms ?? NO_TERMS} onPass={onPass} />
+      </section>
     </main>
   )
 }
@@ -128,9 +141,9 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   const nextOpen = next && isUnlocked(next.id, parts, progressRef.current) ? next : undefined
 
   return (
-    <main className="lesson-page">
-      <p><a href="#/">← กลับแผนที่</a></p>
-      <header className="lesson-head">
+    <main className="lesson-page" style={partVars(lesson.part)}>
+      <p className="lesson-back rise"><a href="#/">← กลับแผนที่</a></p>
+      <header className="lesson-head rise d1">
         <h1>{lesson.titleTh}</h1>
         {lesson.analogyTh && <p className="analogy"><RichText text={lesson.analogyTh} termIds={termIds} /></p>}
         {lesson.ciscoModules.length > 0 && (
@@ -138,7 +151,8 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
         )}
       </header>
 
-      <nav className="steps" aria-label="ขั้นของบทเรียน">
+      <nav className="steps rise d2" aria-label="ขั้นของบทเรียน">
+        <span className="steps-indicator" aria-hidden="true" style={{ '--i': stepIdx } as CSSProperties} />
         {STEPS.map((s, i) => (
           <button
             key={s.key}
@@ -153,7 +167,8 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
         ))}
       </nav>
 
-      <section className="step-body">
+      {/* key ตามขั้น: เปลี่ยนขั้นแล้วสร้างใหม่ จึงลอยขึ้น (.rise) ทุกครั้ง */}
+      <section key={step} className="step-body rise">
         {step === 'video' && <VideoStep videos={lesson.videos} termIds={termIds} onNext={() => setStepIdx(1)} />}
         {step === 'scenes' && (lesson.scenes
           ? <ScenePlayer lessonId={lesson.id} set={lesson.scenes} termIds={termIds} onFinished={onScenesFinished} />
@@ -167,14 +182,14 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
       </section>
 
       {step !== 'video' && step !== 'quiz' && (
-        <p>
+        <p className="step-nav">
           <button type="button" className="btn primary" disabled={!isDone(step)} onClick={() => setStepIdx(stepIdx + 1)}>
             ไปขั้นต่อไป
           </button>
         </p>
       )}
       {stepIdx > 0 && (
-        <p><button type="button" className="btn" onClick={() => setStepIdx(stepIdx - 1)}>ย้อนกลับ</button></p>
+        <p className="step-nav"><button type="button" className="btn" onClick={() => setStepIdx(stepIdx - 1)}>ย้อนกลับ</button></p>
       )}
 
       {passed && step === 'quiz' && (

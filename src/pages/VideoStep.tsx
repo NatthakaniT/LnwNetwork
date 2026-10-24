@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { VideoRef } from '../content/types'
 import { RichText } from '../glossary/RichText'
+import './lesson.css'
 
 export const VIDEO_TIMEOUT_MS = 15000
 
@@ -28,7 +29,7 @@ export function VideoStep({ videos, onNext, termIds = [] }: { videos: VideoRef[]
     <section className="video-step">
       {video ? (
         <>
-          {video.noteTh && <p className="video-note">ℹ️ <RichText text={video.noteTh} termIds={termIds} /></p>}
+          {video.noteTh && <p className="video-note sticker-note"><span aria-hidden="true">📌 </span><RichText text={video.noteTh} termIds={termIds} /></p>}
           <div className="video-frame">
             <iframe
               key={video.youtubeId + (video.startSec ?? '')}
@@ -67,7 +68,7 @@ export function VideoStep({ videos, onNext, termIds = [] }: { videos: VideoRef[]
       ) : (
         <p className="video-notice">บทนี้ยังไม่มีคลิป ข้ามไปขั้นต่อไปได้เลย</p>
       )}
-      <p>
+      <p className="step-nav">
         <button type="button" className="btn primary" onClick={onNext}>ไปขั้นต่อไป</button>
       </p>
     </section>

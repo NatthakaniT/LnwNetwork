@@ -1,0 +1,193 @@
+/* หน้าบทเรียน + ขั้นคลิป (สีมาจาก token ใน styles.css เท่านั้น)
+   --part / --part-fg ตั้งบน .lesson-page จาก PART_COLORS ของภาคนั้น
+   หมายเหตุ: ไฟล์นี้โหลดก่อน styles.css จึงขึ้นต้นด้วย .lesson-page ให้ชนะกฎกว้างอย่าง h1 / .btn
+   ห้ามมี animation วนไม่หยุด และไม่ใส่ของตกแต่งที่ขยับใกล้เวที (ScenePlayer) */
+
+.lesson-page { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem 3rem; }
+
+/* ---------- ลิงก์กลับ ---------- */
+.lesson-page .lesson-back { margin: 1rem 0 0; }
+.lesson-page .lesson-back a {
+  display: inline-block;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 0.15rem 0.7rem 0.15rem 0;
+  transition: color .2s, transform .25s var(--ease-bounce);
+}
+.lesson-page .lesson-back a:hover { color: var(--text); transform: translateX(-3px); }
+.lesson-page .lesson-back a:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+
+/* ---------- หัวบท: Kanit 900 + เส้นสีภาค ---------- */
+.lesson-page .lesson-head h1 {
+  font-size: 2.4rem;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  padding: 0.5rem 0 0;
+  overflow-wrap: anywhere;
+}
+.lesson-page .lesson-head h1::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  height: 6px;
+  margin: 0.7rem 0 0.6rem;
+  border-radius: 99px;
+  background: var(--part, var(--p2));
+}
+.lesson-page .lesson-head .analogy { color: var(--text-muted); margin: 0; }
+
+/* ป้าย "ตรงกับ Cisco" เป็นแคปซูล */
+.lesson-page .badge {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.15rem 0.8rem;
+  border-radius: 99px;
+  border: 1px solid var(--part, var(--p2));
+  background: color-mix(in srgb, var(--part, var(--p2)) 14%, transparent);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ---------- แท็บขั้น: แคปซูลเท่ากัน 4 ช่อง + แถบสีภาคที่เลื่อนไปตามขั้น ---------- */
+.lesson-page .steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 5px;
+  margin: 1.3rem 0 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+}
+/* กว้างเท่าแท็บหนึ่งช่องพอดี (ไม่มี gap) จึงเลื่อนทีละ 100% ของตัวเอง */
+.steps-indicator {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc((100% - 10px) / 4);
+  border-radius: 99px;
+  background: var(--part, var(--p2));
+  box-shadow: 0 8px 22px -12px var(--part, var(--p2));
+  transform: translateX(calc(var(--i) * 100%));
+  transition: transform .45s var(--ease-out);
+  pointer-events: none;
+}
+.lesson-page .step {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  font: inherit;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 99px;
+  padding: 0.5rem 0.6rem;
+  cursor: pointer;
+  transition: color .25s var(--ease-out), transform .2s var(--ease-bounce);
+}
+.lesson-page .step:hover:not(:disabled):not(.on) { color: var(--text); }
+.lesson-page .step.on { color: var(--part-fg, var(--bg)); }
+.lesson-page .step:disabled {
+  color: var(--disabled-fg);
+  background: var(--disabled-bg);
+  border-color: var(--disabled-border);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.lesson-page .step:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+
+/* ---------- เนื้อหาแต่ละขั้น (สร้างใหม่ทุกครั้งที่เปลี่ยนขั้น จึงลอยขึ้น .rise) ---------- */
+.lesson-page .step-body { min-width: 0; }
+
+/* ---------- ปุ่ม ---------- */
+.lesson-page .step-nav { margin: 1.2rem 0 0; }
+.lesson-page .btn { padding: 0.45rem 1.2rem; border-radius: 99px; transition: transform .25s var(--ease-bounce), box-shadow .25s var(--ease-out), border-color .2s; }
+.lesson-page .btn.primary { color: var(--part-fg, var(--bg)); }
+.lesson-page .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 24px -14px var(--part, var(--p2)); }
+.lesson-page .btn:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+
+.lesson-page .pass-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--ok);
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+}
+
+/* ---------- ขั้นคลิป ---------- */
+.video-frame {
+  position: relative;
+  padding-top: 56.25%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 24px 50px -22px var(--shadow);
+}
+.video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* หมายเหตุของคลิป: การ์ดสติกเกอร์สีเหลืองอ่อน เอียงนิดเดียว (ไม่ขยับ)
+   z-index ให้ popover คำศัพท์ในโน้ตอยู่เหนือกรอบคลิป */
+.sticker-note {
+  position: relative;
+  z-index: 2;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0.3rem 0 1.2rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--p4) 70%, var(--text));
+  color: var(--bg);
+  font-weight: 600;
+  transform: rotate(-1deg);
+  box-shadow: 0 12px 26px -16px var(--p4);
+}
+.sticker-note .term-btn { color: var(--bg); border-bottom-color: var(--bg); font-weight: 700; }
+.sticker-note .term-btn:focus-visible { outline: 3px solid var(--bg); outline-offset: 2px; }
+
+.video-notice {
+  margin: 1rem 0 0;
+  padding: 0.7rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--warn);
+  border-radius: 14px;
+}
+
+.video-more h3 { font-size: 1.2rem; margin: 1.4rem 0 0.6rem; }
+.video-more ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.video-pick {
+  font: inherit;
+  text-align: left;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0.3rem 0.9rem;
+  cursor: pointer;
+  transition: transform .25s var(--ease-bounce), border-color .2s;
+}
+.video-pick:hover { border-color: var(--part, var(--p2)); transform: translateY(-2px); }
+.video-pick:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+
+/* ---------- จอแคบ ---------- */
+@media (max-width: 40rem) {
+  .lesson-page { padding: 0 1rem 3rem; }
+  .lesson-page .lesson-head h1 { font-size: 1.9rem; }
+  .lesson-page .steps { border-radius: 18px; }
+  .lesson-page .step { font-size: 0.8rem; padding: 0.45rem 0.25rem; border-radius: 14px; }
+  .steps-indicator { border-radius: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steps-indicator, .lesson-page .step, .lesson-page .btn, .video-pick, .lesson-page .lesson-back a { transition: none; }
+  .lesson-page .btn.primary:hover:not(:disabled), .video-pick:hover, .lesson-page .lesson-back a:hover { transform: none; }
+}

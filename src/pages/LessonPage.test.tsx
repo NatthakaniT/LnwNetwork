@@ -15,6 +15,7 @@ import { LessonPage, MSG_LOCKED, MSG_BUILDING } from './LessonPage'
 import { fixture, mk, memoryStorage } from './fixture'
 import { loadProgress, saveProgress } from '../progress/progress'
 import type { NetworkLab, Part } from '../content/types'
+import { PART_COLORS } from '../ui/contrast'
 
 let storage: Storage
 beforeEach(() => { storage = memoryStorage(); window.location.hash = ''; sceneProps.length = 0 })
@@ -142,5 +143,44 @@ describe('LessonPage terms', () => {
     const parts: Part[] = [{ ...fixture[0], lessons: [mk('t1', 0, 1, { analogyTh: 'เหมือน IP address', terms: ['ip-address'] })] }]
     render(<LessonPage id="t1" parts={parts} storage={memoryStorage()} />)
     expect(screen.getByRole('button', { name: 'IP address' })).toBeInTheDocument()
+  })
+})
+
+describe('LessonPage shell', () => {
+  const p4: Part[] = [{ part: 4, titleTh: 'ภาค 4', examDomain: 'e', lessons: [mk('q1', 4, 1)] }]
+
+  it('.lesson-page ใช้สีของภาค (--part / --part-fg)', () => {
+    const { container } = render(<LessonPage id="q1" parts={p4} storage={storage} />)
+    const page = container.querySelector('.lesson-page') as HTMLElement
+    expect(page.style.getPropertyValue('--part')).toBe(PART_COLORS[4].bg)
+    expect(page.style.getPropertyValue('--part-fg')).toBe(PART_COLORS[4].fg)
+  })
+
+  it('หน้าสอบข้ามบทก็ใช้สีภาคและหัวบทแบบเดียวกัน', () => {
+    const { container } = render(<LessonPage id="q1" testOut parts={p4} storage={storage} />)
+    const page = container.querySelector('.lesson-page') as HTMLElement
+    expect(page.style.getPropertyValue('--part')).toBe(PART_COLORS[4].bg)
+    expect(container.querySelector('.lesson-head h1')).toHaveTextContent('สอบข้ามบท: บท q1')
+  })
+
+  it('แถบบอกขั้นปัจจุบัน .steps-indicator เลื่อนตาม --i', () => {
+    const { container } = render(<LessonPage id="f1" parts={fixture} storage={storage} />)
+    const ind = () => container.querySelector('.steps-indicator') as HTMLElement
+    expect(ind()).toHaveAttribute('aria-hidden', 'true')
+    expect(ind().style.getPropertyValue('--i')).toBe('0')
+    fireEvent.click(nextBtn())
+    expect(ind().style.getPropertyValue('--i')).toBe('1')
+    fireEvent.click(tab('1. ดูคลิป'))
+    expect(ind().style.getPropertyValue('--i')).toBe('0')
+  })
+
+  it('เปลี่ยนขั้นแล้ว .step-body สร้างใหม่ (เล่น .rise อีกครั้ง)', () => {
+    const { container } = render(<LessonPage id="f1" parts={fixture} storage={storage} />)
+    const first = container.querySelector('.step-body')!
+    expect(first).toHaveClass('rise')
+    fireEvent.click(nextBtn())
+    const second = container.querySelector('.step-body')!
+    expect(second).not.toBe(first)
+    expect(second).toHaveClass('rise')
   })
 })

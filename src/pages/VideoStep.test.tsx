@@ -65,6 +65,12 @@ describe('VideoStep note', () => {
     expect(screen.getByRole('button', { name: 'IP address' })).toBeInTheDocument()
   })
 
+  it('noteTh เป็นการ์ดสติกเกอร์ (class sticker-note)', () => {
+    const v = [{ youtubeId: 'n1', titleTh: 'คลิปมีโน้ต', channel: 'ก', noteTh: 'ดูช่วงแรกพอ' }]
+    const { container } = render(<VideoStep videos={v} onNext={() => {}} />)
+    expect(container.querySelector('.video-note')).toHaveClass('sticker-note')
+  })
+
   it('no note element when noteTh is missing', () => {
     const { container } = render(<VideoStep videos={vids} onNext={() => {}} />)
     expect(container.querySelector('.video-note')).toBeNull()

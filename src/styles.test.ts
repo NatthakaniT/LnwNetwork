@@ -36,7 +36,7 @@ describe('styles: ข้อความหลายบรรทัด', () => {
   it('ฐานมีตัวอักษร 1rem และปุ่มที่ล็อกยังดูเทาจาง', () => {
     expect(flat()).toMatch(/:where\(button, select\) \{[^}]*font-size:\s*1rem/)
     expect(flat()).toMatch(/:where\(input\[type='text'\], input:not\(\[type\]\)\) \{[^}]*font-size:\s*1rem/)
-    for (const sel of ['.btn.primary:disabled', '.step:disabled']) {
+    for (const sel of ['.btn.primary:disabled']) {
       expect(rule(sel)).toMatch(/background:\s*var\(--disabled-bg\)/)
       expect(rule(sel)).toMatch(/opacity:\s*0?\.\d+/)
       expect(rule(sel)).toMatch(/cursor:\s*not-allowed/)
@@ -87,5 +87,61 @@ describe('styles: ข้อความหลายบรรทัด', () => {
     expect(vis![0]).toContain('.reveal')
     expect(vis![0]).toMatch(/opacity:\s*1/)
     expect(vis![0]).toMatch(/transform:\s*none/)
+  })
+})
+
+describe('pages/lesson.css', () => {
+  let css = ''
+  let base = ''
+  beforeAll(async () => {
+    const fsModule = 'node:fs'
+    const urlModule = 'node:url'
+    const { readFileSync } = await import(/* @vite-ignore */ fsModule)
+    const { URL: NodeURL } = await import(/* @vite-ignore */ urlModule)
+    css = readFileSync(new NodeURL('./pages/lesson.css', import.meta.url), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '')
+    base = readFileSync(new NodeURL('./styles.css', import.meta.url), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '')
+  })
+  const rule = (sel: string) =>
+    (css.match(/[^{}]*\{[^}]*\}/g) ?? [])
+      .filter((r) => r.split('{')[0].split(',').map((s) => s.trim()).includes(sel))
+      .join(' ')
+
+  it('ไม่มี hex หรือ rgba (ใช้ token เท่านั้น)', () => {
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b/)
+    expect(css).not.toMatch(/rgba?\(/)
+  })
+  it('กฎหน้าบทเรียนและคลิปย้ายออกจาก styles.css แล้ว', () => {
+    for (const k of ['.lesson-head', '.steps', '.step.on', '.video-frame', '.video-note', '.video-notice', '.video-pick', '.pass-box', '.badge']) {
+      expect(base, k).not.toContain(k)
+    }
+  })
+  it('แท็บขั้นที่ยังกดไม่ได้ดูเทาจาง', () => {
+    const r = rule('.lesson-page .step:disabled')
+    expect(r).toMatch(/background:\s*var\(--disabled-bg\)/)
+    expect(r).toMatch(/opacity:\s*0?\.\d+/)
+    expect(r).toMatch(/cursor:\s*not-allowed/)
+  })
+  it('แถบบอกขั้นเลื่อนด้วย translateX(var(--i) * 100%) และ --ease-out', () => {
+    const r = rule('.steps-indicator')
+    expect(r).toMatch(/transform:\s*translateX\(calc\(var\(--i\)\s*\*\s*100%\)\)/)
+    expect(r).toMatch(/transition:[^;]*var\(--ease-out\)/)
+  })
+  it('ปิดการเลื่อนแถบเมื่อ prefers-reduced-motion', () => {
+    const m = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?\})\s*\}/)
+    expect(m).not.toBeNull()
+    expect(m![1]).toMatch(/\.steps-indicator[^{]*\{[^}]*transition:\s*none/)
+  })
+  it('กรอบคลิปโค้ง 16px มีเงาและขอบ', () => {
+    const r = rule('.video-frame')
+    expect(r).toMatch(/border-radius:\s*16px/)
+    expect(r).toMatch(/box-shadow:/)
+    expect(r).toMatch(/border:\s*\d+px solid var\(--border\)/)
+  })
+  it('มี :focus-visible บนแท็บและปุ่ม', () => {
+    expect(css).toMatch(/\.step:focus-visible/)
+    expect(css).toMatch(/\.btn:focus-visible/)
+  })
+  it('ไม่มี animation วนไม่หยุด', () => {
+    expect(css).not.toMatch(/infinite/)
   })
 })
