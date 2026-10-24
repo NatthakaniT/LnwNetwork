@@ -143,7 +143,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's4',
-        narrationTh: 'แล้วเอากล่องขึ้นรถในหมู่บ้าน ติดป้าย MAC ผู้รับ บทก่อนบอกว่า MAC อยู่บนกล่อง จริง ๆ อยู่ชั้นนอกนี้ Switch ดูแค่ป้ายนี้ ข้ามหมู่บ้านก็เปลี่ยนรถ ชั้นนี้เรียกว่า frame',
+        narrationTh: 'แล้วเอากล่องขึ้นรถในหมู่บ้าน ติดป้าย MAC ผู้รับ บทก่อนบอกว่า MAC อยู่บนกล่อง จริง ๆ ติดอยู่บนรถ Switch ดูแค่ป้ายนี้ ข้ามหมู่บ้านก็เปลี่ยนรถ ชั้นนี้เรียกว่า frame',
         actions: [
           ...show('wTruck', 'wL4'),
           { type: 'unhighlight', actor: 'wPkt' },
@@ -182,7 +182,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's8',
-        narrationTh: 'ชั้นพวกนี้ ข้อสอบเรียกว่า Layer นับเลขจากถนนขึ้นไป ชั้นหนึ่งถึงสี่ ก็คือถนน รถ ใบปะหน้า กล่อง ที่เราเพิ่งห่อ OSI model แยกเป็นเจ็ดชั้น ส่วน TCP/IP model รวมเหลือสี่ชั้น',
+        narrationTh: 'ข้อสอบเรียกชั้นว่า Layer นับเลขจากถนนขึ้นไป ชั้นหนึ่งถึงสี่ คือถนน รถ ใบปะหน้า กล่อง OSI model มีเจ็ดชั้น ส่วน TCP/IP model รวมบางชั้นเข้าด้วยกัน เหลือสี่ชั้น',
         actions: [
           ...hide(...roadIds),
           ...show(...tableIds),
@@ -312,7 +312,7 @@ export const lesson: Lesson = {
         { id: 'd', text: 'Bits', textTh: 'bits (สัญญาณบนถนน)' },
       ],
       correct: ['a'],
-      explainTh: 'Data Link คือชื่อของชั้นที่ 2 ชั้นของป้าย MAC นึกภาพตอนเอากล่องขึ้นรถในหมู่บ้าน แล้วติดป้าย MAC ของที่ห่อเสร็จในชั้นนี้ ก็เรียกตามรถคันนั้น ส่วนใบปะหน้า IP อยู่ชั้น 3 และสัญญาณบนถนนอยู่ชั้น 1',
+      explainTh: 'Data Link คือชื่อของชั้นที่ 2 ชั้นของป้าย MAC นึกภาพตอนเอากล่องขึ้นรถในหมู่บ้าน แล้วติดป้าย MAC พอห่อเสร็จ ของชิ้นนี้ก็เรียกตามรถคันนั้น ส่วนใบปะหน้า IP อยู่ชั้น 3 และสัญญาณบนถนนอยู่ชั้น 1',
     },
     {
       id: 'q7',
@@ -321,13 +321,13 @@ export const lesson: Lesson = {
       promptTh: 'ชั้นไหนของ TCP/IP model ตรงกับชั้นที่ 5 6 และ 7 ของ OSI',
       keywords: ['TCP/IP model', 'OSI layers 5, 6, and 7'],
       choices: [
-        { id: 'a', text: 'Application', textTh: 'Application (ชั้นโปรแกรม บนสุด)' },
+        { id: 'a', text: 'Application', textTh: 'Application (ชั้นที่โปรแกรมใช้คุย บนสุด)' },
         { id: 'b', text: 'Transport', textTh: 'Transport (ชั้นเลข port)' },
         { id: 'c', text: 'Internet', textTh: 'Internet (ชั้นใบปะหน้า IP)' },
         { id: 'd', text: 'Network Access', textTh: 'Network Access (รถในหมู่บ้าน กับถนน)' },
       ],
       correct: ['a'],
-      explainTh: 'ชั้น 5 6 7 ของ OSI อยู่บนสุด ใกล้โปรแกรมที่เราใช้ TCP/IP model ไม่ได้แยกสามชั้นนี้ แต่รวมเป็นชั้นบนสุดชั้นเดียว ให้ดูว่าชั้นบนสุดของ TCP/IP ชื่ออะไร',
+      explainTh: 'ชั้น 5 6 7 ของ OSI อยู่บนสุด เป็นชั้นที่โปรแกรมใช้คุยกับ network ไม่ใช่ตัวโปรแกรมเอง TCP/IP model ไม่ได้แยกสามชั้นนี้ แต่รวมเป็นชั้นบนสุดชั้นเดียว ให้ดูว่าชั้นบนสุดของ TCP/IP ชื่ออะไร',
     },
   ],
 }

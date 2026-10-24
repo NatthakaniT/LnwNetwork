@@ -104,7 +104,10 @@ describe('lesson p0-l5', () => {
     }
     expect(s8.actions.some((a) => a.type === 'highlight')).toBe(false)
     // สะพานจาก p0-l4: MAC อยู่ชั้นนอก (รถ) ไม่ใช่บนกล่อง
-    expect(narration('s4')).toContain('จริง ๆ อยู่ชั้นนอกนี้')
+    expect(narration('s4')).toContain('จริง ๆ ติดอยู่บนรถ')
+    // TCP/IP สี่ชั้น ไม่ได้เท่ากับแถว OSI หนึ่งถึงสี่
+    expect(narration('s8')).toContain('รวมบางชั้นเข้าด้วยกัน')
+    expect(lesson.quiz!.find((q) => q.id === 'q7')!.choices[0].textTh).toBe('Application (ชั้นที่โปรแกรมใช้คุย บนสุด)')
     expect(narration('s9')).toMatch(/ชั้นที่สอง[\s\S]*MAC[\s\S]*Switch/)
     expect(narration('s9')).toMatch(/ชั้นที่สาม[\s\S]*IP[\s\S]*Router/)
     const last = lesson.scenes!.scenes[lesson.scenes!.scenes.length - 1].narrationTh
