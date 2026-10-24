@@ -37,7 +37,8 @@ describe('styles: ข้อความหลายบรรทัด', () => {
     expect(flat()).toMatch(/:where\(button, select\) \{[^}]*font-size:\s*1rem/)
     expect(flat()).toMatch(/:where\(input\[type='text'\], input:not\(\[type\]\)\) \{[^}]*font-size:\s*1rem/)
     for (const sel of ['.btn.primary:disabled', '.step:disabled']) {
-      expect(rule(sel)).toMatch(/background:\s*#232b36/)
+      expect(rule(sel)).toMatch(/background:\s*var\(--disabled-bg\)/)
+      expect(rule(sel)).toMatch(/opacity:\s*0?\.\d+/)
       expect(rule(sel)).toMatch(/cursor:\s*not-allowed/)
     }
   })
@@ -51,5 +52,40 @@ describe('styles: ข้อความหลายบรรทัด', () => {
     expect(m).not.toBeNull()
     expect(m![1]).toMatch(/opacity:\s*1/)
     expect(m![1]).toMatch(/cursor:\s*default/)
+  })
+  it('มี token มืดและ easing', () => {
+    const root = flat().match(/:root\s*\{([^}]*)\}/)![1]
+    expect(root).toMatch(/--bg:\s*#0e0f13/)
+    expect(root).toMatch(/--ease-out:\s*cubic-bezier\(\.2,\s*\.9,\s*\.2,\s*1\)/)
+    expect(root).toMatch(/--ease-bounce:\s*cubic-bezier\(\.3,\s*1\.6,\s*\.5,\s*1\)/)
+    for (let i = 0; i <= 6; i++) expect(root).toContain('--p' + i + ':')
+  })
+  it('ไม่มี hex นอกบล็อก :root ใน styles.css', () => {
+    const outside = flat().replace(/:root\s*\{[^}]*\}/, '').replace(/#fff\b/g, '')
+    expect(outside).not.toMatch(/#[0-9a-fA-F]{3,6}\b/)
+  })
+  it('ปุ่มหลักใช้สีภาค (--part) ถ้ามี ไม่งั้น --p2', () => {
+    expect(rule('.btn.primary')).toMatch(/var\(--part,\s*var\(--p2\)\)/)
+  })
+  it('ปุ่มกดแล้วยุบ scale(.97)', () => {
+    expect(flat()).toMatch(/:active[^{]*\{[^}]*scale\(\.97\)/)
+  })
+  it('motion classes มีครบ', () => {
+    const c = flat()
+    for (const k of ['.rise', '.d1', '.d4', '.reveal', '.reveal.is-in', '.pop-in', '.shake', '.celebrate']) {
+      expect(c).toContain(k)
+    }
+  })
+  it('prefers-reduced-motion ปิด animation/transition และทำให้ .rise/.reveal มองเห็น', () => {
+    const m = flat().match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?\})\s*\}/)
+    expect(m).not.toBeNull()
+    const body = m![1]
+    expect(body).toMatch(/animation:\s*none/)
+    expect(body).toMatch(/transition:\s*none/)
+    const vis = body.match(/[^{}]*\.rise[^{}]*\{[^}]*\}/)
+    expect(vis).not.toBeNull()
+    expect(vis![0]).toContain('.reveal')
+    expect(vis![0]).toMatch(/opacity:\s*1/)
+    expect(vis![0]).toMatch(/transform:\s*none/)
   })
 })

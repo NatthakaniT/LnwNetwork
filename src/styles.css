@@ -1,10 +1,29 @@
 :root {
-  --bg: #0f1419;
-  --surface: #1a212b;
-  --text: #e6edf3;
-  --text-muted: #9aa7b4;
-  --accent: #4aa8ff;
-  --border: #2a3441;
+  --bg: #0e0f13;
+  --surface: #181a21;
+  --border: #2a2d38;
+  --text: #f1f1ee;
+  --text-muted: #a3a6b0;
+  /* สีประจำภาค (ตัวหนังสือบนสีเหล่านี้ใช้ --bg) */
+  --p0: #c8f169;
+  --p1: #ff7ad9;
+  --p2: #4c7dff;
+  --p3: #ff5a1f;
+  --p4: #ffd23f;
+  --p5: #4cd4ff;
+  --p6: #b58cff;
+  --accent: #4c7dff;
+  --link: #8fb0ff;
+  --ok: var(--ok);
+  --bad: #f85149;
+  --warn: #ffd23f;
+  --white: #ffffff;
+  --disabled-fg: #70737e;
+  --disabled-bg: #1d1f27;
+  --disabled-border: #2a2d38;
+  --ease-out: cubic-bezier(.2,.9,.2,1);
+  --ease-bounce: cubic-bezier(.3,1.6,.5,1);
+  --font-head: 'Kanit', 'Noto Sans Thai', system-ui, sans-serif;
   color-scheme: dark;
 }
 
@@ -25,6 +44,13 @@ body {
   color: var(--text);
 }
 
+h1, h2, h3 {
+  font-family: var(--font-head);
+  font-weight: 800;
+  line-height: 1.25;
+}
+h1 { font-weight: 900; }
+
 /* ฐานของปุ่ม/ช่องเลือก/ช่องพิมพ์ทุกอันในแอป: ตัวใหญ่ ชัด กดง่าย
    ใช้ :where() ให้ความจำเพาะเป็นศูนย์ คลาสเฉพาะอย่าง .btn/.step/.quiz-choice/.sp-btn จึงทับได้เสมอ */
 :where(button, select) {
@@ -33,9 +59,10 @@ body {
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.4rem 1rem;
   cursor: pointer;
+  transition: transform .2s var(--ease-bounce), border-color .2s, background-color .2s;
 }
 :where(input[type='text'], input:not([type])) {
   font: inherit;
@@ -43,18 +70,20 @@ body {
   color: var(--text);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.3rem 0.6rem;
 }
 :where(button:hover:not(:disabled), select:hover:not(:disabled)) { border-color: var(--accent); }
-/* ปุ่มที่กดไม่ได้ ต้องดูออกทันทีว่ากดไม่ได้ (เทาจาง แม้เป็นปุ่มสีน้ำเงินหลักก็ตาม) */
+/* ปุ่มที่กดไม่ได้ ต้องดูออกทันทีว่ากดไม่ได้ (เทาจาง แม้เป็นปุ่มสีหลักก็ตาม) */
 :where(button:disabled, select:disabled), .btn:disabled, .btn.primary:disabled {
-  color: #6b7785;
-  background: #232b36;
-  border-color: #2f3946;
+  color: var(--disabled-fg);
+  background: var(--disabled-bg);
+  border-color: var(--disabled-border);
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* กดแล้วยุบนิดหนึ่ง */
+:where(button:active:not(:disabled)), .btn:active:not(:disabled), .step:active:not(:disabled) { transform: scale(.97); }
 
 h1 {
   margin: 0;
@@ -64,23 +93,23 @@ h1 {
 .lab-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
 /* ข้อความในห้องทดลอง/กิจกรรม ขึ้นบรรทัดใหม่ตาม \n */
 .lab-intro, .lab-task, .lab-hint, .activity .lab-result { white-space: pre-line; }
-.lab-result.ok { color: #7cfc9a; }
-.lab-result.warn { color: #ffc857; }
+.lab-result.ok { color: var(--ok); }
+.lab-result.warn { color: var(--warn); }
 .lab-iface { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0; }
 .activity-list li { display: flex; gap: 0.5rem; align-items: center; margin: 0.25rem 0; }
 
-a { color: var(--accent); }
-.btn { display: inline-block; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 1rem; cursor: pointer; text-decoration: none; margin-right: 0.5rem; }
-.btn.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+a { color: var(--link); }
+.btn { display: inline-block; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.35rem 1rem; cursor: pointer; text-decoration: none; margin-right: 0.5rem; }
+.btn.primary { background: var(--part, var(--p2)); border-color: var(--part, var(--p2)); color: var(--bg); font-weight: 700; }
 .btn.small { padding: 0.05rem 0.6rem; font-size: 0.8rem; }
 .muted { color: var(--text-muted); }
-.notice { background: var(--surface); border-left: 4px solid #ffc857; padding: 0.5rem 1rem; margin: 0 0 1rem; }
+.notice { background: var(--surface); border-left: 4px solid var(--warn); padding: 0.5rem 1rem; margin: 0 0 1rem; }
 
 .map-page, .lesson-page, .glossary-wrap { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem 3rem; }
 .map-head h1 { padding: 1rem 0 0; }
 .map-progress-text { margin: 0.25rem 0; color: var(--text-muted); }
 .bar { height: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.2); overflow: hidden; margin: 6px 0 14px; }
-.bar > div { height: 100%; background: #22c55e; }
+.bar > div { height: 100%; background: var(--ok); }
 .map { display: flex; flex-direction: column; gap: 14px; }
 .part { border-radius: 12px; padding: 12px 14px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.25); }
 .part h3 { margin: 0 0 4px; font-size: 1rem; }
@@ -88,7 +117,7 @@ a { color: var(--accent); }
 .ls { display: flex; flex-wrap: wrap; gap: 8px; }
 .l { border-radius: 8px; padding: 6px 10px; font-size: 0.85rem; background: rgba(148, 163, 184, 0.15); display: flex; gap: 6px; align-items: center; color: var(--text); text-decoration: none; }
 .l.done { background: rgba(34, 197, 94, 0.2); }
-.l.now { background: rgba(56, 189, 248, 0.3); outline: 2px solid #38bdf8; font-weight: 600; }
+.l.now { background: rgba(56, 189, 248, 0.3); outline: 2px solid var(--p5); font-weight: 600; }
 .l.lock, .l.building { opacity: 0.55; }
 
 .lesson-head .analogy { color: var(--text-muted); margin: 0; }
@@ -97,11 +126,35 @@ a { color: var(--accent); }
 .steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .step { font: inherit; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 0.3rem 0.9rem; cursor: pointer; }
 .step.on { border-color: var(--accent); }
-.step:disabled { color: #6b7785; background: #232b36; border-color: #2f3946; opacity: 0.6; cursor: not-allowed; }
+.step:disabled { color: var(--disabled-fg); background: var(--disabled-bg); border-color: var(--disabled-border); opacity: 0.6; cursor: not-allowed; }
 .video-frame { position: relative; padding-top: 56.25%; }
 .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 8px; }
 .video-note { background: var(--surface); border-left: 4px solid var(--accent); padding: 0.5rem 1rem; margin: 0 0 0.75rem; }
-.video-notice { background: var(--surface); border-left: 4px solid #ffc857; padding: 0.5rem 1rem; }
+.video-notice { background: var(--surface); border-left: 4px solid var(--warn); padding: 0.5rem 1rem; }
 .video-more ul { list-style: none; padding: 0; }
 .video-pick { font: inherit; background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 0.2rem 0; }
-.pass-box { background: var(--surface); border-left: 4px solid #3fb950; padding: 0.5rem 1rem; }
+.pass-box { background: var(--surface); border-left: 4px solid var(--ok); padding: 0.5rem 1rem; }
+
+/* ---------- motion กลาง ---------- */
+@keyframes rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes pop-in { 0% { opacity: 0; transform: scale(.85); } 100% { opacity: 1; transform: none; } }
+@keyframes shake { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+@keyframes celebrate { 0% { transform: scale(1); } 40% { transform: scale(1.12) rotate(-2deg); } 70% { transform: scale(.97) rotate(1deg); } 100% { transform: scale(1); } }
+
+/* ลอยขึ้นตอนเปิดหน้า (หน่วงเป็นขั้น ๆ ด้วย .d1 ถึง .d4) */
+.rise { opacity: 0; animation: rise-in .6s var(--ease-out) forwards; }
+.rise.d1 { animation-delay: .1s; }
+.rise.d2 { animation-delay: .2s; }
+.rise.d3 { animation-delay: .3s; }
+.rise.d4 { animation-delay: .4s; }
+/* เลื่อนมาเห็นแล้วค่อยลอยขึ้น (useReveal ใส่ .is-in) */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
+.reveal.is-in { opacity: 1; transform: none; }
+.pop-in { animation: pop-in .35s var(--ease-bounce) both; }
+.shake { animation: shake .4s ease-in-out; }
+.celebrate { animation: celebrate .55s var(--ease-bounce); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .rise, .reveal, .reveal.is-in, .pop-in { opacity: 1; transform: none; }
+}
