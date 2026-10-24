@@ -329,7 +329,7 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
             <button type="button" onClick={send} disabled={busy}>ส่งข้อมูล</button>
             {sendErr && <p role="alert" className="lab-result warn">{sendErr}</p>}
             {shown && (
-              <p key={`r${shown.no}`} role="status" className={`lab-result ${shown.res.ok ? 'ok' : 'bad'} pop-in`}>
+              <p key={`r${shown.no}`} role="status" className={`lab-result ${shown.res.ok || shown.met ? 'ok' : 'bad'} pop-in`}>
                 <RichText text={shown.res.reasonTh} termIds={termIds} />
               </p>
             )}

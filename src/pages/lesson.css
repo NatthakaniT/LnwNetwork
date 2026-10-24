@@ -110,7 +110,7 @@
 /* ---------- ปุ่ม ---------- */
 .lesson-page .step-nav { margin: 1.2rem 0 0; }
 .lesson-page .btn { padding: 0.45rem 1.2rem; border-radius: 99px; transition: transform .25s var(--ease-bounce), box-shadow .25s var(--ease-out), border-color .2s; }
-.lesson-page .btn.primary { color: var(--part-fg, var(--bg)); }
+.lesson-page .btn.primary:not(:disabled) { color: var(--part-fg, var(--bg)); }
 .lesson-page .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 24px -14px var(--part, var(--p2)); }
 .lesson-page .btn:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 

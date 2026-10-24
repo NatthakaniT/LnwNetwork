@@ -71,6 +71,21 @@ describe('LabView', () => {
     expect(screen.getByText(/เป้าหมายที่ 2 จาก 2/)).toBeInTheDocument()
   })
 
+  it('เป้าหมายแบบ fail ที่ทำสำเร็จ ไม่แสดงการ์ดผลเป็นสีแดง (.bad)', () => {
+    const failLab: NetworkLab = {
+      ...lab,
+      goals: [{ type: 'fail', from: 'pc1', toIp: '192.168.1.99', reasonIncludes: '', hintTh: 'ลองส่งไป IP ที่ไม่มีเครื่อง', taskTh: 'ส่งไป 192.168.1.99' }],
+    }
+    const { container } = render(<LabView lab={failLab} onDone={() => {}} />)
+    fireEvent.change(screen.getByLabelText('ไป IP'), { target: { value: '192.168.1.99' } })
+    fireEvent.click(screen.getByText('ส่งข้อมูล'))
+    flush()
+    expect(screen.getByText(/ผ่านเป้าหมายนี้แล้ว/)).toBeInTheDocument()
+    const card = container.querySelector('.lab-result')
+    expect(card).not.toBeNull()
+    expect(card).not.toHaveClass('bad')
+  })
+
   it('invalid IP in the panel shows a warning and leaves topology unchanged', () => {
     render(<LabView lab={lab} onDone={() => {}} />)
     fireEvent.click(screen.getByTestId('device-pc1'))

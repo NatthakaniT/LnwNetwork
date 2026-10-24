@@ -238,3 +238,21 @@ describe('quiz / lab / scene css (token เท่านั้น + motion)', () 
     expect(base).toMatch(/\.error-card \.btn:focus-visible/)
   })
 })
+
+describe('motion: ไม่ค้างเป็น stacking context', () => {
+  it('.rise / .pop-in / .part-card.rise ไม่ใช้ fill-mode forwards หรือ both', async () => {
+    const fsModule = 'node:fs'
+    const urlModule = 'node:url'
+    const { readFileSync } = await import(/* @vite-ignore */ fsModule)
+    const { URL: NodeURL } = await import(/* @vite-ignore */ urlModule)
+    const strip = (f: string) => readFileSync(new NodeURL(f, import.meta.url), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '')
+    const pick = (css: string, sel: string) =>
+      (css.match(/[^{}]*\{[^}]*\}/g) ?? []).filter((r) => r.split('{')[0].split(',').map((s) => s.trim()).includes(sel)).join(' ')
+    const base = strip('./styles.css')
+    const map = strip('./pages/map.css')
+    for (const r of [pick(base, '.rise'), pick(base, '.pop-in'), pick(map, '.part-card.rise')]) {
+      expect(r).toMatch(/animation:/)
+      expect(r).not.toMatch(/\b(forwards|both)\b/)
+    }
+  })
+})
