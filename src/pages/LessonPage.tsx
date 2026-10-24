@@ -29,6 +29,7 @@ interface Props {
   parts?: Part[]
   storage?: Storage
   onBlocked?: (message: string) => void
+  onTestOutPassed?: (titleTh: string) => void
 }
 
 function findLesson(parts: Part[], id: string): Lesson | undefined {
@@ -44,7 +45,7 @@ function nextReadyLesson(parts: Part[], id: string): Lesson | undefined {
 }
 
 /** เช็กสิทธิ์เข้าบทก่อน แล้วค่อยแสดงหน้า (แยกกันเพื่อให้ hook เรียงเท่าเดิมเสมอ) */
-export function LessonPage({ id, testOut = false, parts = course, storage, onBlocked }: Props) {
+export function LessonPage({ id, testOut = false, parts = course, storage, onBlocked, onTestOutPassed }: Props) {
   const lesson = findLesson(parts, id)
   const [progress0] = useState(() => loadProgress(storage))
 
@@ -61,15 +62,16 @@ export function LessonPage({ id, testOut = false, parts = course, storage, onBlo
 
   if (blocked || !lesson) return null
   return testOut
-    ? <TestOut lesson={lesson} storage={storage} />
+    ? <TestOut lesson={lesson} storage={storage} onPassed={onTestOutPassed} />
     : <LessonBody lesson={lesson} parts={parts} storage={storage} initial={progress0} />
 }
 
-function TestOut({ lesson, storage }: { lesson: Lesson; storage?: Storage }) {
+function TestOut({ lesson, storage, onPassed }: { lesson: Lesson; storage?: Storage; onPassed?: (titleTh: string) => void }) {
   const onPass = useCallback(() => {
     saveProgress(markCompleted(lesson.id, loadProgress(storage)), storage)
+    onPassed?.(lesson.titleTh)
     navigate('#/')
-  }, [lesson.id, storage])
+  }, [lesson.id, lesson.titleTh, storage, onPassed])
   return (
     <main className="lesson-page">
       <p><a href="#/">← กลับแผนที่</a></p>

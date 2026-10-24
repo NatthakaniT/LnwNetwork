@@ -112,6 +112,21 @@ describe('LessonPage', () => {
     expect(on2).toHaveBeenCalledWith(MSG_LOCKED)
   })
 
+  it('a lesson already completed (e.g. by test-out) opens even if the previous one is not completed', () => {
+    saveProgress({ version: 1, completed: ['f3'] }, storage)
+    const onBlocked = vi.fn()
+    render(<LessonPage id="f3" parts={fixture} storage={storage} onBlocked={onBlocked} />)
+    expect(onBlocked).not.toHaveBeenCalled()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('บท f3')
+  })
+
+  it('test-out pass tells the caller which lesson was skipped', () => {
+    const onTestOutPassed = vi.fn()
+    render(<LessonPage id="f3" testOut parts={fixture} storage={storage} onTestOutPassed={onTestOutPassed} />)
+    fireEvent.click(screen.getByText('ผ่านคำถาม-testOut'))
+    expect(onTestOutPassed).toHaveBeenCalledWith('บท f3')
+  })
+
   it('test-out: allowed while locked, only the quiz, pass completes and goes to map', () => {
     window.location.hash = '#/lesson/f3/test-out'
     render(<LessonPage id="f3" testOut parts={fixture} storage={storage} />)

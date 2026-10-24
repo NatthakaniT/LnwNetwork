@@ -39,7 +39,7 @@ export type LabGoal =
   | { type: 'fail'; from: string; toIp: string; reasonIncludes: string; taskTh: string; hintTh: string } // ทำให้พังแล้วดูว่าพังเพราะอะไร
   | { type: 'fix'; from: string; toIp: string; taskTh: string; hintTh: string } // เริ่มพัง ต้องซ่อม
 export interface NetworkLab { kind: 'network'; introTh: string; start: Topology; palette: DeviceKind[]; goals: LabGoal[] }
-export interface ActivityLab { kind: 'order' | 'match'; introTh: string; items: { id: string; textTh: string }[]; answer: string[] | Record<string, string>; explainTh: string }
+export interface ActivityLab { kind: 'order' | 'match'; introTh: string; items: { id: string; textTh: string }[]; answer: string[] | Record<string, string>; explainTh: string; rightTh?: string } // explainTh = ตอบผิดแล้วโค้ช, rightTh = ตอบถูกแล้วสรุปสั้น ๆ
 export type Lab = NetworkLab | ActivityLab
 
 export interface Lesson {

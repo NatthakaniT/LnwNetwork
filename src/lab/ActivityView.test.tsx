@@ -27,6 +27,31 @@ describe('ActivityView order', () => {
   })
 })
 
+describe('ActivityView feedback', () => {
+  it('correct answer shows ถูกต้อง + rightTh, not the wrong-answer coaching', async () => {
+    const lab: ActivityLab = { ...order, explainTh: 'ลองถามตัวเองทีละขั้นนะ', rightTh: 'ใช่เลย เรียงตามลำดับเวลา' }
+    render(<ActivityView lab={lab} onDone={() => {}} shuffle={a => a} />)
+    const user = userEvent.setup()
+    await user.click(screen.getByText('ตรวจคำตอบ'))
+    expect(screen.getByText(/ถูกต้อง!/)).toBeInTheDocument()
+    expect(screen.getByText(/ใช่เลย เรียงตามลำดับเวลา/)).toBeInTheDocument()
+    expect(screen.queryByText(/ลองถามตัวเองทีละขั้นนะ/)).toBeNull()
+    expect(screen.queryByText(/ยังไม่ถูก/)).toBeNull()
+  })
+  it('wrong answer keeps explainTh', async () => {
+    const lab: ActivityLab = { ...order, explainTh: 'ลองถามตัวเองทีละขั้นนะ', rightTh: 'ใช่เลย' }
+    render(<ActivityView lab={lab} onDone={() => {}} shuffle={reverse} />)
+    await userEvent.setup().click(screen.getByText('ตรวจคำตอบ'))
+    expect(screen.getByText(/ยังไม่ถูก/)).toBeInTheDocument()
+    expect(screen.getByText(/ลองถามตัวเองทีละขั้นนะ/)).toBeInTheDocument()
+  })
+  it('falls back to explainTh when rightTh is missing', async () => {
+    render(<ActivityView lab={order} onDone={() => {}} shuffle={a => a} />)
+    await userEvent.setup().click(screen.getByText('ตรวจคำตอบ'))
+    expect(screen.getByText(/เพราะต้องไล่ตามลำดับ/)).toBeInTheDocument()
+  })
+})
+
 describe('ActivityView match', () => {
   const lab: ActivityLab = {
     kind: 'match', introTh: 'จับคู่', explainTh: 'จับคู่ตามหน้าที่',

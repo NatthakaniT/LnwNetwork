@@ -55,7 +55,11 @@ export function simulateSend(t: Topology, fromId: string, toIp: string): SendRes
   const counts = new Map<string, number>()
   for (const d of t.devices) for (const i of d.ifaces) if (i.ip) counts.set(i.ip, (counts.get(i.ip) ?? 0) + 1)
   for (const [ip, n] of counts) {
-    if (n > 1) return fail('IP ซ้ำ! มี ' + n + ' เครื่องใช้ ' + ip + ' พร้อมกัน เครือข่ายเลยไม่รู้ว่าต้องส่งให้เครื่องไหน ให้เปลี่ยน IP ของเครื่องใดเครื่องหนึ่ง')
+    if (n > 1) return fail('IP ซ้ำ! มี ' + n + ' เครื่องใช้ ' + ip + ' พร้อมกัน เครื่องที่ส่งจะได้คำตอบกลับมาสองเครื่อง แล้วไม่รู้ว่าเครื่องไหนคือเครื่องจริง ให้เปลี่ยน IP ของเครื่องใดเครื่องหนึ่ง')
+  }
+
+  if (src.ifaces.some(i => i.ip === toIp)) {
+    return fail('IP นี้เป็นของเครื่องที่ส่งเอง (' + toIp + ') ส่งหาตัวเองไม่ได้ ต้องส่งไปหาเครื่องอื่น ลองเปลี่ยน IP ปลายทาง')
   }
 
   const dst = t.devices.find(d => d.ifaces.some(i => i.ip === toIp))

@@ -183,37 +183,48 @@ describe('lesson p0-l4', () => {
     it('เป้าหมาย 1: ตอนเริ่มส่งถึง (ยังไม่ผ่าน) พอตั้ง IP คอม 2 ซ้ำคอม 1 ก็พังเพราะ IP ซ้ำ (ผ่าน)', () => {
       const r0 = simulateSend(lab.start, g1.from, g1.toIp)
       expect(r0.ok).toBe(true)
-      expect(checkGoal(g1, lab.start, r0)).toBe(false)
+      expect(checkGoal(g1, lab.start, r0, g1)).toBe(false)
       const r1 = simulateSend(dupTopo, g1.from, g1.toIp)
-      expect(checkGoal(g1, dupTopo, r1)).toBe(true)
+      expect(checkGoal(g1, dupTopo, r1, g1)).toBe(true)
     })
 
     it('เป้าหมาย 2: ตอนยัง IP ซ้ำ ส่งไม่ถึง / แก้เป็น 192.168.1.20 ส่งถึง / แก้ไปเลขหมู่บ้านอื่น ไม่ผ่าน', () => {
       const bad = simulateSend(dupTopo, g2.from, g2.toIp)
       expect(bad.ok).toBe(false)
-      expect(checkGoal(g2, dupTopo, bad)).toBe(false)
+      expect(checkGoal(g2, dupTopo, bad, g2)).toBe(false)
       const r = simulateSend(fixedTopo, g2.from, g2.toIp)
       expect(r.ok).toBe(true)
       expect(r.hops).toEqual(['pc2', 'sw', 'pc1'])
-      expect(checkGoal(g2, fixedTopo, r)).toBe(true)
+      expect(checkGoal(g2, fixedTopo, r, g2)).toBe(true)
       // ซ้ำกับคอม 3 ก็ยังไม่ผ่าน
       const dup3 = setIp(dupTopo, 'pc2', '192.168.1.12')
-      expect(checkGoal(g2, dup3, simulateSend(dup3, g2.from, g2.toIp))).toBe(false)
+      expect(checkGoal(g2, dup3, simulateSend(dup3, g2.from, g2.toIp), g2)).toBe(false)
       // ย้ายไปหมู่บ้านอื่น ส่งหาคอม 1 ไม่ถึง
       const away = setIp(dupTopo, 'pc2', '10.0.0.5')
-      expect(checkGoal(g2, away, simulateSend(away, g2.from, g2.toIp))).toBe(false)
+      expect(checkGoal(g2, away, simulateSend(away, g2.from, g2.toIp), g2)).toBe(false)
       expect(g2.hintTh).toContain('ภาค 1')
+    })
+
+    it('เป้าหมาย 2: แก้คอม 1 แทนคอม 2 ไม่ผ่าน (ส่งหา IP ของตัวเองไม่ได้ / ต้องเป็นคู่เดิม)', () => {
+      const moved = setIp(dupTopo, 'pc1', '192.168.1.30')
+      const r = simulateSend(moved, g2.from, g2.toIp)
+      expect(r.ok).toBe(false)
+      expect(r.reasonTh).toContain('IP นี้เป็นของเครื่องที่ส่งเอง')
+      expect(checkGoal(g2, moved, r, g2)).toBe(false)
+      // ส่งจากคอม 1 ไปคอม 2 แทน ก็ไม่ใช่คู่ที่เป้าหมายขอ
+      const other = simulateSend(moved, 'pc1', '192.168.1.10')
+      expect(checkGoal(g2, moved, other, { from: 'pc1', toIp: '192.168.1.10' })).toBe(false)
     })
 
     it('ทางตัน: ถ้าเป้าหมาย 1 ผ่านด้วยการตั้งคอม 3 เป็น .10 เป้าหมาย 2 ทำไม่ได้ ตัวช่วยต้องบอกให้กด เริ่มใหม่', () => {
       const via3 = setIp(lab.start, 'pc3', '192.168.1.10')
-      expect(checkGoal(g1, via3, simulateSend(via3, g1.from, g1.toIp))).toBe(true)
+      expect(checkGoal(g1, via3, simulateSend(via3, g1.from, g1.toIp), g1)).toBe(true)
       const still = setIp(via3, 'pc2', '192.168.1.20')
-      expect(checkGoal(g2, still, simulateSend(still, g2.from, g2.toIp))).toBe(false)
+      expect(checkGoal(g2, still, simulateSend(still, g2.from, g2.toIp), g2)).toBe(false)
       expect(g2.hintTh).toContain('ถ้าคอม 3 ก็ใช้ .10 อยู่ด้วย ให้กด เริ่มใหม่ ก่อน เพราะ .10 ยังซ้ำอยู่ที่คอม 3')
       // กด เริ่มใหม่ = กลับไป lab.start แล้วแก้คอม 2 ก็ผ่าน
       const again = setIp(lab.start, 'pc2', '192.168.1.20')
-      expect(checkGoal(g2, again, simulateSend(again, g2.from, g2.toIp))).toBe(true)
+      expect(checkGoal(g2, again, simulateSend(again, g2.from, g2.toIp), g2)).toBe(true)
     })
 
     it('ทำผ่านหน้าจอห้องทดลองได้ครบ: กดคอม 2 → พิมพ์ IP → บันทึก → ส่ง', () => {

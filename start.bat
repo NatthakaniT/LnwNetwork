@@ -17,5 +17,10 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-start "" http://localhost:4173
-call npm run preview
+call npm run preview -- --port 4173 --strictPort --open
+if errorlevel 1 (
+  echo.
+  echo มีแอปเปิดค้างอยู่แล้ว ปิดหน้าต่างดำอันเก่าก่อนนะ
+  pause
+  exit /b 1
+)

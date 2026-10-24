@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { course } from '../content'
 import type { Lesson, Part } from '../content/types'
-import { isUnlocked, loadProgress, percentComplete } from '../progress/progress'
+import { countCompleted, firstOpenLesson, isUnlocked, loadProgress, percentComplete, totalLessons } from '../progress/progress'
 import { navigate } from '../router'
 
 interface Props {
@@ -16,7 +16,10 @@ type ChipState = 'done' | 'now' | 'lock' | 'building'
 export function CourseMap({ parts = course, storage, notice, onDismissNotice }: Props) {
   const [progress] = useState(() => loadProgress(storage))
   const pct = percentComplete(parts, progress)
-  const hasLast = !!progress.lastLesson && parts.some((p) => p.lessons.some((l) => l.id === progress.lastLesson))
+  const total = totalLessons(parts)
+  const doneCount = countCompleted(parts, progress)
+  const started = !!progress.lastLesson || progress.completed.length > 0
+  const continueId = started ? firstOpenLesson(parts, progress) : undefined
 
   const stateOf = (l: Lesson): ChipState => {
     if (l.status !== 'ready') return 'building'
@@ -36,12 +39,12 @@ export function CourseMap({ parts = course, storage, notice, onDismissNotice }: 
       )}
       <header className="map-head">
         <h1>เรียน CCNA แบบเข้าใจจริง</h1>
-        <p className="map-progress-text">เรียนไปแล้ว {pct}%</p>
+        <p className="map-progress-text">เรียนแล้ว {doneCount} จาก {total} บท</p>
         <div className="bar" role="progressbar" aria-label="ความคืบหน้า" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
           <div style={{ width: `${pct}%` }} />
         </div>
         <p className="map-actions">
-          {hasLast && <a className="btn primary" href={`#/lesson/${progress.lastLesson}`}>เรียนต่อ</a>}
+          {continueId && <a className="btn primary" href={`#/lesson/${continueId}`}>เรียนต่อ</a>}
           <a className="btn" href="#/glossary">📖 คลังศัพท์</a>
         </p>
       </header>

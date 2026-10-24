@@ -14,7 +14,7 @@ describe('CourseMap', () => {
     expect(document.querySelectorAll('.part')).toHaveLength(7)
     const notReady = course.flatMap((p) => p.lessons).filter((l) => l.status !== 'ready').length
     expect(screen.queryAllByText('กำลังทำ')).toHaveLength(notReady)
-    expect(screen.getByText('เรียนไปแล้ว 0%')).toBeInTheDocument()
+    expect(screen.getByText(`เรียนแล้ว 0 จาก ${course.flatMap((p) => p.lessons).length} บท`)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /คลังศัพท์/ })).toHaveAttribute('href', '#/glossary')
     expect(screen.queryByRole('link', { name: 'เรียนต่อ' })).toBeNull()
   })
@@ -22,8 +22,8 @@ describe('CourseMap', () => {
   it('shows done / current / locked / building states and progress', () => {
     saveProgress({ version: 1, completed: ['f1'] }, storage)
     render(<CourseMap parts={fixture} storage={storage} />)
-    expect(screen.getByText('เรียนไปแล้ว 33%')).toBeInTheDocument()
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '33')
+    expect(screen.getByText('เรียนแล้ว 1 จาก 4 บท')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '25')
     const done = screen.getByRole('link', { name: /✅ บท f1/ })
     expect(done).toHaveClass('done')
     const now = screen.getByRole('link', { name: /▶ บท f2/ })
@@ -47,6 +47,19 @@ describe('CourseMap', () => {
   it('continue button points at lastLesson', () => {
     saveProgress({ version: 1, completed: [], lastLesson: 'f1', lastStep: 'lab' }, storage)
     render(<CourseMap parts={fixture} storage={storage} />)
+    expect(screen.getByRole('link', { name: 'เรียนต่อ' })).toHaveAttribute('href', '#/lesson/f1')
+  })
+
+  it('continue button goes to the first open lesson, not an already-finished lastLesson', () => {
+    saveProgress({ version: 1, completed: ['f1'], lastLesson: 'f1', lastStep: 'quiz' }, storage)
+    render(<CourseMap parts={fixture} storage={storage} />)
+    expect(screen.getByRole('link', { name: 'เรียนต่อ' })).toHaveAttribute('href', '#/lesson/f2')
+  })
+
+  it('a lesson done by test-out (previous one not done) is openable on the map', () => {
+    saveProgress({ version: 1, completed: ['f3'] }, storage)
+    render(<CourseMap parts={fixture} storage={storage} />)
+    expect(screen.getByRole('link', { name: /✅ บท f3/ })).toHaveAttribute('href', '#/lesson/f3')
     expect(screen.getByRole('link', { name: 'เรียนต่อ' })).toHaveAttribute('href', '#/lesson/f1')
   })
 

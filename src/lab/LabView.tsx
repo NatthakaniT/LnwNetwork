@@ -162,7 +162,7 @@ export function LabView({ lab, onDone, termIds = [] }: { lab: NetworkLab; onDone
     setSendErr('')
     setShown(null)
     const res = simulateSend(topo, from, ip.value)
-    const met = !!goal && checkGoal(goal, topo, res)
+    const met = !!goal && checkGoal(goal, topo, res, { from, toIp: ip.value })
     clearTimers()
     const reveal = () => {
       setEnvAt(null)

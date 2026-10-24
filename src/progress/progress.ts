@@ -44,6 +44,7 @@ export function isUnlocked(id: LessonId, parts: Part[], p: Progress): boolean {
   const ids = readyLessonIds(parts)
   const i = ids.indexOf(id)
   if (i < 0) return false
+  if (p.completed.includes(id)) return true // เรียนผ่าน/สอบข้ามแล้ว เปิดได้เสมอ
   return i === 0 || p.completed.includes(ids[i - 1])
 }
 
@@ -51,8 +52,27 @@ export function markCompleted(id: LessonId, p: Progress): Progress {
   return { ...p, completed: p.completed.includes(id) ? [...p.completed] : [...p.completed, id] }
 }
 
+function allLessonIds(parts: Part[]): LessonId[] {
+  return parts.flatMap(pt => pt.lessons).map(l => l.id)
+}
+
+export function totalLessons(parts: Part[]): number {
+  return allLessonIds(parts).length
+}
+
+/** จำนวนบทที่เรียนผ่านแล้ว (นับเฉพาะบทที่มีในแผนที่) */
+export function countCompleted(parts: Part[], p: Progress): number {
+  return allLessonIds(parts).filter(id => p.completed.includes(id)).length
+}
+
+/** แถบความคืบหน้า = บทที่ผ่านแล้ว / ทุกบท (รวมบทที่ยังทำไม่เสร็จ) */
 export function percentComplete(parts: Part[], p: Progress): number {
-  const ids = readyLessonIds(parts)
-  if (ids.length === 0) return 0
-  return Math.round((ids.filter(id => p.completed.includes(id)).length / ids.length) * 100)
+  const total = totalLessons(parts)
+  if (total === 0) return 0
+  return Math.round((countCompleted(parts, p) / total) * 100)
+}
+
+/** บทที่พร้อมเรียนบทแรกที่เปิดแล้วและยังไม่ผ่าน (บทที่ติดเครื่องหมาย ▶ บนแผนที่) */
+export function firstOpenLesson(parts: Part[], p: Progress): LessonId | undefined {
+  return readyLessonIds(parts).find(id => !p.completed.includes(id) && isUnlocked(id, parts, p))
 }

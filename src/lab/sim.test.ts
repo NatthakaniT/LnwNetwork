@@ -51,6 +51,14 @@ describe('simulateSend', () => {
     const r = simulateSend(t, 'pc1', '192.168.1.10')
     expect(r.ok).toBe(false)
     expect(r.reasonTh).toContain('IP ซ้ำ')
+    expect(r.reasonTh).toContain('ไม่รู้ว่าเครื่องไหนคือเครื่องจริง')
+    expect(r.reasonTh).not.toContain('เครือข่ายเลยไม่รู้')
+  })
+  it('fails when sending to its own IP', () => {
+    const r = simulateSend(lan(), 'pc1', '192.168.1.10')
+    expect(r.ok).toBe(false)
+    expect(r.hops).toEqual([])
+    expect(r.reasonTh).toContain('IP นี้เป็นของเครื่องที่ส่งเอง')
   })
   it('fails across subnets without gateway', () => {
     const r = simulateSend(routed(''), 'pc1', '192.168.2.10')

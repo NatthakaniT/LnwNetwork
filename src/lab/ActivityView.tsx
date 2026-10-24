@@ -91,7 +91,7 @@ export function ActivityView({ lab, onDone, shuffle = fisherYates, termIds = [] 
         </ul>
       )}
       <button type="button" onClick={check}>ตรวจคำตอบ</button>
-      {result === 'right' && <p className="lab-result ok" role="status">ถูกต้อง! 🎉 <RichText text={lab.explainTh} termIds={termIds} /></p>}
+      {result === 'right' && <p className="lab-result ok" role="status">ถูกต้อง! 🎉 <RichText text={lab.rightTh ?? lab.explainTh} termIds={termIds} /></p>}
       {result === 'wrong' && <p className="lab-result warn" role="status">ยังไม่ถูก ลองใหม่อีกที — <RichText text={lab.explainTh} termIds={termIds} /></p>}
     </section>
   )

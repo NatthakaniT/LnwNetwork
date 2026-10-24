@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { Lesson, Part } from '../content/types'
 import {
-  STORAGE_KEY, loadProgress, saveProgress, isUnlocked, markCompleted, percentComplete, type Progress,
+  STORAGE_KEY, loadProgress, saveProgress, isUnlocked, markCompleted, percentComplete, countCompleted, totalLessons, firstOpenLesson, type Progress,
 } from './progress'
 
 const lesson = (id: string, part: number, order: number, status: 'ready' | 'building'): Lesson => ({
@@ -34,6 +34,15 @@ describe('isUnlocked', () => {
     expect(isUnlocked('p1-l3', parts, p)).toBe(true)
     expect(isUnlocked('p1-l3', parts, { version: 1, completed: ['p0-l1', 'p0-l2'] })).toBe(false)
   })
+  it('a completed lesson is always openable, even if the one before it is not completed', () => {
+    const p: Progress = { version: 1, completed: ['p1-l1'] } // สอบข้ามบทข้ามมา
+    expect(isUnlocked('p0-l2', parts, empty)).toBe(false)
+    expect(isUnlocked('p1-l1', parts, p)).toBe(true)
+    expect(isUnlocked('p1-l1', parts, empty)).toBe(false)
+    // ของที่ยังไม่พร้อม/ไม่มี ก็ยังเปิดไม่ได้ แม้อยู่ใน completed
+    expect(isUnlocked('p1-l2', parts, { version: 1, completed: ['p1-l2'] })).toBe(false)
+    expect(isUnlocked('nope', parts, { version: 1, completed: ['nope'] })).toBe(false)
+  })
   it('building lessons and unknown ids are never unlocked', () => {
     expect(isUnlocked('p1-l2', parts, { version: 1, completed: ['p0-l1', 'p0-l2', 'p1-l1'] })).toBe(false)
     expect(isUnlocked('nope', parts, empty)).toBe(false)
@@ -57,15 +66,24 @@ describe('markCompleted', () => {
   })
 })
 
-describe('percentComplete', () => {
-  it('counts only ready lessons', () => {
+describe('percentComplete / countCompleted / totalLessons', () => {
+  it('bar is completed / ALL lessons (building ones included)', () => {
+    expect(totalLessons(parts)).toBe(5)
     expect(percentComplete(parts, empty)).toBe(0)
-    expect(percentComplete(parts, { version: 1, completed: ['p0-l1'] })).toBe(25)
-    expect(percentComplete(parts, { version: 1, completed: ['p0-l1', 'p1-l2'] })).toBe(25)
-    expect(percentComplete(parts, { version: 1, completed: ['p0-l1', 'p0-l2', 'p1-l1', 'p1-l3'] })).toBe(100)
+    expect(percentComplete(parts, { version: 1, completed: ['p0-l1'] })).toBe(20)
+    expect(percentComplete(parts, { version: 1, completed: ['p0-l1', 'p0-l2', 'p1-l1', 'p1-l3'] })).toBe(80)
+    expect(countCompleted(parts, { version: 1, completed: ['p0-l1', 'nope'] })).toBe(1)
   })
-  it('is 0 when there are no ready lessons', () => {
+  it('is 0 when there are no lessons', () => {
     expect(percentComplete([], empty)).toBe(0)
+  })
+})
+
+describe('firstOpenLesson', () => {
+  it('is the first ready lesson that is unlocked and not completed', () => {
+    expect(firstOpenLesson(parts, empty)).toBe('p0-l1')
+    expect(firstOpenLesson(parts, { version: 1, completed: ['p0-l1'] })).toBe('p0-l2')
+    expect(firstOpenLesson(parts, { version: 1, completed: ['p0-l1', 'p0-l2', 'p1-l1', 'p1-l3'] })).toBeUndefined()
   })
 })
 

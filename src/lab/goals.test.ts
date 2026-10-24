@@ -20,20 +20,25 @@ describe('checkGoal', () => {
   const goodSend = simulateSend(good, 'pc1', '192.168.1.20')
 
   it('is false without a send', () => {
-    expect(checkGoal({ type: 'deliver', from: 'pc1', toIp: '192.168.1.20', hintTh: '', taskTh: 't' }, good)).toBe(false)
+    expect(checkGoal({ type: 'deliver', from: 'pc1', toIp: '192.168.1.20', hintTh: '', taskTh: 't' }, good, undefined, { from: 'pc1', toIp: '192.168.1.20' })).toBe(false)
   })
   it('deliver and fix need success', () => {
-    expect(checkGoal({ type: 'deliver', from: 'pc1', toIp: '192.168.1.20', hintTh: '', taskTh: 't' }, good, goodSend)).toBe(true)
-    expect(checkGoal({ type: 'fix', from: 'pc1', toIp: '192.168.1.20', hintTh: '', taskTh: 't' }, good, goodSend)).toBe(true)
+    expect(checkGoal({ type: 'deliver', from: 'pc1', toIp: '192.168.1.20', hintTh: '', taskTh: 't' }, good, goodSend, { from: 'pc1', toIp: '192.168.1.20' })).toBe(true)
+    expect(checkGoal({ type: 'fix', from: 'pc1', toIp: '192.168.1.20', hintTh: '', taskTh: 't' }, good, goodSend, { from: 'pc1', toIp: '192.168.1.20' })).toBe(true)
     const bad = topo('192.168.5.20')
     const badSend = simulateSend(bad, 'pc1', '192.168.5.20')
-    expect(checkGoal({ type: 'fix', from: 'pc1', toIp: '192.168.5.20', hintTh: '', taskTh: 't' }, bad, badSend)).toBe(false)
+    expect(checkGoal({ type: 'fix', from: 'pc1', toIp: '192.168.5.20', hintTh: '', taskTh: 't' }, bad, badSend, { from: 'pc1', toIp: '192.168.5.20' })).toBe(false)
   })
   it('fail needs a failure containing the reason', () => {
     const dup = topo('192.168.1.10')
     const s = simulateSend(dup, 'pc1', '192.168.1.10')
-    expect(checkGoal({ type: 'fail', from: 'pc1', toIp: '192.168.1.10', reasonIncludes: 'IP ซ้ำ', hintTh: '', taskTh: 't' }, dup, s)).toBe(true)
-    expect(checkGoal({ type: 'fail', from: 'pc1', toIp: '192.168.1.10', reasonIncludes: 'Gateway', hintTh: '', taskTh: 't' }, dup, s)).toBe(false)
-    expect(checkGoal({ type: 'fail', from: 'pc1', toIp: '192.168.1.20', reasonIncludes: 'IP ซ้ำ', hintTh: '', taskTh: 't' }, good, goodSend)).toBe(false)
+    expect(checkGoal({ type: 'fail', from: 'pc1', toIp: '192.168.1.10', reasonIncludes: 'IP ซ้ำ', hintTh: '', taskTh: 't' }, dup, s, { from: 'pc1', toIp: '192.168.1.10' })).toBe(true)
+    expect(checkGoal({ type: 'fail', from: 'pc1', toIp: '192.168.1.10', reasonIncludes: 'Gateway', hintTh: '', taskTh: 't' }, dup, s, { from: 'pc1', toIp: '192.168.1.10' })).toBe(false)
+    expect(checkGoal({ type: 'fail', from: 'pc1', toIp: '192.168.1.20', reasonIncludes: 'IP ซ้ำ', hintTh: '', taskTh: 't' }, good, goodSend, { from: 'pc1', toIp: '192.168.1.20' })).toBe(false)
+  })
+  it('requires the actual sent pair to equal the goal pair', () => {
+    const goal = { type: 'deliver' as const, from: 'pc1', toIp: '192.168.1.20', hintTh: '', taskTh: 't' }
+    expect(checkGoal(goal, good, goodSend, { from: 'pc2', toIp: '192.168.1.10' })).toBe(false)
+    expect(checkGoal(goal, good, goodSend, { from: 'pc1', toIp: '192.168.1.99' })).toBe(false)
   })
 })
