@@ -11,6 +11,7 @@
 .quiz-btn { font: inherit; color: #fff; background: #1f6feb; border: 0; border-radius: 8px; padding: 0.5rem 1.2rem; cursor: pointer; }
 .quiz-btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
 .quiz-link { font: inherit; background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 0; }
+.quiz-choice:disabled { opacity: 1; cursor: default; }
 .quiz-translation, .quiz-explain { background: var(--surface); border-left: 4px solid var(--accent); padding: 0.5rem 0.9rem; }
 .quiz-ok { color: #3fb950; }
 .quiz-bad { color: #f85149; }

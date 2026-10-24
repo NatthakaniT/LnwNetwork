@@ -41,4 +41,15 @@ describe('styles: ข้อความหลายบรรทัด', () => {
       expect(rule(sel)).toMatch(/cursor:\s*not-allowed/)
     }
   })
+  it('ตัวเลือกคำถามที่ตอบแล้ว (.quiz-choice:disabled) ไม่จางและเคอร์เซอร์ปกติ', async () => {
+    const fsModule = 'node:fs'
+    const urlModule = 'node:url'
+    const { readFileSync } = await import(/* @vite-ignore */ fsModule)
+    const { URL: NodeURL } = await import(/* @vite-ignore */ urlModule)
+    const quiz = readFileSync(new NodeURL('./quiz/quiz.css', import.meta.url), 'utf-8')
+    const m = quiz.match(/\.quiz-choice:disabled\s*\{([^}]*)\}/)
+    expect(m).not.toBeNull()
+    expect(m![1]).toMatch(/opacity:\s*1/)
+    expect(m![1]).toMatch(/cursor:\s*default/)
+  })
 })
