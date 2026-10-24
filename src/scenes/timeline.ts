@@ -40,6 +40,7 @@ export function fallbackDurationMs(narrationTh: string, rate: number): number {
   return (narrationTh.length * 90 + 1500) / rate
 }
 
-export function audioUrl(lessonId: string, sceneId: string): string {
-  return `/audio/${lessonId}/${sceneId}.mp3`
+// base มาจาก vite (เครื่องตัวเอง = '/', GitHub Pages = '/LnwNetwork/')
+export function audioUrl(lessonId: string, sceneId: string, base: string = import.meta.env.BASE_URL): string {
+  return `${base}audio/${lessonId}/${sceneId}.mp3`
 }

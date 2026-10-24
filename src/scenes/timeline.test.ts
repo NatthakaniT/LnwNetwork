@@ -59,4 +59,8 @@ describe('timeline', () => {
   it('audioUrl', () => {
     expect(audioUrl('p0-l1', 's1')).toBe('/audio/p0-l1/s1.mp3')
   })
+
+  it('audioUrl อยู่ใต้ base path ของเว็บ (GitHub Pages)', () => {
+    expect(audioUrl('p0-l1', 's1', '/LnwNetwork/')).toBe('/LnwNetwork/audio/p0-l1/s1.mp3')
+  })
 })
