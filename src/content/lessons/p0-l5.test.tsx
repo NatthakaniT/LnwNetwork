@@ -44,7 +44,7 @@ describe('lesson p0-l5', () => {
   })
 
   it('ศัพท์ใหม่อยู่ในคลังศัพท์ (ไม่ซ้ำ) และอยู่ใน terms ของบท', () => {
-    const ids = ['osi-model', 'tcp-ip-model', 'encapsulation', 'de-encapsulation', 'layer', 'port', 'pdu',
+    const ids = ['osi-model', 'presentation-layer', 'session-layer', 'tcp-ip-model', 'encapsulation', 'de-encapsulation', 'layer', 'port', 'pdu',
       'data', 'segment', 'packet', 'frame', 'bits',
       'application-layer', 'transport-layer', 'network-layer', 'internet-layer', 'data-link-layer', 'physical-layer', 'network-access-layer']
     for (const id of ids) {
@@ -54,6 +54,10 @@ describe('lesson p0-l5', () => {
     expect(new Set(glossary.map((g) => g.en.toLowerCase())).size).toBe(glossary.length)
     for (const t of lesson.terms!) expect(glossary.some((g) => g.id === t), t).toBe(true)
     expect(glossary.find((g) => g.id === 'port')!.explainTh).toContain('โปรแกรม')
+    // Application layer = ชั้นที่โปรแกรมใช้คุยกับ network ไม่ใช่ตัวโปรแกรม
+    expect(glossary.find((g) => g.id === 'application-layer')!.explainTh).toContain('ชั้นที่โปรแกรมใช้คุยกับ network')
+    expect(glossary.find((g) => g.id === 'tcp-ip-model')!.explainTh).toContain('บางตำราแบ่งเป็น 5 ชั้น')
+    expect(lesson.scenes!.actors.find((a) => a.id === 'tInt')!.label).toBe('TCP/IP: Internet layer · IP = ชั้น 3')
     expect(glossary.find((g) => g.id === 'data-link-layer')!.explainTh).toContain('MAC')
     expect(glossary.find((g) => g.id === 'network-layer')!.explainTh).toContain('IP')
     // TCP กับ UDP แค่บอกชื่อ เรียนจริงภาคหน้า
@@ -74,6 +78,7 @@ describe('lesson p0-l5', () => {
   it('เรื่องเล่า: ห่อจากในออกนอก → แกะย้อนกลับ → ทำไมแยกชั้น → เปลี่ยนถนนไม่ต้องห่อใหม่ → สองชุดชั้น → ปูทางภาค 1', () => {
     expect(narration('s1')).toContain('ลองนึกดูนะ')
     expect(narration('s2')).toContain('port')
+    expect(narration('s2')).not.toContain('ชั้นแรก') // ชั้นที่หนึ่งคือถนน ห้ามสับสนกับห่อแรก
     expect(narration('s2')).toContain('segment')
     expect(narration('s3')).toContain('IP')
     expect(narration('s3')).toContain('packet')
@@ -89,6 +94,17 @@ describe('lesson p0-l5', () => {
     expect(narration('s7')).toContain('ไม่ต้อง')
     expect(narration('s8')).toContain('TCP/IP model')
     expect(narration('s8')).toContain('OSI model')
+    expect(narration('s8')).toContain('นับ')
+    const s8 = lesson.scenes!.scenes.find((s) => s.id === 's8')!
+    // ชั้น 1-4 ในตารางติดสัญลักษณ์เดียวกับตอนห่อ (กรอบ highlight ใหญ่เท่าไอคอน จะทับแถวข้าง ๆ)
+    const marks: Record<string, string> = { o4: '📦', o3: '🏷️', o2: '🚚', o1: '〰️' }
+    for (const [id, mark] of Object.entries(marks)) {
+      const set = s8.actions.find((a) => a.type === 'setLabel' && a.actor === id) as { label: string } | undefined
+      expect(set?.label, id).toMatch(new RegExp(`^${mark} `))
+    }
+    expect(s8.actions.some((a) => a.type === 'highlight')).toBe(false)
+    // สะพานจาก p0-l4: MAC อยู่ชั้นนอก (รถ) ไม่ใช่บนกล่อง
+    expect(narration('s4')).toContain('จริง ๆ อยู่ชั้นนอกนี้')
     expect(narration('s9')).toMatch(/ชั้นที่สอง[\s\S]*MAC[\s\S]*Switch/)
     expect(narration('s9')).toMatch(/ชั้นที่สาม[\s\S]*IP[\s\S]*Router/)
     const last = lesson.scenes!.scenes[lesson.scenes!.scenes.length - 1].narrationTh
@@ -153,7 +169,10 @@ describe('lesson p0-l5', () => {
       for (const k of q.keywords!) expect(q.prompt).toContain(k)
     }
     for (const q of lesson.quiz!) {
-      for (const c of q.choices) expect(q.explainTh, `${q.id}/${c.id}`).not.toContain(c.textTh ?? c.text)
+      for (const c of q.choices) {
+        expect(q.explainTh, `${q.id}/${c.id}`).not.toContain(c.textTh ?? c.text)
+        if (q.layer === 'en') expect(q.explainTh, `${q.id}/${c.id} en`).not.toContain(c.text)
+      }
     }
     const prompts = en.map((q) => q.prompt).join('\n')
     expect(prompts).toContain('logical addressing')

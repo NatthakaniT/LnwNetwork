@@ -125,13 +125,13 @@ export const glossary: GlossaryTerm[] = [
     id: 'osi-model',
     en: 'OSI model',
     th: 'โอเอสไอโมเดล (แบบแบ่ง 7 ชั้น)',
-    explainTh: 'ตารางที่แบ่งงานส่งข้อมูลเป็น 7 ชั้น นับจากล่าง ชั้น 1 คือถนน ไปถึงชั้น 7 คือโปรแกรมที่เราใช้ แยกละเอียดกว่า TCP/IP model คนทำงานใช้เรียกชื่อชั้นตอนหาปัญหา เช่น ปัญหาชั้น 1 คือสายหรือสัญญาณ ข้อสอบถามเลขชั้นจากชุดนี้',
+    explainTh: 'ตารางที่แบ่งงานส่งข้อมูลเป็น 7 ชั้น นับจากล่าง ชั้น 1 คือถนน ไปถึงชั้น 7 คือชั้นที่โปรแกรมใช้คุยกับ network แยกละเอียดกว่า TCP/IP model คนทำงานใช้เรียกชื่อชั้นตอนหาปัญหา เช่น ปัญหาชั้น 1 คือสายหรือสัญญาณ ข้อสอบถามเลขชั้นจากชุดนี้',
   },
   {
     id: 'tcp-ip-model',
     en: 'TCP/IP model',
     th: 'ทีซีพีไอพีโมเดล (แบบแบ่ง 4 ชั้น)',
-    explainTh: 'แบบแบ่งงานเป็น 4 ชั้น ที่คอมใช้ส่งข้อมูลจริง คือ Application, Transport, Internet และ Network Access ชั้น Application รวมชั้น 5 6 7 ของ OSI ไว้ด้วยกัน ส่วน Network Access รวมชั้น 1 กับ 2',
+    explainTh: 'แบบแบ่งงานเป็น 4 ชั้น ที่คอมใช้ส่งข้อมูลจริง คือ Application, Transport, Internet และ Network Access ชั้น Application รวมชั้น 5 6 7 ของ OSI ไว้ด้วยกัน ส่วน Network Access รวมชั้น 1 กับ 2 บางตำราแบ่งเป็น 5 ชั้น แยกชั้นล่างเป็น Data Link กับ Physical',
   },
   {
     id: 'encapsulation',
@@ -185,7 +185,19 @@ export const glossary: GlossaryTerm[] = [
     id: 'application-layer',
     en: 'Application layer',
     th: 'แอปพลิเคชันเลเยอร์ (ชั้นของโปรแกรม)',
-    explainTh: 'ชั้นบนสุด ใกล้ตัวเราที่สุด เป็นชั้นของโปรแกรมที่เราใช้ เช่น เว็บ แชต หรือ DNS ใน OSI model คือชั้นที่ 7 ส่วนใน TCP/IP model ชั้นนี้รวมชั้น 5 6 7 ของ OSI ไว้ด้วยกัน',
+    explainTh: 'ชั้นบนสุด ใกล้ตัวเราที่สุด เป็นชั้นที่โปรแกรมใช้คุยกับ network เช่น เว็บ แชต DNS ไม่ใช่ตัวโปรแกรมเอง แต่เป็นวิธีคุยที่โปรแกรมใช้ ใน OSI model คือชั้นที่ 7 ส่วนใน TCP/IP model ชั้นนี้รวมชั้น 5 6 7 ของ OSI ไว้ด้วยกัน',
+  },
+  {
+    id: 'presentation-layer',
+    en: 'Presentation layer',
+    th: 'พรีเซนเทชันเลเยอร์ (ชั้นที่ 6 จัดรูปแบบข้อมูล)',
+    explainTh: 'ชั้นที่ 6 ของ OSI model จัดรูปแบบข้อมูล ให้สองฝั่งอ่านเข้าใจตรงกัน เช่น เข้ารหัส บีบอัด ใน TCP/IP model ชั้นนี้รวมอยู่ใน Application',
+  },
+  {
+    id: 'session-layer',
+    en: 'Session layer',
+    th: 'เซสชันเลเยอร์ (ชั้นที่ 5 ดูแลการคุย)',
+    explainTh: 'ชั้นที่ 5 ของ OSI model เปิด ปิด และดูแลการคุยระหว่างสองโปรแกรม ให้คุยกันจนจบเรื่อง ใน TCP/IP model ชั้นนี้รวมอยู่ใน Application',
   },
   {
     id: 'transport-layer',

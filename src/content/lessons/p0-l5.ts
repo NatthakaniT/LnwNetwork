@@ -53,7 +53,7 @@ const actors: Actor[] = [
   hidden({ id: 'aBox', kind: 'box', x: 130, y: 110 }),
   hidden({ id: 'aLbl', kind: 'label', x: 800, y: 110, label: '📦 กล่องเดิม' }),
   hidden({ id: 'bLap', kind: 'laptop', x: 130, y: 280, label: 'ต่อไวไฟ' }),
-  hidden({ id: 'bAp', kind: 'router', x: 480, y: 280, label: 'กล่องไวไฟ' }),
+  hidden({ id: 'bAp', kind: 'router', x: 480, y: 280, label: 'กล่องเน็ตบ้าน (ไวไฟ)' }),
   hidden({ id: 'bBox', kind: 'box', x: 130, y: 280 }),
   hidden({ id: 'bLbl', kind: 'label', x: 800, y: 280, label: '📦 กล่องเดิม' }),
   hidden({ id: 'rL1', kind: 'label', x: 480, y: 420, label: '🔄 เปลี่ยนแค่ชั้นนอก: รถ กับ ถนน' }),
@@ -61,7 +61,7 @@ const actors: Actor[] = [
 
   // ฉาก 8: ตารางเทียบ OSI 7 ชั้น กับ TCP/IP 4 ชั้น
   hidden({ id: 'oHead', kind: 'label', x: 250, y: 30, label: 'OSI model · 7 ชั้น' }),
-  hidden({ id: 'o7', kind: 'label', x: 250, y: 92, label: '7 Application · โปรแกรมที่เราใช้' }),
+  hidden({ id: 'o7', kind: 'label', x: 250, y: 92, label: '7 Application · ทางคุยของโปรแกรม' }),
   hidden({ id: 'o6', kind: 'label', x: 250, y: 154, label: '6 Presentation · จัดรูปแบบข้อมูล' }),
   hidden({ id: 'o5', kind: 'label', x: 250, y: 216, label: '5 Session · เปิด ปิด การคุย' }),
   hidden({ id: 'o4', kind: 'label', x: 250, y: 278, label: '4 Transport · port · segment' }),
@@ -71,7 +71,7 @@ const actors: Actor[] = [
   hidden({ id: 'tHead', kind: 'label', x: 730, y: 30, label: 'TCP/IP model · 4 ชั้น' }),
   hidden({ id: 'tApp', kind: 'label', x: 730, y: 154, label: 'TCP/IP: Application = ชั้น 5-7' }),
   hidden({ id: 'tTra', kind: 'label', x: 730, y: 278, label: 'TCP/IP: Transport = ชั้น 4' }),
-  hidden({ id: 'tInt', kind: 'label', x: 730, y: 340, label: 'TCP/IP: Internet = ชั้น 3' }),
+  hidden({ id: 'tInt', kind: 'label', x: 730, y: 340, label: 'TCP/IP: Internet layer · IP = ชั้น 3' }),
   hidden({ id: 'tNa', kind: 'label', x: 730, y: 433, label: 'TCP/IP: Network Access = ชั้น 1-2' }),
 
   // ฉาก 9: เลขชั้นที่ข้อสอบชอบถาม
@@ -110,7 +110,7 @@ export const lesson: Lesson = {
   terms: [
     'layer', 'osi-model', 'tcp-ip-model', 'encapsulation', 'de-encapsulation', 'pdu',
     'data', 'segment', 'packet', 'frame', 'bits', 'port',
-    'application-layer', 'transport-layer', 'network-layer', 'internet-layer', 'data-link-layer', 'physical-layer', 'network-access-layer',
+    'application-layer', 'presentation-layer', 'session-layer', 'transport-layer', 'network-layer', 'internet-layer', 'data-link-layer', 'physical-layer', 'network-access-layer',
     'ip-address', 'mac-address', 'switch', 'router',
   ],
 
@@ -125,7 +125,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's2',
-        narrationTh: 'ชั้นแรก ใส่ของลงกล่อง แล้วเขียนว่าให้ใคร เพราะบ้านหลังหนึ่งมีหลายคน คอมก็มีหลายโปรแกรม เลยใส่เลข port บอกว่าส่งให้โปรแกรมไหน กล่องชั้นนี้ เรียกว่า segment',
+        narrationTh: 'เริ่มห่อ ใส่ของลงกล่อง แล้วเขียนว่าให้ใคร เพราะบ้านหลังหนึ่งมีหลายคน คอมก็มีหลายโปรแกรม เลยใส่เลข port บอกว่าส่งให้โปรแกรมไหน กล่องชั้นนี้ เรียกว่า segment',
         actions: [
           ...hide(...giftIds),
           ...show('wData', 'wSeg', 'wL2'),
@@ -143,7 +143,7 @@ export const lesson: Lesson = {
       },
       {
         id: 's4',
-        narrationTh: 'แล้วเอากล่องขึ้นรถส่งของ ที่ติดป้าย MAC ของเครื่องที่จะรับ ในหมู่บ้านนี้ Switch ดูแค่ป้าย MAC บนรถ รถวิ่งแค่ในหมู่บ้าน ข้ามหมู่บ้านก็เปลี่ยนคันใหม่ ชั้นนี้เรียกว่า frame',
+        narrationTh: 'แล้วเอากล่องขึ้นรถในหมู่บ้าน ติดป้าย MAC ผู้รับ บทก่อนบอกว่า MAC อยู่บนกล่อง จริง ๆ อยู่ชั้นนอกนี้ Switch ดูแค่ป้ายนี้ ข้ามหมู่บ้านก็เปลี่ยนรถ ชั้นนี้เรียกว่า frame',
         actions: [
           ...show('wTruck', 'wL4'),
           { type: 'unhighlight', actor: 'wPkt' },
@@ -182,10 +182,15 @@ export const lesson: Lesson = {
       },
       {
         id: 's8',
-        narrationTh: 'ชั้นพวกนี้ มีชื่อเรียกสองชุด TCP/IP model มีสี่ชั้น เป็นแบบที่ใช้งานจริง ส่วน OSI model มีเจ็ดชั้น แยกละเอียดกว่า ข้อสอบถามทั้งสองชุด และเรียกชั้นว่า Layer',
+        narrationTh: 'ชั้นพวกนี้ ข้อสอบเรียกว่า Layer นับเลขจากถนนขึ้นไป ชั้นหนึ่งถึงสี่ ก็คือถนน รถ ใบปะหน้า กล่อง ที่เราเพิ่งห่อ OSI model แยกเป็นเจ็ดชั้น ส่วน TCP/IP model รวมเหลือสี่ชั้น',
         actions: [
           ...hide(...roadIds),
           ...show(...tableIds),
+          // ชั้น 1-4 ติดสัญลักษณ์เดียวกับตอนห่อ (กล่อง ใบปะหน้า รถ ถนน) ให้ตาตามเรื่องได้
+          { type: 'setLabel', actor: 'o4', label: '📦 4 Transport · port · segment' },
+          { type: 'setLabel', actor: 'o3', label: '🏷️ 3 Network · IP · packet' },
+          { type: 'setLabel', actor: 'o2', label: '🚚 2 Data Link · MAC · frame' },
+          { type: 'setLabel', actor: 'o1', label: '〰️ 1 Physical · สาย ไวไฟ · bits' },
         ],
       },
       {
@@ -307,7 +312,7 @@ export const lesson: Lesson = {
         { id: 'd', text: 'Bits', textTh: 'bits (สัญญาณบนถนน)' },
       ],
       correct: ['a'],
-      explainTh: 'Data Link คือชั้นที่ 2 ชั้นของป้าย MAC นึกภาพตอนเอากล่องขึ้นรถในหมู่บ้าน แล้วติดป้าย MAC ชื่อของชั้นนี้ ก็คือชื่อเรียกรถคันนั้น ส่วนใบปะหน้า IP อยู่ชั้น 3 และสัญญาณบนถนนอยู่ชั้น 1',
+      explainTh: 'Data Link คือชื่อของชั้นที่ 2 ชั้นของป้าย MAC นึกภาพตอนเอากล่องขึ้นรถในหมู่บ้าน แล้วติดป้าย MAC ของที่ห่อเสร็จในชั้นนี้ ก็เรียกตามรถคันนั้น ส่วนใบปะหน้า IP อยู่ชั้น 3 และสัญญาณบนถนนอยู่ชั้น 1',
     },
     {
       id: 'q7',
