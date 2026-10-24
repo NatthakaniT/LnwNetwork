@@ -21,4 +21,19 @@ describe('styles: ข้อความหลายบรรทัด', () => {
   it.each(['.lab-intro', '.lab-task', '.lab-hint', '.activity .lab-result'])('%s ใช้ white-space: pre-line', (sel) => {
     expect(rule(sel)).toMatch(/white-space:\s*pre-line/)
   })
+
+  it('button และ select ใช้ตัวอักษร 1rem (18px) และมี padding', () => {
+    for (const sel of ['button', 'select']) {
+      expect(rule(sel)).toMatch(/font-size:[ ]*1rem/)
+      expect(rule(sel)).toMatch(/padding:[ ]*0[.]4rem 1rem/)
+    }
+  })
+  it('ปุ่มที่ disabled ดูเทาจางและกดไม่ได้ แม้เป็น .btn.primary', () => {
+    for (const sel of ['button:disabled', '.btn.primary:disabled']) {
+      const r = rule(sel)
+      expect(r).toMatch(/background:[ ]*#232b36/)
+      expect(r).toMatch(/cursor:[ ]*not-allowed/)
+      expect(r).toMatch(/opacity:[ ]*0[.]6/)
+    }
+  })
 })

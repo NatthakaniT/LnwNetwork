@@ -25,6 +25,27 @@ body {
   color: var(--text);
 }
 
+/* ปุ่มและช่องเลือกทุกอันในแอป: ตัวใหญ่ ชัด กดง่าย (คลาสเฉพาะอย่าง .btn/.step/.quiz-choice ทับได้) */
+button, select {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+}
+button:hover:not(:disabled), select:hover:not(:disabled) { border-color: var(--accent); }
+/* ปุ่มที่กดไม่ได้ ต้องดูออกทันทีว่ากดไม่ได้ (เทาจาง แม้เป็นปุ่มสีน้ำเงินหลักก็ตาม) */
+button:disabled, select:disabled, .btn:disabled, .btn.primary:disabled {
+  color: #6b7785;
+  background: #232b36;
+  border-color: #2f3946;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 h1 {
   margin: 0;
   padding: 1rem 1.5rem;
@@ -42,7 +63,6 @@ a { color: var(--accent); }
 .btn { display: inline-block; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 1rem; cursor: pointer; text-decoration: none; margin-right: 0.5rem; }
 .btn.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
 .btn.small { padding: 0.05rem 0.6rem; font-size: 0.8rem; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .muted { color: var(--text-muted); }
 .notice { background: var(--surface); border-left: 4px solid #ffc857; padding: 0.5rem 1rem; margin: 0 0 1rem; }
 
