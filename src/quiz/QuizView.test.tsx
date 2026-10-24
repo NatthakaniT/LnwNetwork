@@ -14,6 +14,16 @@ const pick = async (u: ReturnType<typeof userEvent.setup>, id: string, c: string
   u.click(screen.getByRole('button', { name: new RegExp(`ตัวเลือก ${c} ${id}`) }))
 
 describe('QuizView', () => {
+  it('หลังส่งคำตอบ ตัวเลือกยังเป็น .quiz-choice ที่มีสไตล์ของตัวเอง (ไม่โดนฐาน disabled ทับ)', async () => {
+    const u = userEvent.setup()
+    render(<QuizView questions={[mk('d', 'th', ['a'])]} onPass={() => {}} />)
+    await pick(u, 'd', 'a')
+    await u.click(screen.getByRole('button', { name: 'ส่งคำตอบ' }))
+    const choice = screen.getByRole('button', { name: /ตัวเลือก a d/ })
+    expect(choice).toBeDisabled()
+    expect(choice).toHaveClass('quiz-choice', 'right')
+  })
+
   it('แสดงชั้น th ก่อน en', async () => {
     const u = userEvent.setup()
     // ใส่ en ไว้ก่อนในอาร์เรย์ แต่ต้องเห็น th ก่อน

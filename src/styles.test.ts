@@ -21,19 +21,22 @@ describe('styles: ข้อความหลายบรรทัด', () => {
   it.each(['.lab-intro', '.lab-task', '.lab-hint', '.activity .lab-result'])('%s ใช้ white-space: pre-line', (sel) => {
     expect(rule(sel)).toMatch(/white-space:\s*pre-line/)
   })
-
-  it('button และ select ใช้ตัวอักษร 1rem (18px) และมี padding', () => {
-    for (const sel of ['button', 'select']) {
-      expect(rule(sel)).toMatch(/font-size:[ ]*1rem/)
-      expect(rule(sel)).toMatch(/padding:[ ]*0[.]4rem 1rem/)
-    }
+  const flat = () => css.replace(/\/\*[\s\S]*?\*\//g, '')
+  it('ฐานปุ่ม/ช่องเลือก/ช่องพิมพ์ใช้ :where() (ความจำเพาะศูนย์ ไม่ทับคลาสอื่น)', () => {
+    const c = flat()
+    expect(c).toContain(':where(button, select) {')
+    expect(c).toContain(":where(input[type='text'], input:not([type])) {")
+    expect(c).toContain(':where(button, select):hover:not(:disabled)')
+    expect(c).toContain(':where(button, select):disabled')
+    // ต้องไม่มี selector ฐานเปล่า ๆ (button:disabled ฯลฯ) ที่ทับ .quiz-choice ได้
+    expect(c).not.toMatch(/(^|\n)\s*(button|select)(:[a-z:()]+)?\s*[,{]/)
   })
-  it('ปุ่มที่ disabled ดูเทาจางและกดไม่ได้ แม้เป็น .btn.primary', () => {
-    for (const sel of ['button:disabled', '.btn.primary:disabled']) {
-      const r = rule(sel)
-      expect(r).toMatch(/background:[ ]*#232b36/)
-      expect(r).toMatch(/cursor:[ ]*not-allowed/)
-      expect(r).toMatch(/opacity:[ ]*0[.]6/)
+  it('ฐานมีตัวอักษร 1rem และปุ่มที่ล็อกยังดูเทาจาง', () => {
+    expect(flat()).toMatch(/:where\(button, select\) \{[^}]*font-size:\s*1rem/)
+    expect(flat()).toMatch(/:where\(input\[type='text'\], input:not\(\[type\]\)\) \{[^}]*font-size:\s*1rem/)
+    for (const sel of ['.btn.primary:disabled', '.step:disabled']) {
+      expect(rule(sel)).toMatch(/background:\s*#232b36/)
+      expect(rule(sel)).toMatch(/cursor:\s*not-allowed/)
     }
   })
 })

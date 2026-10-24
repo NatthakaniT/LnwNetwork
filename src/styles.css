@@ -25,8 +25,9 @@ body {
   color: var(--text);
 }
 
-/* ปุ่มและช่องเลือกทุกอันในแอป: ตัวใหญ่ ชัด กดง่าย (คลาสเฉพาะอย่าง .btn/.step/.quiz-choice ทับได้) */
-button, select {
+/* ฐานของปุ่ม/ช่องเลือก/ช่องพิมพ์ทุกอันในแอป: ตัวใหญ่ ชัด กดง่าย
+   ใช้ :where() ให้ความจำเพาะเป็นศูนย์ คลาสเฉพาะอย่าง .btn/.step/.quiz-choice/.sp-btn จึงทับได้เสมอ */
+:where(button, select) {
   font: inherit;
   font-size: 1rem;
   color: var(--text);
@@ -36,9 +37,18 @@ button, select {
   padding: 0.4rem 1rem;
   cursor: pointer;
 }
-button:hover:not(:disabled), select:hover:not(:disabled) { border-color: var(--accent); }
+:where(input[type='text'], input:not([type])) {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+}
+:where(button, select):hover:not(:disabled) { border-color: var(--accent); }
 /* ปุ่มที่กดไม่ได้ ต้องดูออกทันทีว่ากดไม่ได้ (เทาจาง แม้เป็นปุ่มสีน้ำเงินหลักก็ตาม) */
-button:disabled, select:disabled, .btn:disabled, .btn.primary:disabled {
+:where(button, select):disabled, .btn:disabled, .btn.primary:disabled {
   color: #6b7785;
   background: #232b36;
   border-color: #2f3946;
@@ -87,7 +97,7 @@ a { color: var(--accent); }
 .steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
 .step { font: inherit; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 0.3rem 0.9rem; cursor: pointer; }
 .step.on { border-color: var(--accent); }
-.step:disabled { opacity: 0.45; cursor: not-allowed; }
+.step:disabled { color: #6b7785; background: #232b36; border-color: #2f3946; opacity: 0.6; cursor: not-allowed; }
 .video-frame { position: relative; padding-top: 56.25%; }
 .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 8px; }
 .video-note { background: var(--surface); border-left: 4px solid var(--accent); padding: 0.5rem 1rem; margin: 0 0 0.75rem; }
