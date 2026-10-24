@@ -1,10 +1,147 @@
+/* ---------- คำศัพท์ในเนื้อหา (Term popover) — Task 5 จะแต่งใหม่ ตอนนี้แค่เปลี่ยนเป็น token ---------- */
 .term { position: relative; display: inline-block; }
 .term-btn { font: inherit; color: var(--accent); background: none; border: 0; border-bottom: 1px dotted var(--accent); padding: 0; border-radius: 0; cursor: help; }
-.term-pop { position: absolute; left: 0; top: 100%; z-index: 10; margin-top: 0.3rem; min-width: 16rem; max-width: 24rem; display: flex; flex-direction: column; gap: 0.25rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; box-shadow: 0 4px 16px rgba(0,0,0,.35); text-align: left; }
+.term-pop { position: absolute; left: 0; top: 100%; z-index: 10; margin-top: 0.3rem; min-width: 16rem; max-width: 24rem; display: flex; flex-direction: column; gap: 0.25rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; box-shadow: 0 4px 16px var(--shadow); text-align: left; }
 .term-th { color: var(--text-muted); }
-.glossary { max-width: 48rem; margin: 1rem auto; padding: 0 1.5rem; }
-.glossary-search { width: 100%; font: inherit; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 0.5rem 0.8rem; box-sizing: border-box; }
-.glossary-empty { color: var(--text-muted); }
-.glossary-item { margin: 0.6rem 0; }
-.glossary dt { font-weight: 700; }
-.glossary dd { margin: 0.2rem 0 0; }
+
+/* ---------- หน้าคลังศัพท์ (สีมาจาก token ใน styles.css เท่านั้น) ----------
+   main.glossary-wrap ชนะ .glossary-wrap ใน styles.css (ความจำเพาะสูงกว่า) จึงกว้างได้ 64rem เฉพาะหน้านี้ */
+main.glossary-wrap { max-width: 64rem; }
+.glossary { margin: 0 0 1rem; }
+.glossary h1 { font-size: 2.3rem; padding: 0.6rem 0 0.8rem; }
+.glossary h2 { font-size: 1.5rem; margin: 2.2rem 0 0.9rem; }
+.glossary-search {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+  transition: border-color .2s;
+}
+.glossary-search:focus-visible { outline: none; border-color: var(--p5); }
+.glossary-empty { color: var(--text-muted); margin-top: 1.2rem; }
+
+/* ---------- ส่วน OSI ---------- */
+.osi-hint { color: var(--text-muted); margin: -0.4rem 0 0.8rem; }
+/* แถบ OSI (คอลัมน์ 1) กับกรอบ TCP/IP (คอลัมน์ 2) ใช้แถว grid ร่วมกัน กรอบจึงตรงกับชั้นที่มันครอบพอดี
+   (grid-row ตั้งใน GlossaryPage.tsx ตามข้อมูลใน content/osi.ts) */
+.osi-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(8rem, 15rem);
+  grid-auto-rows: minmax(2.9rem, auto);
+  gap: 6px 14px;
+}
+.osi-col-head {
+  align-self: end;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.osi-layer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  text-align: left;
+  color: var(--bg);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 0.35rem 0.9rem;
+  font-family: var(--font-head);
+  transition: transform .25s var(--ease-bounce), box-shadow .25s var(--ease-out), border-color .2s;
+}
+.osi-layer:hover { transform: translateX(8px); }
+.osi-layer[aria-pressed='true'] { border-color: var(--text); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--text); }
+.osi-layer:focus-visible { outline: 3px solid var(--p5); outline-offset: 4px; }
+.osi-no { font-weight: 900; font-size: 1.3rem; width: 1.4rem; flex-shrink: 0; }
+.osi-en { font-weight: 800; font-size: 1.05rem; }
+.osi-short { margin-left: auto; font-family: 'Noto Sans Thai', system-ui, sans-serif; font-size: 0.9rem; font-weight: 700; text-align: right; }
+
+.tcp-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  text-align: center;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text);
+  background: transparent;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 0.3rem 0.6rem;
+  overflow-wrap: anywhere;
+  transition: border-color .2s, background-color .2s;
+}
+.tcp-box:hover { border-color: var(--text-muted); background: var(--surface); }
+.tcp-box[aria-pressed='true'] { border-style: solid; border-color: var(--text); background: var(--surface); }
+.tcp-box:focus-visible { outline: 3px solid var(--p5); outline-offset: 3px; }
+
+.osi-detail {
+  margin-top: 1rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--card-c, var(--text-muted));
+  border-radius: 14px;
+  padding: 0.8rem 1.1rem;
+}
+.osi-detail p { margin: 0.15rem 0; }
+.osi-detail-title strong { font-family: var(--font-head); font-weight: 800; font-size: 1.15rem; }
+.osi-detail-tag, .osi-detail-th { color: var(--text-muted); }
+.osi-detail-th { font-weight: 700; }
+
+.osi-sub { font-size: 1.1rem; margin: 1.6rem 0 0.8rem; color: var(--text-muted); }
+
+/* ---------- การ์ดศัพท์ (2 คอลัมน์) ---------- */
+.g-head { display: flex; align-items: center; gap: 0.6rem; }
+.g-head::before { content: ''; width: 0.8rem; height: 0.8rem; border-radius: 99px; background: var(--card-c, var(--text-muted)); flex-shrink: 0; }
+.g-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
+.g-card {
+  position: relative;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--card-c, var(--text-muted));
+  border-radius: 16px;
+  padding: 0.8rem 1rem 0.9rem;
+  overflow-wrap: anywhere;
+  /* ใช้ translate แยกจาก transform ของ .reveal จึงไม่ทับกัน (transition อยู่ใน .g-card.reveal ให้ชนะ .reveal ของ styles.css) */
+}
+.g-card.reveal { transition: opacity .6s var(--ease-out), transform .6s var(--ease-out), translate .3s var(--ease-bounce), border-color .2s; }
+.g-card.reveal:nth-child(2n) { transition-delay: .08s, .08s, 0s, 0s; }
+.g-card:hover { translate: 0 -3px; border-color: var(--card-c, var(--text-muted)); border-top-color: var(--card-c, var(--text-muted)); }
+.g-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--bg);
+  background: var(--card-c, var(--text-muted));
+  border-radius: 99px;
+  padding: 0.05rem 0.6rem;
+  margin-bottom: 0.3rem;
+}
+.g-en { font-family: var(--font-head); font-weight: 800; font-size: 1.2rem; line-height: 1.25; margin: 0 0 0.15rem; }
+.g-th { margin: 0 0 0.35rem; color: var(--text-muted); font-weight: 700; }
+.g-explain { margin: 0; }
+
+/* ---------- จอแคบ ---------- */
+@media (max-width: 48rem) {
+  .g-cards { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 40rem) {
+  .osi-grid { grid-template-columns: minmax(0, 1fr) 6.5rem; gap: 6px 8px; }
+  .osi-layer { flex-wrap: wrap; gap: 0 0.6rem; }
+  .osi-short { margin-left: 2rem; text-align: left; flex-basis: 100%; }
+  .tcp-box { font-size: 0.85rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .osi-layer:hover, .g-card:hover { transform: none; translate: none; }
+}

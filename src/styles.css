@@ -12,6 +12,11 @@
   --p4: #ffd23f;
   --p5: #4cd4ff;
   --p6: #b58cff;
+  /* เฉดสว่างของ --p1 (แถบชั้น 6 และ 5 ของ OSI ในหน้าคลังศัพท์) */
+  --p1-light: #ff9adf;
+  --p1-lighter: #ffb8e8;
+  /* เงาของกล่องลอย */
+  --shadow: rgba(0, 0, 0, 0.35);
   --accent: #4c7dff;
   --link: #8fb0ff;
   --ok: #3fb950;
