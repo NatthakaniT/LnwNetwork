@@ -44,7 +44,7 @@ export function isUnlocked(id: LessonId, parts: Part[], p: Progress): boolean {
   const ids = readyLessonIds(parts)
   const i = ids.indexOf(id)
   if (i < 0) return false
-  if (p.completed.includes(id)) return true // เรียนผ่าน/สอบข้ามแล้ว เปิดได้เสมอ
+  if (p.completed.includes(id)) return true // เรียนผ่านแล้ว เปิดได้เสมอ
   return i === 0 || p.completed.includes(ids[i - 1])
 }
 

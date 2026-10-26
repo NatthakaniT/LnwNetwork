@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Lesson, Part } from '../content/types'
+import { course } from '../content'
 import {
   STORAGE_KEY, loadProgress, saveProgress, isUnlocked, markCompleted, percentComplete, countCompleted, totalLessons, firstOpenLesson, type Progress,
 } from './progress'
@@ -24,6 +25,12 @@ function fakeStorage(init: Record<string, string> = {}, opts: { getThrows?: bool
 }
 
 describe('isUnlocked', () => {
+  it('progress เดิมที่เคยบันทึกไว้ ยังโหลดได้และบทถัดไปเปิดอยู่', () => {
+    const raw = JSON.stringify({ version: 1, completed: ['p0-l1', 'p0-l2'] })
+    const p = loadProgress(fakeStorage({ [STORAGE_KEY]: raw }))
+    expect(p.completed).toEqual(['p0-l1', 'p0-l2'])
+    expect(isUnlocked('p0-l3', course, p)).toBe(true)
+  })
   it('first ready lesson is always unlocked; next is locked until it completes', () => {
     expect(isUnlocked('p0-l1', parts, empty)).toBe(true)
     expect(isUnlocked('p0-l2', parts, empty)).toBe(false)
@@ -35,7 +42,7 @@ describe('isUnlocked', () => {
     expect(isUnlocked('p1-l3', parts, { version: 1, completed: ['p0-l1', 'p0-l2'] })).toBe(false)
   })
   it('a completed lesson is always openable, even if the one before it is not completed', () => {
-    const p: Progress = { version: 1, completed: ['p1-l1'] } // สอบข้ามบทข้ามมา
+    const p: Progress = { version: 1, completed: ['p1-l1'] } // ผ่านบทนี้โดยไม่ผ่านบทก่อนหน้า
     expect(isUnlocked('p0-l2', parts, empty)).toBe(false)
     expect(isUnlocked('p1-l1', parts, p)).toBe(true)
     expect(isUnlocked('p1-l1', parts, empty)).toBe(false)

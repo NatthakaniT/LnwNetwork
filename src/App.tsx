@@ -9,10 +9,9 @@ function AppRoutes() {
   const route = useRoute()
   const [notice, setNotice] = useState<string | null>(null)
   const onBlocked = useCallback((m: string) => setNotice(m), [])
-  const onTestOutPassed = useCallback((title: string) => setNotice(`ข้ามบท ${title} แล้ว 🎉`), [])
 
   if (route.name === 'lesson') {
-    return <LessonPage key={route.id + (route.testOut ? ':t' : '')} id={route.id} testOut={route.testOut} onBlocked={onBlocked} onTestOutPassed={onTestOutPassed} />
+    return <LessonPage key={route.id} id={route.id} onBlocked={onBlocked} />
   }
   if (route.name === 'glossary') {
     return (

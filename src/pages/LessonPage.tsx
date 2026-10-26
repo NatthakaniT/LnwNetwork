@@ -34,11 +34,9 @@ const STEPS: { key: StepKey; label: string }[] = [
 
 interface Props {
   id: string
-  testOut?: boolean
   parts?: Part[]
   storage?: Storage
   onBlocked?: (message: string) => void
-  onTestOutPassed?: (titleTh: string) => void
 }
 
 function findLesson(parts: Part[], id: string): Lesson | undefined {
@@ -54,14 +52,14 @@ function nextReadyLesson(parts: Part[], id: string): Lesson | undefined {
 }
 
 /** เช็กสิทธิ์เข้าบทก่อน แล้วค่อยแสดงหน้า (แยกกันเพื่อให้ hook เรียงเท่าเดิมเสมอ) */
-export function LessonPage({ id, testOut = false, parts = course, storage, onBlocked, onTestOutPassed }: Props) {
+export function LessonPage({ id, parts = course, storage, onBlocked }: Props) {
   const lesson = findLesson(parts, id)
   const [progress0] = useState(() => loadProgress(storage))
 
   let blocked: string | null = null
   if (!lesson) blocked = MSG_LOCKED
   else if (lesson.status !== 'ready' || !lesson.quiz || lesson.quiz.length === 0) blocked = MSG_BUILDING
-  else if (!testOut && !isUnlocked(id, parts, progress0)) blocked = MSG_LOCKED
+  else if (!isUnlocked(id, parts, progress0)) blocked = MSG_LOCKED
 
   useEffect(() => {
     if (!blocked) return
@@ -70,28 +68,7 @@ export function LessonPage({ id, testOut = false, parts = course, storage, onBlo
   }, [blocked, onBlocked])
 
   if (blocked || !lesson) return null
-  return testOut
-    ? <TestOut lesson={lesson} storage={storage} onPassed={onTestOutPassed} />
-    : <LessonBody lesson={lesson} parts={parts} storage={storage} initial={progress0} />
-}
-
-function TestOut({ lesson, storage, onPassed }: { lesson: Lesson; storage?: Storage; onPassed?: (titleTh: string) => void }) {
-  const onPass = useCallback(() => {
-    saveProgress(markCompleted(lesson.id, loadProgress(storage)), storage)
-    onPassed?.(lesson.titleTh)
-    navigate('#/')
-  }, [lesson.id, lesson.titleTh, storage, onPassed])
-  return (
-    <main className="lesson-page" style={partVars(lesson.part)}>
-      <p className="lesson-back rise"><a href="#/">← กลับแผนที่</a></p>
-      <header className="lesson-head rise d1">
-        <h1>สอบข้ามบท: {lesson.titleTh}</h1>
-      </header>
-      <section className="step-body rise d2">
-        <QuizView key={lesson.id} questions={lesson.quiz!} mode="testOut" termIds={lesson.terms ?? NO_TERMS} onPass={onPass} />
-      </section>
-    </main>
-  )
+  return <LessonBody lesson={lesson} parts={parts} storage={storage} initial={progress0} />
 }
 
 function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts: Part[]; storage?: Storage; initial: Progress }) {

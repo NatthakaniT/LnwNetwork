@@ -78,14 +78,7 @@ export function CourseMap({ parts = course, storage, notice, onDismissNotice }: 
                   if (s === 'building') {
                     return <span key={l.id} className="l building">{label(l)} <small>กำลังทำ</small></span>
                   }
-                  return (
-                    <span key={l.id} className="l lock">
-                      <span>🔒 {label(l)}</span>{' '}
-                      <button type="button" className="btn small" onClick={() => navigate(`#/lesson/${l.id}/test-out`)}>
-                        สอบข้ามบท
-                      </button>
-                    </span>
-                  )
+                  return <span key={l.id} className="l lock">🔒 {label(l)}</span>
                 })}
               </div>
             </section>

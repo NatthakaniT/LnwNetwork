@@ -47,17 +47,12 @@ describe('CourseMap', () => {
     expect(now).toHaveAttribute('href', '#/lesson/f2')
     const lock = screen.getByText(/🔒 บท f3/).closest('.l') as HTMLElement
     expect(lock.tagName).not.toBe('A')
-    expect(within(lock).getByRole('button', { name: 'สอบข้ามบท' })).toBeInTheDocument()
+    expect(within(lock).queryByRole('button', { name: 'สอบข้ามบท' })).toBeNull()
+    expect(within(lock).queryByRole('button')).toBeNull()
     const building = screen.getByText(/บท b1/).closest('.l') as HTMLElement
     expect(building.tagName).not.toBe('A')
     expect(within(building).getByText('กำลังทำ')).toBeInTheDocument()
     expect(within(building).queryByRole('button')).toBeNull()
-  })
-
-  it('test-out button goes to test-out route', () => {
-    render(<CourseMap parts={fixture} storage={storage} />)
-    fireEvent.click(screen.getAllByRole('button', { name: 'สอบข้ามบท' })[1]) // f3 (f2 is the first locked)
-    expect(window.location.hash).toBe('#/lesson/f3/test-out')
   })
 
   it('continue button points at lastLesson', () => {
@@ -72,7 +67,7 @@ describe('CourseMap', () => {
     expect(screen.getByRole('link', { name: 'เรียนต่อ' })).toHaveAttribute('href', '#/lesson/f2')
   })
 
-  it('a lesson done by test-out (previous one not done) is openable on the map', () => {
+  it('a completed lesson (previous one not done) is openable on the map', () => {
     saveProgress({ version: 1, completed: ['f3'] }, storage)
     render(<CourseMap parts={fixture} storage={storage} />)
     expect(screen.getByRole('link', { name: /✅ บท f3/ })).toHaveAttribute('href', '#/lesson/f3')
@@ -105,14 +100,14 @@ describe('CourseMap', () => {
     }
   })
 
-  it('a part whose only open lesson is done (by test-out) is not locked', () => {
+  it('a part whose only open lesson is done is not locked', () => {
     const parts: Part[] = [
       { part: 0, titleTh: 'ก', examDomain: 'A', lessons: [mk('x1', 0, 1)] },
       { part: 1, titleTh: 'ข', examDomain: 'B', lessons: [mk('y1', 1, 1)] },
       { part: 2, titleTh: 'ค', examDomain: 'C', lessons: [mk('z1', 2, 1)] },
       { part: 3, titleTh: 'ง', examDomain: 'D', lessons: [mk('w1', 3, 1)] },
     ]
-    // y1 ผ่านด้วยการสอบข้าม (x1 ยังไม่ผ่าน): ภาค 1 มีแต่บทที่จบแล้ว ก็ยังไม่ล็อก; z1 เปิดต่อได้; w1 ยังไม่ถึง
+    // y1 ผ่านแล้ว (x1 ยังไม่ผ่าน): ภาค 1 มีแต่บทที่จบแล้ว ก็ยังไม่ล็อก; z1 เปิดต่อได้; w1 ยังไม่ถึง
     saveProgress({ version: 1, completed: ['y1'] }, storage)
     render(<CourseMap parts={parts} storage={storage} />)
     const cards = [...document.querySelectorAll<HTMLElement>('.part-card')]

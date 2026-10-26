@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react'
 
 export type Route =
   | { name: 'map' }
-  | { name: 'lesson'; id: string; testOut: boolean }
+  | { name: 'lesson'; id: string }
   | { name: 'glossary' }
 
 export function parseHash(hash: string): Route {
   const path = hash.replace(/^#/, '').replace(/\/+$/, '')
-  const m = /^\/lesson\/([^/]+)(\/test-out)?$/.exec(path)
+  const m = /^\/lesson\/([^/]+)$/.exec(path)
   if (m) {
     try {
-      return { name: 'lesson', id: decodeURIComponent(m[1]), testOut: !!m[2] }
+      return { name: 'lesson', id: decodeURIComponent(m[1]) }
     } catch {
       return { name: 'map' } // hash เสียรูปแบบ เช่น %E0%A4%A
     }

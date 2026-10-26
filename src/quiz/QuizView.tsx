@@ -40,12 +40,11 @@ function order(questions: QuizQuestion[], shuffle?: Shuffle): QuizQuestion[] {
 export interface QuizViewProps {
   questions: QuizQuestion[]
   onPass: () => void
-  mode?: 'lesson' | 'testOut'
   shuffle?: Shuffle
   termIds?: string[]
 }
 
-export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherYates, termIds = [] }: QuizViewProps) {
+export function QuizView({ questions, onPass, shuffle = fisherYates, termIds = [] }: QuizViewProps) {
   const [list, setList] = useState(() => order(questions, shuffle))
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
@@ -115,9 +114,7 @@ export function QuizView({ questions, onPass, mode = 'lesson', shuffle = fisherY
   return (
     <section className="quiz">
       {index === 0 && (
-        <p className="quiz-intro">
-          {mode === 'testOut' ? 'ถ้าตอบผ่าน จะข้ามบทนี้ได้เลย ต้องถูกอย่างน้อย 80%' : 'ตอบให้ถูกอย่างน้อย 80% ถึงจะผ่านบทนี้'}
-        </p>
+        <p className="quiz-intro">ตอบให้ถูกอย่างน้อย 80% ถึงจะผ่านบทนี้</p>
       )}
       <p className="quiz-count">ข้อ {index + 1} จาก {list.length}</p>
       <h3 className="quiz-prompt" lang={q.layer === 'en' ? 'en' : 'th'}>

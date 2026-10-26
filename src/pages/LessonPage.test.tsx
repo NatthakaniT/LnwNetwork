@@ -8,7 +8,7 @@ vi.mock('../scenes/ScenePlayer', () => ({
 vi.mock('../lab/LabView', () => ({ LabView: (p: { onDone: () => void }) => <button onClick={p.onDone}>จบแล็บเครือข่าย</button> }))
 vi.mock('../lab/ActivityView', () => ({ ActivityView: (p: { onDone: () => void }) => <button onClick={p.onDone}>จบกิจกรรม</button> }))
 vi.mock('../quiz/QuizView', () => ({
-  QuizView: (p: { mode?: string; onPass: () => void }) => <button onClick={p.onPass}>ผ่านคำถาม-{p.mode ?? 'lesson'}</button>,
+  QuizView: (p: { onPass: () => void }) => <button onClick={p.onPass}>ผ่านคำถาม</button>,
 }))
 
 import { LessonPage, MSG_LOCKED, MSG_BUILDING } from './LessonPage'
@@ -54,7 +54,7 @@ describe('LessonPage', () => {
     fireEvent.click(screen.getByText('จบกิจกรรม'))
     fireEvent.click(nextBtn())
     expect(screen.queryByText(/ไปบทถัดไป/)).toBeNull()
-    fireEvent.click(screen.getByText('ผ่านคำถาม-lesson'))
+    fireEvent.click(screen.getByText('ผ่านคำถาม'))
     expect(loadProgress(storage).completed).toEqual(['f1'])
     expect(screen.getByRole('link', { name: 'ไปบทถัดไป' })).toHaveAttribute('href', '#/lesson/f2')
     fireEvent.click(tab('1. ดูคลิป'))
@@ -66,7 +66,7 @@ describe('LessonPage', () => {
     render(<LessonPage id="f3" parts={fixture} storage={storage} />)
     fireEvent.click(nextBtn()); fireEvent.click(screen.getByText('จบฉาก')); fireEvent.click(nextBtn())
     fireEvent.click(screen.getByText('จบกิจกรรม')); fireEvent.click(nextBtn())
-    fireEvent.click(screen.getByText('ผ่านคำถาม-lesson'))
+    fireEvent.click(screen.getByText('ผ่านคำถาม'))
     expect(screen.queryByRole('link', { name: 'ไปบทถัดไป' })).toBeNull()
     expect(screen.getByRole('link', { name: 'กลับไปแผนที่' })).toHaveAttribute('href', '#/')
   })
@@ -113,28 +113,12 @@ describe('LessonPage', () => {
     expect(on2).toHaveBeenCalledWith(MSG_LOCKED)
   })
 
-  it('a lesson already completed (e.g. by test-out) opens even if the previous one is not completed', () => {
+  it('a lesson already completed opens even if the previous one is not completed', () => {
     saveProgress({ version: 1, completed: ['f3'] }, storage)
     const onBlocked = vi.fn()
     render(<LessonPage id="f3" parts={fixture} storage={storage} onBlocked={onBlocked} />)
     expect(onBlocked).not.toHaveBeenCalled()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('บท f3')
-  })
-
-  it('test-out pass tells the caller which lesson was skipped', () => {
-    const onTestOutPassed = vi.fn()
-    render(<LessonPage id="f3" testOut parts={fixture} storage={storage} onTestOutPassed={onTestOutPassed} />)
-    fireEvent.click(screen.getByText('ผ่านคำถาม-testOut'))
-    expect(onTestOutPassed).toHaveBeenCalledWith('บท f3')
-  })
-
-  it('test-out: allowed while locked, only the quiz, pass completes and goes to map', () => {
-    window.location.hash = '#/lesson/f3/test-out'
-    render(<LessonPage id="f3" testOut parts={fixture} storage={storage} />)
-    expect(screen.queryByRole('navigation')).toBeNull()
-    fireEvent.click(screen.getByText('ผ่านคำถาม-testOut'))
-    expect(loadProgress(storage).completed).toEqual(['f3'])
-    expect(window.location.hash).toBe('#/')
   })
 })
 
@@ -154,13 +138,6 @@ describe('LessonPage shell', () => {
     const page = container.querySelector('.lesson-page') as HTMLElement
     expect(page.style.getPropertyValue('--part')).toBe(PART_COLORS[4].bg)
     expect(page.style.getPropertyValue('--part-fg')).toBe(PART_COLORS[4].fg)
-  })
-
-  it('หน้าสอบข้ามบทก็ใช้สีภาคและหัวบทแบบเดียวกัน', () => {
-    const { container } = render(<LessonPage id="q1" testOut parts={p4} storage={storage} />)
-    const page = container.querySelector('.lesson-page') as HTMLElement
-    expect(page.style.getPropertyValue('--part')).toBe(PART_COLORS[4].bg)
-    expect(container.querySelector('.lesson-head h1')).toHaveTextContent('สอบข้ามบท: บท q1')
   })
 
   it('แถบบอกขั้นปัจจุบัน .steps-indicator เลื่อนตาม --i', () => {

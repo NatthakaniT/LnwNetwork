@@ -112,9 +112,10 @@ describe('QuizView', () => {
     expect(texts).toEqual(['ตัวเลือก c 1', 'ตัวเลือก b 1', 'ตัวเลือก a 1'])
   })
 
-  it('testOut แสดงข้อความนำ', () => {
-    render(<QuizView questions={[mk('1', 'th', ['a'])]} onPass={() => {}} mode="testOut" />)
-    expect(screen.getByText(/ถ้าตอบผ่าน จะข้ามบทนี้ได้เลย/)).toBeInTheDocument()
+  it('ไม่มีข้อความชวนข้ามบท', () => {
+    render(<QuizView questions={[mk('1', 'th', ['a'])]} onPass={() => {}} />)
+    expect(screen.queryByText(/ข้ามบทนี้ได้เลย/)).toBeNull()
+    expect(screen.getByText(/ตอบให้ถูกอย่างน้อย 80%/)).toBeInTheDocument()
   })
 })
 

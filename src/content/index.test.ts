@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { course, validateCourse } from './index'
+import { build } from './parts'
 import { glossary } from './glossary'
 import type { Lesson, Part, GlossaryTerm, QuizQuestion, SceneSet } from './types'
 
@@ -25,6 +26,17 @@ describe('course outline', () => {
     expect(course[1].lessons[8].id).toBe('p1-l9')
     expect(course[6].lessons[3].id).toBe('p6-l4')
     expect(course[0].lessons[2].ciscoModules).toEqual(['ITN 3'])
+  })
+
+  it('lesson ids do not depend on position', () => {
+    const ids = (rows: Parameters<typeof build>[1]) => build(9, rows).map((l) => l.id).sort()
+    expect(ids([['p9-a', 'ก'], ['p9-b', 'ข']])).toEqual(['p9-a', 'p9-b'])
+    expect(ids([['p9-b', 'ข'], ['p9-a', 'ก']])).toEqual(['p9-a', 'p9-b'])
+  })
+
+  it('keeps the 45 original ids', () => {
+    const expected = [5, 9, 8, 5, 7, 7, 4].flatMap((n, p) => Array.from({ length: n }, (_, i) => `p${p}-l${i + 1}`))
+    expect(course.flatMap((p) => p.lessons).map((l) => l.id)).toEqual(expected)
   })
 
   it('passes validation', () => {
