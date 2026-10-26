@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 
 const sceneProps: { set?: unknown }[] = []
 vi.mock('../scenes/ScenePlayer', () => ({
@@ -203,5 +203,20 @@ describe('LessonPage foundations', () => {
     expect(screen.getByText('ไม่รู้เรื่องนี้ก็เรียนต่อได้')).toBeInTheDocument()
     fireEvent.click(screen.getByText('อยากรู้ลึก: ลึกมาก'))
     expect(d).toHaveAttribute('open')
+  })
+})
+
+describe('LessonPage tryIt', () => {
+  it('scenes step needs scenes finished and try-it done', () => {
+    vi.useFakeTimers()
+    const parts = [{ ...fixture[0], lessons: [mk('t1', 0, 1, { tryIt: { kind: 'bits8' as const, introTh: 'ลอง', goals: [1] } })] }]
+    render(<LessonPage id="t1" parts={parts} storage={storage} />)
+    fireEvent.click(nextBtn())
+    fireEvent.click(screen.getByText('จบฉาก'))
+    expect(nextBtn()).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'สวิตช์ค่า 1' }))
+    act(() => { vi.advanceTimersByTime(1400) })
+    expect(nextBtn()).toBeEnabled()
+    vi.useRealTimers()
   })
 })

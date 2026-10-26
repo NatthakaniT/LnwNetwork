@@ -4,6 +4,7 @@ import { course } from '../content'
 import type { Lesson, Part, QuizQuestion } from '../content/types'
 import { QuizView } from '../quiz/QuizView'
 import { ScenePlayer } from '../scenes/ScenePlayer'
+import { Bits8 } from '../tryit/Bits8'
 import { LabView } from '../lab/LabView'
 import { ActivityView } from '../lab/ActivityView'
 import { isUnlocked, loadProgress, markCompleted, saveProgress } from '../progress/progress'
@@ -93,6 +94,8 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
     if (completedAtStart) STEPS.forEach((st) => s.add(st.key))
     return s
   })
+  // ขั้นภาพทบทวนเสร็จเมื่อดูฉากจบ และทำ tryIt ครบ (ถ้าบทมี)
+  const [fin, setFin] = useState({ scenes: false, tryIt: !lesson.tryIt })
   const [passed, setPassed] = useState(completedAtStart)
   const [wrongPrompt, setWrongPrompt] = useState<string>()
 
@@ -111,7 +114,9 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   const isDone = (k: StepKey) => done.has(k) || !!missing[k]
   const canOpen = (i: number) => STEPS.slice(0, i).every((s) => isDone(s.key))
 
-  const onScenesFinished = useCallback(() => markDone('scenes'), [markDone])
+  useEffect(() => { if (fin.scenes && fin.tryIt) markDone('scenes') }, [fin, markDone])
+  const onScenesFinished = useCallback(() => setFin((f) => ({ ...f, scenes: true })), [])
+  const onTryItDone = useCallback(() => setFin((f) => ({ ...f, tryIt: true })), [])
   const onLabDone = useCallback(() => markDone('lab'), [markDone])
   const onQuizPass = useCallback(() => {
     const p = markCompleted(lesson.id, progressRef.current)
@@ -175,6 +180,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
         {step === 'scenes' && (lesson.scenes
           ? <ScenePlayer lessonId={lesson.id} set={lesson.scenes} termIds={termIds} onFinished={onScenesFinished} />
           : <p>บทนี้ไม่มีภาพทบทวน ไปขั้นต่อไปได้เลย</p>)}
+        {step === 'scenes' && lesson.tryIt && <Bits8 tryIt={lesson.tryIt} onDone={onTryItDone} />}
         {step === 'lab' && (lesson.lab
           ? (lesson.lab.kind === 'network'
             ? <LabView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />
