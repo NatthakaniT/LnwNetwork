@@ -161,3 +161,47 @@ describe('LessonPage shell', () => {
     expect(second).toHaveClass('rise')
   })
 })
+
+describe('LessonPage foundations', () => {
+  const base = mk('r1', 0, 1)
+  const withReq = (extra: object) => [{ ...fixture[0], lessons: [base, mk('t1', 0, 2, { requires: [{ lesson: 'r1', useTh: 'ใช้ตอนนับบิต' }], ...extra })] }]
+  const done = () => saveProgress({ version: 1, completed: ['r1'] }, storage)
+  const pre = { precheck: [{ id: 'c1', layer: 'th' as const, prompt: 'ถาม', reviewLesson: 'r1', choices: [{ id: 'a', text: 'ก' }, { id: 'b', text: 'ข' }], correct: ['a'], explainTh: 'เพราะ' }] }
+
+  it('lesson with precheck opens at เช็กพื้นฐาน and shows the requires box', () => {
+    done()
+    render(<LessonPage id="t1" parts={withReq(pre)} storage={storage} />)
+    expect(tab('1. เช็กพื้นฐาน')).toHaveAttribute('aria-current', 'step')
+    expect(tab('2. ดูคลิป')).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'เริ่มเรียน' }))
+    expect(tab('2. ดูคลิป')).toHaveAttribute('aria-current', 'step')
+    expect(loadProgress(storage).lastStep).toBe('video')
+  })
+  it('requires without precheck starts at the video and shows the box', () => {
+    done()
+    render(<LessonPage id="t1" parts={withReq({})} storage={storage} />)
+    expect(tab('1. ดูคลิป')).toHaveAttribute('aria-current', 'step')
+    expect(screen.queryByText(/เช็กพื้นฐาน/)).toBeNull()
+    expect(screen.getByText(/เรื่องนี้ต่อจาก/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'บท r1' })).toHaveAttribute('href', '#/lesson/r1')
+    expect(screen.getByText(/ใช้ตอนนับบิต/)).toBeInTheDocument()
+  })
+  it('plain lesson has neither', () => {
+    render(<LessonPage id="f1" parts={fixture} storage={storage} />)
+    expect(screen.queryByText(/เรื่องนี้ต่อจาก/)).toBeNull()
+    expect(screen.queryByText(/เช็กพื้นฐาน/)).toBeNull()
+  })
+  it('resumes at check from saved progress', () => {
+    saveProgress({ version: 1, completed: ['r1'], lastLesson: 't1', lastStep: 'check' }, storage)
+    render(<LessonPage id="t1" parts={withReq(pre)} storage={storage} />)
+    expect(tab('1. เช็กพื้นฐาน')).toHaveAttribute('aria-current', 'step')
+  })
+  it('deep dives are closed first and open on click', () => {
+    render(<LessonPage id="f1" parts={[{ ...fixture[0], lessons: [mk('f1', 0, 1, { deepDives: [{ titleTh: 'ลึกมาก', bodyTh: 'เนื้อหาลึก' }] })] }]} storage={storage} />)
+    const d = screen.getByText('อยากรู้ลึก: ลึกมาก').closest('details')!
+    expect(d).not.toHaveAttribute('open')
+    expect(screen.getByText('ไม่รู้เรื่องนี้ก็เรียนต่อได้')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('อยากรู้ลึก: ลึกมาก'))
+    expect(d).toHaveAttribute('open')
+  })
+})

@@ -1,11 +1,11 @@
 import type { LessonId, Part } from '../content/types'
 
-export type StepKey = 'video' | 'scenes' | 'lab' | 'quiz'
+export type StepKey = 'check' | 'video' | 'scenes' | 'lab' | 'quiz'
 export interface Progress { version: 1; completed: LessonId[]; lastLesson?: LessonId; lastStep?: StepKey }
 
 export const STORAGE_KEY = 'lnw-ccna-progress-v1'
 
-const STEPS: StepKey[] = ['video', 'scenes', 'lab', 'quiz']
+const STEPS: StepKey[] = ['check', 'video', 'scenes', 'lab', 'quiz']
 const emptyProgress = (): Progress => ({ version: 1, completed: [] })
 
 function defaultStorage(): Storage | undefined {

@@ -101,6 +101,12 @@ describe('loadProgress / saveProgress', () => {
     saveProgress(p, s)
     expect(loadProgress(s)).toEqual(p)
   })
+  it('round-trips lastStep check', () => {
+    const s = fakeStorage()
+    const p: Progress = { version: 1, completed: [], lastLesson: 'p0-l2', lastStep: 'check' }
+    saveProgress(p, s)
+    expect(loadProgress(s)).toEqual(p)
+  })
   it('returns empty progress for missing, corrupt, wrong-version or throwing storage', () => {
     expect(loadProgress(fakeStorage())).toEqual(empty)
     expect(loadProgress(fakeStorage({ [STORAGE_KEY]: '{oops' }))).toEqual(empty)

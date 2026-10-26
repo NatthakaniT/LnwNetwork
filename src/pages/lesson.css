@@ -191,3 +191,19 @@
   .steps-indicator, .lesson-page .step, .lesson-page .btn, .video-pick, .lesson-page .lesson-back a { transition: none; }
   .lesson-page .btn.primary:hover:not(:disabled), .video-pick:hover, .lesson-page .lesson-back a:hover { transform: none; }
 }
+
+/* ---------- กล่อง "เรื่องนี้ต่อจาก…" และ "อยากรู้ลึก" ---------- */
+.requires-box, .deep-dive {
+  margin: 1rem 0 0;
+  padding: 0.7rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--part, var(--p2));
+  border-radius: 14px;
+}
+.requires-box h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
+.requires-box ul { margin: 0; padding-left: 1.2rem; }
+.deep-dive summary { cursor: pointer; font-weight: 600; }
+.deep-dive summary:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+.deep-skip { opacity: 0.75; font-size: 0.9rem; }
+.precheck .quiz { margin-bottom: 1.2rem; }

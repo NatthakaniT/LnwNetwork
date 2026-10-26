@@ -10,6 +10,7 @@ import { isUnlocked, loadProgress, markCompleted, saveProgress } from '../progre
 import type { Progress, StepKey } from '../progress/progress'
 import { navigate } from '../router'
 import { VideoStep } from './VideoStep'
+import { PrecheckStep } from './PrecheckStep'
 import { RichText } from '../glossary/RichText'
 import { PART_COLORS } from '../ui/contrast'
 import './lesson.css'
@@ -25,12 +26,13 @@ function partVars(n: number): CSSProperties {
   return { '--part': c.bg, '--part-fg': c.fg } as CSSProperties
 }
 
-const STEPS: { key: StepKey; label: string }[] = [
+const BASE_STEPS: { key: StepKey; label: string }[] = [
   { key: 'video', label: 'ดูคลิป' },
   { key: 'scenes', label: 'ดูภาพทบทวน' },
   { key: 'lab', label: 'ลองเล่น' },
   { key: 'quiz', label: 'ตอบคำถาม' },
 ]
+const CHECK_STEP = { key: 'check' as StepKey, label: 'เช็กพื้นฐาน' }
 
 interface Props {
   id: string
@@ -73,6 +75,8 @@ export function LessonPage({ id, parts = course, storage, onBlocked }: Props) {
 
 function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts: Part[]; storage?: Storage; initial: Progress }) {
   const progressRef = useRef(initial)
+  // ขั้นเช็กพื้นฐานมีเฉพาะบทที่มี precheck
+  const STEPS = lesson.precheck && lesson.precheck.length > 0 ? [CHECK_STEP, ...BASE_STEPS] : BASE_STEPS
   const completedAtStart = initial.completed.includes(lesson.id)
   const startIdx =
     initial.lastLesson === lesson.id && initial.lastStep
@@ -82,7 +86,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   const [stepIdx, setStepIdx] = useState(startIdx)
   // ขั้นที่ทำเสร็จแล้ว: คลิปถือว่าเสร็จเสมอ; กลับมาที่ขั้นไหน ขั้นก่อนหน้าถือว่าผ่านแล้ว
   const [done, setDone] = useState<Set<StepKey>>(() => {
-    const s = new Set<StepKey>(['video'])
+    const s = new Set<StepKey>(['check', 'video'])
     STEPS.slice(0, startIdx).forEach((st) => s.add(st.key))
     if (completedAtStart) STEPS.forEach((st) => s.add(st.key))
     return s
@@ -123,6 +127,18 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
       <header className="lesson-head rise d1">
         <h1>{lesson.titleTh}</h1>
         {lesson.analogyTh && <p className="analogy"><RichText text={lesson.analogyTh} termIds={termIds} /></p>}
+        {lesson.requires && lesson.requires.length > 0 && (
+          <div className="requires-box">
+            <h2>เรื่องนี้ต่อจาก…</h2>
+            <ul>
+              {lesson.requires.map((r) => (
+                <li key={r.lesson}>
+                  <a href={`#/lesson/${r.lesson}`}>{findLesson(parts, r.lesson)?.titleTh ?? r.lesson}</a> · <RichText text={r.useTh} termIds={termIds} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {lesson.ciscoModules.length > 0 && (
           <span className="badge">ตรงกับ Cisco: {lesson.ciscoModules.join(', ')}</span>
         )}
@@ -146,7 +162,10 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
 
       {/* key ตามขั้น: เปลี่ยนขั้นแล้วสร้างใหม่ จึงลอยขึ้น (.rise) ทุกครั้ง */}
       <section key={step} className="step-body rise">
-        {step === 'video' && <VideoStep videos={lesson.videos} termIds={termIds} onNext={() => setStepIdx(1)} />}
+        {step === 'check' && (
+          <PrecheckStep questions={lesson.precheck!} requires={lesson.requires ?? []} parts={parts} termIds={termIds} onDone={() => setStepIdx(stepIdx + 1)} />
+        )}
+        {step === 'video' && <VideoStep videos={lesson.videos} termIds={termIds} onNext={() => setStepIdx(stepIdx + 1)} />}
         {step === 'scenes' && (lesson.scenes
           ? <ScenePlayer lessonId={lesson.id} set={lesson.scenes} termIds={termIds} onFinished={onScenesFinished} />
           : <p>บทนี้ไม่มีภาพทบทวน ไปขั้นต่อไปได้เลย</p>)}
@@ -158,7 +177,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
         {step === 'quiz' && <QuizView key={lesson.id} questions={lesson.quiz!} termIds={termIds} onPass={onQuizPass} />}
       </section>
 
-      {step !== 'video' && step !== 'quiz' && (
+      {step !== 'check' && step !== 'video' && step !== 'quiz' && (
         <p className="step-nav">
           <button type="button" className="btn primary" disabled={!isDone(step)} onClick={() => setStepIdx(stepIdx + 1)}>
             ไปขั้นต่อไป
@@ -168,6 +187,14 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
       {stepIdx > 0 && (
         <p className="step-nav"><button type="button" className="btn" onClick={() => setStepIdx(stepIdx - 1)}>ย้อนกลับ</button></p>
       )}
+
+      {lesson.deepDives?.map((d) => (
+        <details key={d.titleTh} className="deep-dive">
+          <summary>อยากรู้ลึก: {d.titleTh}</summary>
+          <p><RichText text={d.bodyTh} termIds={termIds} /></p>
+          <p className="deep-skip">ไม่รู้เรื่องนี้ก็เรียนต่อได้</p>
+        </details>
+      ))}
 
       {passed && step === 'quiz' && (
         <p className="pass-box">
