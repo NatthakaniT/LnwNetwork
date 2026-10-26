@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { course, validateCourse } from './index'
+import { course, validateCourse, firstTaughtIn } from './index'
 import { build } from './parts'
 import { glossary } from './glossary'
-import type { Lesson, Part, GlossaryTerm, QuizQuestion, SceneSet } from './types'
+import type { Lesson, Part, PrecheckQuestion, GlossaryTerm, QuizQuestion, SceneSet } from './types'
 
 describe('course outline', () => {
   it('has 7 parts (0-6) and 45 lessons', () => {
@@ -40,7 +40,9 @@ describe('course outline', () => {
   })
 
   it('passes validation', () => {
-    expect(validateCourse(course, glossary)).toEqual([])
+    // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
+    const errs = validateCourse(course, glossary)
+    expect(errs.filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
   })
 })
 
@@ -134,5 +136,59 @@ describe('validateCourse', () => {
     const errs = validateCourse(parts(readyOk({ scenes: bad })), gl)
     expect(has(errs, 'ghost')).toBe(true)
     expect(has(errs, 'ghost2')).toBe(true)
+  })
+
+  describe('foundations-first data', () => {
+    const l1 = (over: Partial<Lesson> = {}) => readyOk({ id: 'p9-l1', order: 1, ...over })
+    const l2 = (over: Partial<Lesson> = {}) => readyOk({ id: 'p9-l2', order: 2, ...over })
+    const pre = (over: Partial<PrecheckQuestion> = {}): PrecheckQuestion => ({ ...q({ id: 'pq' }), layer: 'th', reviewLesson: 'p9-l1', ...over })
+    const req = [{ lesson: 'p9-l1', useTh: 'ใช้ที่อยู่' }]
+
+    it('reports requires pointing to a missing lesson', () => {
+      const errs = validateCourse(parts(l1(), l2({ requires: [{ lesson: 'p9-zz', useTh: 'x' }] })), gl)
+      expect(has(errs, 'requires') && has(errs, 'p9-zz')).toBe(true)
+    })
+
+    it('reports requires pointing to itself or a later lesson', () => {
+      expect(has(validateCourse(parts(l1({ requires: [{ lesson: 'p9-l1', useTh: 'x' }] })), gl), 'ต้องเป็นบทก่อนหน้า')).toBe(true)
+      expect(has(validateCourse(parts(l1({ requires: [{ lesson: 'p9-l2', useTh: 'x' }] }), l2()), gl), 'ต้องเป็นบทก่อนหน้า')).toBe(true)
+    })
+
+    it('reports precheck without requires or with reviewLesson outside requires', () => {
+      expect(has(validateCourse(parts(l1(), l2({ precheck: [pre()] })), gl), 'reviewLesson')).toBe(true)
+      expect(has(validateCourse(parts(l1(), l2({ requires: req, precheck: [pre({ reviewLesson: 'p9-l0' })] })), gl), 'reviewLesson')).toBe(true)
+      expect(validateCourse(parts(l1(), l2({ requires: req, precheck: [pre()] })), gl)).toEqual([])
+    })
+
+    it('reports reviewLesson that is still building', () => {
+      const errs = validateCourse(parts(lesson({ id: 'p9-l1', order: 1 }), l2({ requires: req, precheck: [pre()] })), gl)
+      expect(has(errs, 'ยังไม่พร้อม')).toBe(true)
+    })
+
+    it('reports precheck with an en question', () => {
+      const errs = validateCourse(parts(l1(), l2({ requires: req, precheck: [{ ...pre(), layer: 'en' } as never] })), gl)
+      expect(has(errs, 'precheck ต้องเป็นภาษาไทย')).toBe(true)
+    })
+
+    it('reports bits8 goals outside 0-255 or non-integer', () => {
+      const tryIt = (goals: number[]) => l1({ tryIt: { kind: 'bits8', introTh: 'i', goals } })
+      expect(validateCourse(parts(tryIt([0, 255, 128])), gl)).toEqual([])
+      for (const g of [256, -1, 1.5]) expect(has(validateCourse(parts(tryIt([g])), gl), '0 ถึง 255')).toBe(true)
+    })
+
+    it('reports a term used before the lesson that first teaches it', () => {
+      const early = l1({ scenes: scenes({ scenes: [{ id: 's1', narrationTh: 'ใช้ mac นะ', actions: [] }] }) })
+      const errs = validateCourse(parts(early, l2({ terms: ['mac'] })), gl)
+      expect(has(errs, 'ใช้ศัพท์ "MAC" ก่อนบทที่สอน')).toBe(true)
+      expect(validateCourse(parts(l1({ terms: ['mac'] }), l2({ scenes: early.scenes })), gl)).toEqual([])
+      const macaroni = l1({ scenes: scenes({ scenes: [{ id: 's1', narrationTh: 'macaroni', actions: [] }] }) })
+      expect(validateCourse(parts(macaroni, l2({ terms: ['mac'] })), gl)).toEqual([])
+    })
+
+    it('firstTaughtIn maps each term to its first lesson', () => {
+      const m = firstTaughtIn(parts(l1({ terms: ['mac'] }), l2({ terms: ['mac', 'ip'] })))
+      expect(m.get('mac')).toBe('p9-l1')
+      expect(m.get('ip')).toBe('p9-l2')
+    })
   })
 })

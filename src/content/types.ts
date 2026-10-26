@@ -42,11 +42,18 @@ export interface NetworkLab { kind: 'network'; introTh: string; start: Topology;
 export interface ActivityLab { kind: 'order' | 'match'; introTh: string; items: { id: string; textTh: string }[]; answer: string[] | Record<string, string>; explainTh: string; rightTh?: string } // explainTh = ตอบผิดแล้วโค้ช, rightTh = ตอบถูกแล้วสรุปสั้น ๆ
 export type Lab = NetworkLab | ActivityLab
 
+// requires = บทนี้ใช้อะไรจากบทก่อน (useTh) / precheck = เช็กพื้นฐานก่อนเรียน ชั้นไทยเท่านั้น / goals = เลข 0–255 ที่ต้องทำให้ได้ตามลำดับ
+export interface Requirement { lesson: LessonId; useTh: string }
+export interface PrecheckQuestion extends QuizQuestion { layer: 'th'; reviewLesson: LessonId }
+export interface DeepDive { titleTh: string; bodyTh: string }
+export type TryIt = { kind: 'bits8'; introTh: string; goals: number[] }
+
 export interface Lesson {
   id: LessonId; part: number; order: number; status: LessonStatus
   titleTh: string; analogyTh: string; ciscoModules: string[]
   videos: VideoRef[] // ตัวแรก = คลิปหลัก
   scenes?: SceneSet; lab?: Lab; quiz?: QuizQuestion[]; terms?: string[]
+  requires?: Requirement[]; precheck?: PrecheckQuestion[]; tryIt?: TryIt; deepDives?: DeepDive[]
 }
 export interface Part { part: number; titleTh: string; examDomain: string; lessons: Lesson[] }
 export interface GlossaryTerm { id: string; en: string; th: string; explainTh: string }

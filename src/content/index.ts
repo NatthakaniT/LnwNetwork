@@ -1,4 +1,4 @@
-import type { GlossaryTerm, Lesson, Part, SceneAction } from './types'
+import type { GlossaryTerm, Lesson, LessonId, Part, QuizQuestion, SceneAction } from './types'
 import { parts } from './parts'
 
 export * from './types'
@@ -9,6 +9,37 @@ export const course: Part[] = parts
 function actorRefs(a: SceneAction): string[] {
   return a.type === 'moveAlong' ? [a.actor, ...a.path] : [a.actor]
 }
+
+const inOrder = (parts: Part[]): Lesson[] =>
+  parts.flatMap((p) => p.lessons).sort((a, b) => a.part - b.part || a.order - b.order)
+
+/** ศัพท์แต่ละคำ (glossary id) สอนครั้งแรกในบทไหน: บท ready แรกตามลำดับที่ใส่ศัพท์นั้นใน terms */
+export function firstTaughtIn(parts: Part[]): Map<string, LessonId> {
+  const m = new Map<string, LessonId>()
+  for (const l of inOrder(parts)) {
+    if (l.status !== 'ready') continue
+    for (const t of l.terms ?? []) if (!m.has(t)) m.set(t, l.id)
+  }
+  return m
+}
+
+const quizTexts = (qs: QuizQuestion[]): string[] =>
+  qs.flatMap((q) => [q.prompt, q.promptTh ?? '', q.explainTh, ...q.choices.flatMap((c) => [c.text, c.textTh ?? ''])])
+
+/** ข้อความที่ผู้เรียนเห็นในบท ready */
+function learnerTexts(l: Lesson): string[] {
+  const out = [l.analogyTh, ...quizTexts(l.quiz ?? []), ...quizTexts(l.precheck ?? [])]
+  for (const a of l.scenes?.actors ?? []) out.push(a.label ?? '')
+  for (const s of l.scenes?.scenes ?? []) {
+    out.push(s.narrationTh)
+    for (const act of s.actions) if (act.type === 'setLabel') out.push(act.label)
+  }
+  if (l.lab) out.push(l.lab.introTh)
+  if (l.lab?.kind === 'network') for (const g of l.lab.goals) out.push(g.taskTh, g.hintTh)
+  return out
+}
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): void {
   const id = l.id
@@ -39,6 +70,15 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
     if (!glossaryIds.has(t)) errs.push(`บท ${id}: อ้างศัพท์ "${t}" ที่ไม่มีใน glossary`)
   }
 
+  for (const q of l.precheck ?? []) {
+    if ((q.layer as string) !== 'th') errs.push(`บท ${id}: precheck ต้องเป็นภาษาไทย (คำถาม ${q.id})`)
+  }
+  if (l.tryIt?.kind === 'bits8') {
+    for (const g of l.tryIt.goals) {
+      if (!Number.isInteger(g) || g < 0 || g > 255) errs.push(`บท ${id}: เป้าหมาย tryIt ต้องเป็นจำนวนเต็ม 0 ถึง 255 (เจอ ${g})`)
+    }
+  }
+
   if (l.scenes) {
     const actorIds = new Set(l.scenes.actors.map((a) => a.id))
     for (const a of l.scenes.actors) {
@@ -66,5 +106,40 @@ export function validateCourse(parts: Part[], glossary: GlossaryTerm[]): string[
       if (l.status === 'ready') validateReady(l, glossaryIds, errs)
     }
   }
+  validateOrder(parts, glossary, errs)
   return errs
+}
+
+/** ตรวจที่ต้องรู้ลำดับบท: requires/precheck และการใช้ศัพท์ก่อนบทที่สอน */
+function validateOrder(parts: Part[], glossary: GlossaryTerm[], errs: string[]): void {
+  const lessons = inOrder(parts)
+  const pos = new Map(lessons.map((l, i) => [l.id, i]))
+  const byId = new Map(lessons.map((l) => [l.id, l]))
+  for (const l of lessons) {
+    if (l.status !== 'ready') continue
+    const reqIds = new Set((l.requires ?? []).map((r) => r.lesson))
+    for (const r of l.requires ?? []) {
+      if (!byId.has(r.lesson)) errs.push(`บท ${l.id}: requires ชี้ไปบท ${r.lesson} ซึ่งไม่มีอยู่`)
+      else if (pos.get(r.lesson)! >= pos.get(l.id)!) errs.push(`บท ${l.id}: requires บท ${r.lesson} ต้องเป็นบทก่อนหน้า`)
+    }
+    for (const q of l.precheck ?? []) {
+      if (!reqIds.has(q.reviewLesson)) errs.push(`บท ${l.id}: precheck ${q.id} มี reviewLesson ${q.reviewLesson} ที่ไม่อยู่ใน requires`)
+      else if (byId.get(q.reviewLesson)?.status === 'building') errs.push(`บท ${l.id}: precheck ${q.id} ชี้ reviewLesson ${q.reviewLesson} ที่ยังไม่พร้อม`)
+    }
+  }
+
+  const taught = firstTaughtIn(parts)
+  const termById = new Map(glossary.map((g) => [g.id, g]))
+  for (const l of lessons) {
+    if (l.status !== 'ready') continue
+    const text = learnerTexts(l).join('\n')
+    for (const [tid, lid] of taught) {
+      const term = termById.get(tid)
+      if (!term || pos.get(lid)! <= pos.get(l.id)!) continue
+      // ทั้งคำ ไม่สนตัวพิมพ์ เหมือน RichText
+      if (new RegExp(`(?<![A-Za-z0-9])${escapeRe(term.en)}(?![A-Za-z0-9])`, 'i').test(text)) {
+        errs.push(`บท ${l.id}: ใช้ศัพท์ "${term.en}" ก่อนบทที่สอน (${lid})`)
+      }
+    }
+  }
 }
