@@ -138,6 +138,32 @@ describe('validateCourse', () => {
     expect(has(errs, 'ghost2')).toBe(true)
   })
 
+  describe('ฉากแบบ v2', () => {
+    const v2 = (sceneOver: object, actors = [{ id: 'a1', kind: 'pc' as const, x: 100, y: 100 }]) => scenes({
+      style: 'v2', actors,
+      scenes: [{ id: 's1', narrationTh: 'n', chipTh: 'ถาม', lifeTh: 'ชีวิตจริง', actions: [{ type: 'show', actor: 'a1' }], ...sceneOver }],
+    })
+    it('ผ่านเมื่อมี chipTh lifeTh และไม่มีของทับกัน', () => {
+      expect(validateCourse(parts(readyOk({ scenes: v2({}) })), gl)).toEqual([])
+    })
+    it('ฉากไม่มี chipTh หรือ lifeTh', () => {
+      expect(has(validateCourse(parts(readyOk({ scenes: v2({ chipTh: undefined }) })), gl), 'chipTh')).toBe(true)
+      expect(has(validateCourse(parts(readyOk({ scenes: v2({ lifeTh: '' }) })), gl), 'lifeTh')).toBe(true)
+    })
+    it('สภาพตอนจบของฉากมีของทับกัน', () => {
+      const two = [{ id: 'a1', kind: 'pc' as const, x: 100, y: 100 }, { id: 'a2', kind: 'pc' as const, x: 120, y: 110 }]
+      const errs = validateCourse(parts(readyOk({ scenes: v2({}, two) })), gl)
+      expect(has(errs, 'ซ้อนกัน') && has(errs, 'a2')).toBe(true)
+    })
+    it('อ้าง actor ที่ไม่มีใน setup, trail และ say', () => {
+      const errs = validateCourse(parts(readyOk({ scenes: v2({
+        setup: [{ type: 'show', actor: 'ghost1' }],
+        actions: [{ type: 'trail', path: ['a1', 'ghost2'], tone: 'bcast' }, { type: 'say', actor: 'ghost3', text: 'x', mood: 'no' }],
+      }) })), gl)
+      for (const g of ['ghost1', 'ghost2', 'ghost3']) expect(has(errs, g)).toBe(true)
+    })
+  })
+
   describe('foundations-first data', () => {
     const l1 = (over: Partial<Lesson> = {}) => readyOk({ id: 'p9-l1', order: 1, ...over })
     const l2 = (over: Partial<Lesson> = {}) => readyOk({ id: 'p9-l2', order: 2, ...over })

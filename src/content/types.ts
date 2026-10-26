@@ -5,15 +5,31 @@ export type LessonStatus = 'ready' | 'building'
 export interface VideoRef { youtubeId: string; titleTh: string; channel: string; startSec?: number; noteTh?: string }
 
 export type ActorKind = 'house' | 'pc' | 'laptop' | 'switch' | 'router' | 'server' | 'cloud'
-  | 'envelope' | 'box' | 'truck' | 'person' | 'label' | 'cable'
-export interface Actor { id: string; kind: ActorKind; x: number; y: number; label?: string; hidden?: boolean; to?: string /* cable: target actor id */ }
+  | 'envelope' | 'box' | 'truck' | 'person' | 'label' | 'cable' | 'card' | 'table'
+/** สีบอกชนิดการส่ง: bcast = ถามทุกเครื่อง (ส้ม), reply = ตอบเครื่องเดียว (ฟ้า), deliver = ส่งของจริง (สีภาค) */
+export type Tone = 'bcast' | 'reply' | 'deliver'
+// label ขึ้นบรรทัดใหม่ด้วย \n (บรรทัดที่สองตัวเล็กและจาง) / labelSide 'right' = ป้ายอยู่ข้างไอคอน ใช้กับเครื่องที่เรียงแนวตั้ง
+// card: lines = ข้อความหน้าซอง (บรรทัดแรกตัวหนา), tone / table: titleTh, columns, rows
+export interface Actor {
+  id: string; kind: ActorKind; x: number; y: number; label?: string; hidden?: boolean; to?: string /* cable: target actor id */
+  labelSide?: 'right'
+  lines?: string[]; tone?: Tone
+  titleTh?: string; columns?: [string, string]; rows?: [string, string][]
+}
 export type SceneAction =
   | { type: 'show' | 'hide' | 'highlight' | 'unhighlight'; actor: string }
   | { type: 'move'; actor: string; x: number; y: number; ms: number }
-  | { type: 'moveAlong'; actor: string; path: string[]; msPerHop: number } // path = actor ids
+  // path = actor ids; offset ใช้กับทุกจุดในเส้นทาง เพื่อให้ซองจอดข้างอุปกรณ์
+  | { type: 'moveAlong'; actor: string; path: string[]; msPerHop: number; offset?: { dx: number; dy: number } }
   | { type: 'setLabel'; actor: string; label: string }
-export interface Scene { id: string; narrationTh: string; actions: SceneAction[] }
-export interface SceneSet { stage: { width: number; height: number }; actors: Actor[]; scenes: Scene[] }
+  | { type: 'trail'; path: string[]; tone: Tone } // เส้นทางค้างบนสาย
+  | { type: 'ripple'; actor: string; tone: Tone } // วงกระจายตอน broadcast (มีแค่ตอนเล่น)
+  | { type: 'say'; actor: string; text: string; mood: 'yes' | 'no' }
+  | { type: 'dim' | 'glow'; actor: string }
+  | { type: 'setRows'; actor: string; rows: [string, string][] }
+// v2: chipTh = ชื่อฉากสั้น ๆ บนปุ่มเลือกฉาก, lifeTh/lifeIcon = แถบ "ในชีวิตจริง", setup = ของที่ฉากนี้ใช้ (เวทีเริ่มใหม่ทุกฉาก)
+export interface Scene { id: string; narrationTh: string; actions: SceneAction[]; chipTh?: string; lifeTh?: string; lifeIcon?: string; setup?: SceneAction[] }
+export interface SceneSet { stage: { width: number; height: number }; actors: Actor[]; scenes: Scene[]; style?: 'v2' }
 
 export interface QuizChoice { id: string; text: string; textTh?: string }
 export interface QuizQuestion {

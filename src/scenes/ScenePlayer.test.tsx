@@ -194,3 +194,104 @@ describe('ScenePlayer termIds', () => {
     expect(screen.getByRole('button', { name: 'IP address' })).toBeInTheDocument()
   })
 })
+
+describe('ScenePlayer v2', () => {
+  const base = [{ type: 'show' as const, actor: 'me' }, { type: 'show' as const, actor: 'you' }]
+  const v2: SceneSet = {
+    style: 'v2',
+    stage: { width: 960, height: 540 },
+    actors: [
+      { id: 'me', kind: 'pc', x: 150, y: 250, label: 'คอมเรา', hidden: true },
+      { id: 'you', kind: 'pc', x: 750, y: 250, label: 'คอม 3', labelSide: 'right', hidden: true },
+      { id: 'q', kind: 'card', x: 150, y: 140, lines: ['ถึง: ทุกเครื่อง', 'ใครคือ .30 ?'], tone: 'bcast', hidden: true },
+    ],
+    scenes: [
+      { id: 'v1', narrationTh: 'ปัญหา', chipTh: 'ปัญหา', lifeTh: 'ชีวิตหนึ่ง', lifeIcon: '📦', setup: base, actions: [] },
+      { id: 'v2', narrationTh: 'ถาม', chipTh: 'ตะโกนถาม', lifeTh: 'ชีวิตสอง', setup: base, actions: [
+        { type: 'ripple', actor: 'me', tone: 'bcast' },
+        { type: 'trail', path: ['me', 'you'], tone: 'bcast' },
+        { type: 'show', actor: 'q' },
+        { type: 'moveAlong', actor: 'q', path: ['me', 'you'], msPerHop: 500, offset: { dx: -180, dy: 0 } },
+        { type: 'say', actor: 'you', text: 'ได้ยินแล้ว', mood: 'yes' },
+      ] },
+      { id: 'v3', narrationTh: 'เงียบ', chipTh: 'เงียบ', lifeTh: 'ชีวิตสาม', setup: base, actions: [{ type: 'dim', actor: 'you' }] },
+      { id: 'v4', narrationTh: 'ตอบ', chipTh: 'ตอบกลับ', lifeTh: 'ชีวิตสี่', setup: base, actions: [
+        { type: 'trail', path: ['you', 'me'], tone: 'reply' },
+        { type: 'say', actor: 'you', text: 'ฉันเอง!', mood: 'yes' },
+      ] },
+    ],
+  }
+  const chip = (name: string) => screen.getByRole('button', { name: new RegExp(name) })
+
+  it('แสดงปุ่มฉากตามจำนวนฉาก แถบชีวิตจริง และคำอธิบายสีเฉพาะที่ใช้', () => {
+    const { container } = render(<ScenePlayer lessonId="l1" set={v2} onFinished={() => {}} />)
+    expect(container.querySelectorAll('.sp-chips button')).toHaveLength(4)
+    expect(screen.getByText('ชีวิตหนึ่ง')).toBeInTheDocument()
+    expect(screen.getByText('ในชีวิตจริง')).toBeInTheDocument()
+    expect(chip('ปัญหา')).toHaveAttribute('aria-current', 'step')
+    expect(container.querySelector('.sp-legend')).toHaveTextContent('broadcast')
+    expect(container.querySelector('.sp-legend')).toHaveTextContent('unicast')
+    expect(container.querySelector('.sp-legend')).not.toHaveTextContent('ส่งของจริง')
+  })
+
+  it('กดปุ่มฉากที่ 4 เห็น bubble และ trail ทันที กดย้อนไปฉาก 3 ไม่มีของฉาก 4 ค้าง', () => {
+    const { container } = render(<ScenePlayer lessonId="l1" set={v2} onFinished={() => {}} />)
+    fireEvent.click(chip('ตอบกลับ'))
+    expect(screen.getByText('ฉากที่ 4 จาก 4')).toBeInTheDocument()
+    expect(screen.getByText('ฉันเอง!')).toBeInTheDocument()
+    expect(container.querySelector('[data-trail="reply"]')).not.toBeNull()
+    expect(screen.getByText('ชีวิตสี่')).toBeInTheDocument()
+    expect(chip('ปัญหา')).toHaveClass('done')
+    fireEvent.click(screen.getByRole('button', { name: /ย้อน/ }))
+    expect(screen.getByText('ฉากที่ 3 จาก 4')).toBeInTheDocument()
+    expect(container.querySelector('[data-trail]')).toBeNull()
+    expect(screen.queryByText('ฉันเอง!')).toBeNull()
+    expect(group(container, 'you').style.opacity).toBe('0.35')
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled()
+  })
+
+  it('เล่นฉาก: ripple มีแค่ตอนเล่น ซองวิ่งไปจอดข้างเครื่อง แล้วค่อยพูดหลังซองถึง', () => {
+    const { container } = render(<ScenePlayer lessonId="l1" set={v2} onFinished={() => {}} />)
+    fireEvent.click(chip('ตะโกนถาม'))
+    expect(container.querySelector('.sp-ripple')).toBeNull()
+    expect(group(container, 'q').style.transform).toContain('translate(570px, 250px)')
+    fireEvent.click(screen.getByRole('button', { name: /เล่น/ }))
+    expect(screen.queryByText('ได้ยินแล้ว')).toBeNull()
+    act(() => { vi.advanceTimersByTime(100) })
+    expect(container.querySelector('.sp-ripple')).not.toBeNull()
+    expect(container.querySelector('[data-trail="bcast"]')).not.toBeNull()
+    expect(group(container, 'q').style.transform).toContain('translate(570px, 250px)')
+    expect(screen.queryByText('ได้ยินแล้ว')).toBeNull()
+    act(() => { vi.advanceTimersByTime(600) })
+    expect(screen.getByText('ได้ยินแล้ว')).toBeInTheDocument()
+  })
+
+  it('prefers-reduced-motion: กดเล่นแล้วเห็นสภาพตอนจบทันที ไม่มี ripple', () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('reduce'), addEventListener() {}, removeEventListener() {} }))
+    try {
+      const { container } = render(<ScenePlayer lessonId="l1" set={v2} onFinished={() => {}} />)
+      fireEvent.click(chip('ตะโกนถาม'))
+      fireEvent.click(screen.getByRole('button', { name: /เล่น/ }))
+      expect(screen.getByText('ได้ยินแล้ว')).toBeInTheDocument()
+      act(() => { vi.advanceTimersByTime(100) })
+      expect(container.querySelector('.sp-ripple')).toBeNull()
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('ฉากสุดท้ายจบแล้วเรียก onFinished ครั้งเดียว', () => {
+    const onFinished = vi.fn()
+    const { container } = render(<ScenePlayer lessonId="l1" set={v2} onFinished={onFinished} />)
+    fireEvent.click(screen.getByRole('button', { name: /เล่น/ }))
+    for (let i = 0; i < 4; i++) fireEvent.ended(audio(container))
+    expect(onFinished).toHaveBeenCalledTimes(1)
+  })
+
+  it('SceneSet แบบเดิมไม่มีแถบชีวิตจริงและปุ่มฉาก', () => {
+    const { container } = render(<ScenePlayer lessonId="l1" set={set} onFinished={() => {}} />)
+    expect(container.querySelector('.sp-life')).toBeNull()
+    expect(container.querySelector('.sp-chips')).toBeNull()
+    expect(container.querySelector('.sp-legend')).toBeNull()
+  })
+})

@@ -39,3 +39,56 @@
 @media (prefers-reduced-motion: reduce) {
   .sp-btn { transition: none; }
 }
+
+/* ---- ฉากแบบ v2 (spec 3.1): ปุ่มเลือกฉาก แถบชีวิตจริง สีการส่ง ซอง สมุด ป้ายพูด ---- */
+.sp-chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.sp-chips button {
+  font: inherit; font-size: 0.9rem; font-weight: 600;
+  color: var(--text-muted); background: var(--surface); border: 1.5px solid var(--border);
+  padding: 6px 14px; border-radius: 999px; cursor: pointer;
+}
+.sp-chips button.done { color: var(--text); border-color: var(--text-muted); }
+.sp-chips button.on { color: var(--part-fg, var(--bg)); background: var(--part, var(--p0)); border-color: var(--part, var(--p0)); }
+.sp-chips button:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+
+.sp-life {
+  display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px;
+}
+.sp-life-icon { font-size: 2rem; line-height: 1; }
+.sp-life-tag { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; color: var(--part, var(--p0)); }
+.sp-life p { margin: 0; font-size: 1.1rem; }
+
+.sp-tone-bcast { --tone: var(--tone-bcast); }
+.sp-tone-reply { --tone: var(--tone-reply); }
+.sp-tone-deliver { --tone: var(--part, var(--p0)); }
+
+.sp-legend { display: flex; flex-wrap: wrap; gap: 16px; color: var(--text-muted); font-size: 0.95rem; }
+.sp-legend i { display: inline-block; width: 22px; height: 6px; border-radius: 3px; vertical-align: middle; margin-right: 6px; background: var(--tone); }
+
+.sp-trail line { stroke: var(--tone); stroke-width: 8; stroke-linecap: round; opacity: 0.9; }
+.sp-ripple {
+  fill: none; stroke: var(--tone); stroke-width: 5; vector-effect: non-scaling-stroke;
+  transform-box: fill-box; transform-origin: center; opacity: 0;
+  animation: sp-ripple 1.4s ease-out forwards;
+}
+@keyframes sp-ripple { from { transform: scale(1); opacity: 0.9; } to { transform: scale(6); opacity: 0; } }
+
+/* กระดาษสว่าง ตัวหนังสือเข้ม อ่านง่ายบนเวทีมืด */
+.sp-card rect { fill: var(--text); stroke: var(--tone); stroke-width: 4; }
+.sp-card text, .sp-table text { fill: var(--bg); }
+.sp-table .sp-paper { fill: var(--text); stroke: var(--bg); stroke-width: 3; }
+.sp-table text.sp-muted { fill: var(--disabled-fg); }
+.sp-table .sp-rule { stroke: var(--text-muted); stroke-width: 2; }
+.sp-label-sub { fill: var(--text-muted); }
+
+.sp-bubble rect { stroke: var(--bg); stroke-width: 2; }
+.sp-bubble text { fill: var(--bg); }
+.sp-bubble-yes rect { fill: var(--tone-reply); }
+.sp-bubble-no rect { fill: var(--text-muted); }
+.sp-bubble-no { opacity: 0.8; }
+.sp-glow { filter: drop-shadow(0 0 10px var(--part, var(--p0))); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-ripple { display: none; }
+}

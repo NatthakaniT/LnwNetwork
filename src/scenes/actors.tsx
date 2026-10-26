@@ -1,6 +1,8 @@
-import type { Actor, ActorKind } from '../content/types'
+import type { ActorKind } from '../content/types'
+import { BUBBLE, CARD, HALF, ICON_SCALE, LABEL_BELOW_Y, TABLE, bubbleBox, cardSize, tableSize } from './layout'
+import type { StageActor, StageState } from './timeline'
 
-export type StageActor = Actor & { highlighted?: boolean }
+export type { StageActor }
 
 const STROKE = '#0b1220'
 
@@ -109,12 +111,75 @@ function Icon({ kind }: { kind: ActorKind }) {
       )
     case 'label':
     case 'cable':
+    case 'card':
+    case 'table':
       return null
   }
 }
 
-const ICON_SCALE = 1.6
 const ICON_HALF_HEIGHT = 36 * ICON_SCALE
+
+/** ซองที่มีป้ายหน้าซอง ขอบเป็นสีชนิดการส่ง */
+function Card({ actor }: { actor: StageActor }) {
+  const lines = actor.lines ?? []
+  const { w, h } = cardSize(lines)
+  return (
+    <g className={`sp-card sp-tone-${actor.tone ?? 'deliver'}`}>
+      <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="8" />
+      {lines.map((l, i) => (
+        <text key={i} x={-w / 2 + CARD.pad} y={-h / 2 + 28 + i * CARD.line} fontSize={CARD.font} fontWeight={i === 0 ? 700 : 400}>{l}</text>
+      ))}
+    </g>
+  )
+}
+
+/** สิ่งที่อุปกรณ์รู้ เช่น สมุดจด IP → MAC */
+function Table({ actor }: { actor: StageActor }) {
+  const rows = actor.rows ?? []
+  const { w, h } = tableSize(rows.length)
+  const L = -w / 2, T = -h / 2
+  const [c1, c2] = actor.columns ?? ['', '']
+  return (
+    <g className="sp-table">
+      <rect className="sp-paper" x={L} y={T} width={w} height={h} rx="12" />
+      <text x={L + 16} y={T + 32} fontSize="20" fontWeight={700}>{actor.titleTh}</text>
+      <text className="sp-muted" x={L + 16} y={T + 66} fontSize="16" fontWeight={600}>{c1}</text>
+      <text className="sp-muted" x={L + TABLE.col2} y={T + 66} fontSize="16" fontWeight={600}>{c2}</text>
+      <line className="sp-rule" x1={L + 12} y1={T + 76} x2={L + w - 12} y2={T + 76} />
+      {rows.length === 0
+        ? <text className="sp-muted" x={L + 16} y={T + 108} fontSize="17">ยังว่างอยู่</text>
+        : rows.map(([a, b], i) => (
+          <g key={i}>
+            <text x={L + 16} y={T + 108 + i * TABLE.row} fontSize="18">{a}</text>
+            <text x={L + TABLE.col2} y={T + 108 + i * TABLE.row} fontSize="18" fontWeight={700}>{b}</text>
+          </g>
+        ))}
+    </g>
+  )
+}
+
+/** ป้ายพูดเหนือเครื่อง: yes = เครื่องที่ใช่ (ฟ้า) / no = ไม่ใช่ (เทา) */
+export function Bubble({ actor, text, mood }: { actor: StageActor; text: string; mood: 'yes' | 'no' }) {
+  const b = bubbleBox(actor, text)
+  return (
+    <g data-bubble={actor.id} className={`sp-bubble sp-bubble-${mood}`} transform={`translate(${b.x + b.w / 2} ${b.y + b.h / 2})`}>
+      <rect x={-b.w / 2} y={-b.h / 2} width={b.w} height={b.h} rx={b.h / 2} />
+      <text y="7" textAnchor="middle" fontSize={BUBBLE.font} fontWeight={700}>{text}</text>
+    </g>
+  )
+}
+
+/** เส้นทางที่ของวิ่งผ่าน ค้างไว้บนสาย */
+export function Trail({ trail, actors }: { trail: StageState['trails'][number]; actors: StageState['actors'] }) {
+  return (
+    <g data-trail={trail.tone} className={`sp-trail sp-tone-${trail.tone}`}>
+      {trail.path.slice(1).map((to, i) => {
+        const a = actors[trail.path[i]], b = actors[to]
+        return a && b ? <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} /> : null
+      })}
+    </g>
+  )
+}
 
 export function ActorView({
   actor,
@@ -152,10 +217,13 @@ export function ActorView({
       style={{
         transform: `translate(${actor.x}px, ${actor.y}px)`,
         transition: `transform ${moveMs}ms ease-in-out, opacity 300ms`,
-        opacity: hidden ? 0 : 1,
+        opacity: hidden ? 0 : actor.dimmed ? 0.35 : 1,
         pointerEvents: 'none',
       }}
+      className={actor.glow ? 'sp-glow' : undefined}
     >
+      {actor.kind === 'card' && <Card actor={actor} />}
+      {actor.kind === 'table' && <Table actor={actor} />}
       {actor.highlighted && (
         <rect
           x={-50 * ICON_SCALE}
@@ -172,20 +240,27 @@ export function ActorView({
       <g data-icon-scale={ICON_SCALE} transform={`scale(${ICON_SCALE})`}>
         <Icon kind={actor.kind} />
       </g>
-      {actor.label && (
-        <text
-          y={actor.kind === 'label' ? 0 : ICON_HALF_HEIGHT + 26}
-          textAnchor="middle"
-          fontSize={actor.kind === 'label' ? 26 : 24}
-          fontWeight={600}
-          fill="#e6edf3"
-          stroke="#0f1419"
-          strokeWidth="4"
-          paintOrder="stroke"
-        >
-          {actor.label}
-        </text>
-      )}
+      {actor.label && actor.label.split('\n').map((line, i) => {
+        const side = actor.labelSide === 'right'
+        const y0 = actor.kind === 'label' ? 0 : side ? -4 : LABEL_BELOW_Y
+        return (
+          <text
+            key={i}
+            className={i > 0 ? 'sp-label-sub' : undefined}
+            x={side ? HALF[actor.kind][0] + 12 : 0}
+            y={y0 + i * 28}
+            textAnchor={side ? 'start' : 'middle'}
+            fontSize={actor.kind === 'label' ? 26 : i > 0 ? 20 : 24}
+            fontWeight={i > 0 ? 400 : 600}
+            fill="#e6edf3"
+            stroke="#0f1419"
+            strokeWidth="4"
+            paintOrder="stroke"
+          >
+            {line}
+          </text>
+        )
+      })}
     </g>
   )
 }

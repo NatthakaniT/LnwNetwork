@@ -1,5 +1,7 @@
 import type { GlossaryTerm, Lesson, LessonId, Part, QuizQuestion, SceneAction } from './types'
 import { parts } from './parts'
+import { stateAfterScene } from '../scenes/timeline'
+import { overlaps } from '../scenes/layout'
 
 export * from './types'
 export { glossary } from './glossary'
@@ -7,7 +9,16 @@ export { glossary } from './glossary'
 export const course: Part[] = parts
 
 function actorRefs(a: SceneAction): string[] {
+  if (a.type === 'trail') return a.path
   return a.type === 'moveAlong' ? [a.actor, ...a.path] : [a.actor]
+}
+
+/** ข้อความที่ผู้เรียนเห็นในฉาก (ไม่รวมบทพูด) */
+function actionTexts(a: SceneAction): string[] {
+  if (a.type === 'setLabel') return [a.label]
+  if (a.type === 'say') return [a.text]
+  if (a.type === 'setRows') return a.rows.flat()
+  return []
 }
 
 const inOrder = (parts: Part[]): Lesson[] =>
@@ -29,10 +40,12 @@ const quizTexts = (qs: QuizQuestion[]): string[] =>
 /** ข้อความที่ผู้เรียนเห็นในบท ready */
 function learnerTexts(l: Lesson): string[] {
   const out = [l.analogyTh, ...quizTexts(l.quiz ?? []), ...quizTexts(l.precheck ?? [])]
-  for (const a of l.scenes?.actors ?? []) out.push(a.label ?? '')
+  for (const a of l.scenes?.actors ?? []) {
+    out.push(a.label ?? '', ...(a.lines ?? []), a.titleTh ?? '', ...(a.columns ?? []), ...(a.rows ?? []).flat())
+  }
   for (const s of l.scenes?.scenes ?? []) {
-    out.push(s.narrationTh)
-    for (const act of s.actions) if (act.type === 'setLabel') out.push(act.label)
+    out.push(s.narrationTh, s.chipTh ?? '', s.lifeTh ?? '')
+    for (const act of [...(s.setup ?? []), ...s.actions]) out.push(...actionTexts(act))
   }
   if (l.lab) out.push(l.lab.introTh)
   if (l.lab?.kind === 'network') for (const g of l.lab.goals) out.push(g.taskTh, g.hintTh)
@@ -85,11 +98,18 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
       if (a.to && !actorIds.has(a.to)) errs.push(`บท ${id}: actor "${a.id}" ต่อสายไปหา "${a.to}" ซึ่งไม่มีอยู่`)
     }
     for (const s of l.scenes.scenes) {
-      for (const act of s.actions) {
+      for (const act of [...(s.setup ?? []), ...s.actions]) {
         for (const ref of actorRefs(act)) {
           if (!actorIds.has(ref)) errs.push(`บท ${id}: ฉาก ${s.id} อ้างถึง actor "${ref}" ซึ่งไม่มีอยู่`)
         }
       }
+    }
+    if (l.scenes.style === 'v2') {
+      l.scenes.scenes.forEach((s, i) => {
+        if (!s.chipTh?.trim()) errs.push(`บท ${id}: ฉาก ${s.id} ไม่มีชื่อฉาก (chipTh)`)
+        if (!s.lifeTh?.trim()) errs.push(`บท ${id}: ฉาก ${s.id} ไม่มีแถบชีวิตจริง (lifeTh)`)
+        for (const [a, b] of overlaps(stateAfterScene(l.scenes!, i))) errs.push(`บท ${id}: ฉาก ${s.id} ตอนจบมีของซ้อนกัน: ${a} กับ ${b}`)
+      })
     }
   }
 }

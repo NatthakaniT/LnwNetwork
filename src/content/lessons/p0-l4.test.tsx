@@ -9,7 +9,8 @@ import { saveProgress } from '../../progress/progress'
 import { LabView } from '../../lab/LabView'
 import { simulateSend } from '../../lab/sim'
 import { checkGoal } from '../../lab/goals'
-import { initialState, applyScene } from '../../scenes/timeline'
+import { stateAfterScene } from '../../scenes/timeline'
+import { boxOf, bubbleBox, overlaps } from '../../scenes/layout'
 import { lesson } from './p0-l4'
 
 const lab = lesson.lab as NetworkLab
@@ -48,14 +49,28 @@ describe('lesson p0-l4', () => {
     expect(glossary.find((g) => g.id === 'arp')!.explainTh).toContain('Gateway')
   })
 
-  it('บทพูด: 6-10 ฉาก ไม่เกิน 170 ตัวอักษร ไม่มีวงเล็บ (TTS อ่านวงเล็บตรง ๆ) ไม่มีตัวเลขให้ TTS อ่านเพี้ยน', () => {
+  it('บทพูด: ไม่เกิน 170 ตัวอักษร ไม่มีวงเล็บและตัวเลข (TTS อ่านเพี้ยน)', () => {
     const scenes = lesson.scenes!.scenes
     expect(scenes.length).toBeGreaterThanOrEqual(6)
-    expect(scenes.length).toBeLessThanOrEqual(10)
+    expect(scenes.length).toBeLessThanOrEqual(18)
     for (const s of scenes) {
       expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(170)
-      expect(s.narrationTh, s.id).not.toMatch(/[()]/)
-      expect(s.narrationTh.replace(/IPv4/g, ''), s.id).not.toMatch(/\d/) // IPv4 อ่านด้วยตาราง PRONOUNCE
+      // IPv4 คือชื่อศัพท์ อ่านด้วยตาราง PRONOUNCE ของ gen_lessons.py
+      expect(s.narrationTh.replace(/IPv4/g, ''), s.id).not.toMatch(/[0-9()]/)
+    }
+  })
+
+  it('เป็นฉากแบบ v2: ฉาก ARP แยกเป็น 6 ขั้นตามลำดับ และใช้สมุดจดของคอมเรา', () => {
+    const set = lesson.scenes!
+    expect(set.style).toBe('v2')
+    const chips = set.scenes.map((s) => s.chipTh)
+    const arp = ['ปัญหา', 'ตะโกนถาม', 'ใช่ฉันไหม', 'ตอบกลับ', 'จดลงสมุด', 'ส่งของจริง']
+    const at = chips.indexOf('ปัญหา')
+    expect(chips.slice(at, at + 6)).toEqual(arp)
+    expect(set.actors.find((a) => a.kind === 'table')!.titleTh).toContain('สมุดจดของคอมเรา')
+    for (const s of set.scenes) {
+      expect(s.chipTh, s.id).toBeTruthy()
+      expect(s.lifeTh, s.id).toBeTruthy()
     }
   })
 
@@ -76,36 +91,22 @@ describe('lesson p0-l4', () => {
     for (const t of texts.filter((x) => x.includes('สามชุดแรก'))) expect(t).toContain('ภาค 1')
   })
 
-  it('ทุกฉาก: ไอคอนที่โชว์อยู่ห่างกัน ≥ 120 และป้ายข้อความไม่ทับกัน', () => {
+  it('ทุกฉาก: ตอนจบไม่มีของทับกัน และทุกอย่างอยู่ในเวที', () => {
     const set = lesson.scenes!
-    let st = initialState(set)
-    for (const sc of set.scenes) {
-      st = applyScene(st, sc)
-      const vis = Object.values(st.actors).filter((a) => !a.hidden && a.kind !== 'cable')
-      const icons = vis.filter((a) => a.kind !== 'label' && a.kind !== 'box' && a.kind !== 'envelope')
-      const labels = vis.filter((a) => a.kind === 'label')
-      for (let i = 0; i < icons.length; i++) {
-        for (let j = i + 1; j < icons.length; j++) {
-          const d = Math.hypot(icons[i].x - icons[j].x, icons[i].y - icons[j].y)
-          expect(d, `${sc.id}: ${icons[i].id} กับ ${icons[j].id}`).toBeGreaterThanOrEqual(120)
-        }
+    set.scenes.forEach((sc, i) => {
+      const st = stateAfterScene(set, i)
+      expect(overlaps(st), sc.id).toEqual([])
+      const items = [
+        ...Object.values(st.actors).filter((a) => !a.hidden && a.kind !== 'cable').map((a) => [a.id, boxOf(a)] as const),
+        ...st.bubbles.map((b) => [b.actor + ':bubble', bubbleBox(st.actors[b.actor], b.text)] as const),
+      ]
+      for (const [id, b] of items) {
+        expect(b.x, `${sc.id}: ${id}`).toBeGreaterThanOrEqual(0)
+        expect(b.y, `${sc.id}: ${id}`).toBeGreaterThanOrEqual(0)
+        expect(b.x + b.w, `${sc.id}: ${id}`).toBeLessThanOrEqual(set.stage.width)
+        expect(b.y + b.h, `${sc.id}: ${id}`).toBeLessThanOrEqual(set.stage.height)
       }
-      for (const a of vis) {
-        expect(a.x, `${sc.id}: ${a.id}`).toBeGreaterThanOrEqual(60)
-        expect(a.x, `${sc.id}: ${a.id}`).toBeLessThanOrEqual(900)
-        expect(a.y, `${sc.id}: ${a.id}`).toBeLessThanOrEqual(510)
-      }
-      for (let i = 0; i < labels.length; i++) {
-        for (let j = i + 1; j < labels.length; j++) {
-          const apart = Math.abs(labels[i].y - labels[j].y) >= 50 || Math.abs(labels[i].x - labels[j].x) >= 400
-          expect(apart, `${sc.id}: ${labels[i].id} กับ ${labels[j].id}`).toBe(true)
-        }
-        for (const ic of icons) {
-          const clash = Math.abs(labels[i].x - ic.x) < 300 && labels[i].y > ic.y - 75 && labels[i].y < ic.y + 110
-          expect(clash, `${sc.id}: ป้าย ${labels[i].id} ทับ ${ic.id}`).toBe(false)
-        }
-      }
-    }
+    })
   })
 
   it('ฉากย้ายบ้าน: โน้ตบุ๊กย้ายหมู่บ้าน IP เปลี่ยน MAC เดิม / ฉาก ARP ถาม Gateway เมื่อปลายทางอยู่นอกหมู่บ้าน', () => {
@@ -133,25 +134,28 @@ describe('lesson p0-l4', () => {
     }
   })
 
-  it('IP ซ้ำ: อธิบายด้วย ARP ได้คำตอบสองเครื่อง ไม่ใช่ไปรษณีย์ (Switch) งง', () => {
+  it('IP ซ้ำ: ถามก่อน แล้วค่อยได้คำตอบสองเครื่อง ไม่ใช่ไปรษณีย์ (Switch) งง', () => {
     const scenes = lesson.scenes!.scenes
-    const s9 = scenes.find((s) => s.id === 's9')!
-    expect(s9.narrationTh).not.toContain('ไปรษณีย์')
-    expect(s9.narrationTh).toContain('สองเครื่องตอบ')
+    const ask = scenes.find((s) => s.id === 'dup1')!
+    const two = scenes.find((s) => s.id === 'dup2')!
+    expect(scenes.indexOf(ask) + 1).toBe(scenes.indexOf(two))
+    expect(two.narrationTh).not.toContain('ไปรษณีย์')
+    expect(two.narrationTh).toContain('สองเครื่องตอบ')
     expect((lesson.lab as NetworkLab).goals[0].hintTh).not.toContain('ไปรษณีย์')
     expect((lesson.lab as NetworkLab).goals[0].hintTh).toContain('พอถามหา MAC ก็ตอบมาสองเครื่อง')
-    // คำตอบสองซองวิ่งจากคอม 1 และคอม 2 กลับไปที่คนส่ง และเครื่องหมายคำถามอยู่ที่คนส่ง
-    const along = s9.actions.filter((a) => a.type === 'moveAlong') as { actor: string; path: string[] }[]
+    // ฉากถามมีแต่คำถาม ฉากตอบมีคำตอบสองซองวิ่งจากคอม 1 และคอม 2 กลับไปที่คนส่ง แล้วคนส่งงง
+    expect(ask.actions.some((a) => a.type === 'trail' && a.tone === 'reply')).toBe(false)
+    const along = two.actions.filter((a) => a.type === 'moveAlong') as { actor: string; path: string[] }[]
     for (const from of ['d1', 'd2']) expect(along.some((a) => a.path[0] === from && a.path[a.path.length - 1] === 'dSend')).toBe(true)
-    expect(s9.actions).toContainEqual({ type: 'setLabel', actor: 'dSend', label: 'คอม 3: MAC ไหนดี?' })
+    expect(two.actions).toContainEqual({ type: 'say', actor: 'dSend', text: 'MAC ไหนดี?', mood: 'no' })
     expect(lesson.scenes!.actors.find((a) => a.id === 'dLbl1')!.label).toBe('❓ IP ซ้ำ: สองเครื่องตอบ ARP · คอมไม่รู้จะส่งให้ใคร')
   })
 
-  it('ฉาก 6 บอกว่าทำไมต้องรู้ MAC / ฉาก 7 เริ่มจากคนส่งต้องเขียน MAC ผู้รับ / ไม่มีศัพท์อังกฤษสองคำติดกัน', () => {
-    const [s3, s5, s6, s7] = ['s3', 's5', 's6', 's7'].map((id) => lesson.scenes!.scenes.find((s) => s.id === id)!.narrationTh)
+  it('ฉาก 6 บอกว่าทำไมต้องรู้ MAC / ฉาก ARP เริ่มจากคนส่งต้องเขียน MAC ผู้รับ / ไม่มีศัพท์อังกฤษสองคำติดกัน', () => {
+    const [s3, s5, s6, arp1] = ['s3', 's5', 's6', 'arp1'].map((id) => lesson.scenes!.scenes.find((s) => s.id === id)!.narrationTh)
     expect(s6).toContain('Switch จะดู MAC ผู้รับบนกล่อง')
     expect(s6).not.toContain('MAC Switch')
-    expect(s7.startsWith('คนส่งต้องเขียน MAC ผู้รับบนกล่องด้วย')).toBe(true)
+    expect(arp1.startsWith('คนส่งต้องเขียน MAC ผู้รับบนกล่องด้วย')).toBe(true)
     expect(s3).toContain('เลขนี้ห้ามซ้ำกันนะ')
     expect(s5).toContain('Router หรือไปรษณีย์กลาง')
     expect(glossary.find((g) => g.id === 'mac-address')!.explainTh).toContain('ตามปกติ')

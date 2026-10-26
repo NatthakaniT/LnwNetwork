@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { SceneSet } from '../content/types'
-import { applyScene, audioUrl, fallbackDurationMs, initialState, stateBeforeScene } from './timeline'
+import { applyScene, audioUrl, fallbackDurationMs, initialState, stateAfterScene, stateBeforeScene } from './timeline'
 
 const set: SceneSet = {
   stage: { width: 800, height: 400 },
@@ -62,5 +62,60 @@ describe('timeline', () => {
 
   it('audioUrl อยู่ใต้ base path ของเว็บ (GitHub Pages)', () => {
     expect(audioUrl('p0-l1', 's1', '/LnwNetwork/')).toBe('/LnwNetwork/audio/p0-l1/s1.mp3')
+  })
+})
+
+describe('timeline v2 (เวทีเริ่มใหม่ทุกฉาก)', () => {
+  const v2: SceneSet = {
+    style: 'v2',
+    stage: { width: 960, height: 540 },
+    actors: [
+      { id: 'A', kind: 'pc', x: 100, y: 100, hidden: true },
+      { id: 'B', kind: 'pc', x: 400, y: 100, hidden: true },
+      { id: 'sw', kind: 'switch', x: 250, y: 300 },
+      { id: 'card', kind: 'card', x: 100, y: 0, hidden: true, lines: ['ถึง: B'], tone: 'reply' },
+      { id: 'nb', kind: 'table', x: 700, y: 400, titleTh: 'สมุด', columns: ['IP', 'MAC'], rows: [] },
+    ],
+    scenes: [
+      { id: 'a', narrationTh: 'หนึ่ง', chipTh: 'หนึ่ง', lifeTh: 'ชีวิต', actions: [{ type: 'show', actor: 'A' }] },
+      {
+        id: 'b', narrationTh: 'สอง', chipTh: 'สอง', lifeTh: 'ชีวิต',
+        setup: [{ type: 'show', actor: 'B' }],
+        actions: [
+          { type: 'ripple', actor: 'B', tone: 'bcast' },
+          { type: 'trail', path: ['B', 'sw'], tone: 'bcast' },
+          { type: 'say', actor: 'B', text: 'ฉันเอง', mood: 'yes' },
+          { type: 'dim', actor: 'sw' },
+          { type: 'glow', actor: 'B' },
+          { type: 'setRows', actor: 'nb', rows: [['1.1.1.1', 'AA']] },
+          { type: 'show', actor: 'card' },
+          { type: 'moveAlong', actor: 'card', path: ['A', 'B'], msPerHop: 100, offset: { dx: -165, dy: 0 } },
+        ],
+      },
+    ],
+  }
+
+  it('stateBeforeScene ใช้ initialState + setup ไม่เอาของจากฉากก่อน', () => {
+    const s = stateBeforeScene(v2, 1)
+    expect(s.actors.B.hidden).toBe(false)
+    expect(s.actors.A.hidden).toBe(true)
+    expect(s.trails).toEqual([])
+    expect(s.bubbles).toEqual([])
+  })
+
+  it('stateAfterScene มี trail, bubble, dim, glow, rows และซองจอดตาม offset', () => {
+    expect(stateAfterScene(v2, 0).actors.A.hidden).toBe(false)
+    const s = stateAfterScene(v2, 1)
+    expect(s.trails).toEqual([{ path: ['B', 'sw'], tone: 'bcast' }])
+    expect(s.bubbles).toEqual([{ actor: 'B', text: 'ฉันเอง', mood: 'yes' }])
+    expect(s.actors.sw.dimmed).toBe(true)
+    expect(s.actors.B.glow).toBe(true)
+    expect(s.actors.nb.rows).toEqual([['1.1.1.1', 'AA']])
+    expect(s.actors.card).toMatchObject({ x: 235, y: 100, hidden: false })
+  })
+
+  it('SceneSet แบบเดิมยังสะสมสภาพจากฉากก่อน', () => {
+    expect(stateBeforeScene(set, 1).actors.env.hidden).toBe(false)
+    expect(stateAfterScene(set, 0)).toEqual(applyScene(initialState(set), set.scenes[0]))
   })
 })

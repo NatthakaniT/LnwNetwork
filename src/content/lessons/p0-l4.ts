@@ -1,125 +1,129 @@
 import type { Actor, Device, Lesson, SceneAction } from '../types'
 
-const hidden = (a: Actor): Actor => ({ ...a, hidden: true })
+// ฉากแบบ v2: ทุกอย่างซ่อนไว้ก่อน แต่ละฉากโชว์ของที่ตัวเองใช้ใน setup (เวทีเริ่มใหม่ทุกฉาก)
+const h = (a: Actor): Actor => ({ ...a, hidden: true })
 const show = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'show', actor }))
-const hide = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'hide', actor }))
+const dim = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'dim', actor }))
+const glow = (actor: string): SceneAction => ({ type: 'glow', actor })
 
-const lifeIds = ['man', 'home', 'lifeLbl1', 'lifeLbl2']
-const macIds = ['mPc', 'mLbl1', 'mLbl2', 'mLbl3']
-const ipIds = ['iPc', 'iLbl1', 'iLbl2', 'iLbl3']
-const moveIds = ['vHome', 'vCafe', 'lap', 'vLbl1', 'vLbl2']
-const routeIds = ['rVA', 'rVB', 'rPc', 'rSwA', 'rR', 'rSwB', 'rDst', 'rc1', 'rc2', 'rc3', 'rc4', 'rBox', 'rLbl1', 'rLbl2']
-const lastIds = ['tR', 'tSw', 't1', 't2', 't3', 'tc0', 'tc1', 'tc2', 'tc3', 'tBox', 'tLbl']
-const arpIds = ['aAsk', 'aSw', 'a1', 'a2', 'a3', 'ac0', 'ac1', 'ac2', 'ac3', 'aQ1', 'aQ2', 'aQ3', 'aAns', 'aLbl1', 'aLbl2']
-const gwIds = ['gPc', 'gSw', 'gR', 'gNet', 'gc1', 'gc2', 'gc3', 'gAsk', 'gBox', 'gLbl1', 'gLbl2']
-const dupIds = ['dSend', 'dSw', 'd1', 'd2', 'dc0', 'dc1', 'dc2', 'dQ1', 'dQ2', 'dA1', 'dA2', 'dLbl1', 'dLbl2']
+// ซองจอดข้างอุปกรณ์: เหนือเครื่องฝั่งซ้าย / ทางซ้ายของเครื่องที่เรียงแนวตั้งฝั่งขวา
+const ABOVE = { dx: 0, dy: -95 }
+const LEFT = { dx: -180, dy: 0 }
+
+const arpBase = ['me', 'sw', 'pc1', 'pc2', 'pc3', 'ac0', 'ac1', 'ac2', 'ac3', 'nb']
+const arpRows: [string, string][] = [['192.168.1.30', 'AA:BB:CC:00:00:03']]
+const gwBase = ['gPc', 'gSw', 'gR', 'gNet', 'gc1', 'gc2', 'gc3']
+const dupBase = ['dSend', 'dSw', 'd1', 'd2', 'dc0', 'dc1', 'dc2']
+const askLines = (ip: string) => ['ถึง: ทุกเครื่อง', `ใครคือ ${ip} ?`]
 
 const actors: Actor[] = [
   // ฉาก 1: คนหนึ่งคน มีเลขสองแบบ
-  { id: 'man', kind: 'person', x: 260, y: 190, label: 'ตัวเรา' },
-  { id: 'home', kind: 'house', x: 700, y: 190, label: 'บ้านเรา' },
-  { id: 'lifeLbl1', kind: 'label', x: 480, y: 400, label: '🪪 เลขบัตรประชาชน = ติดตัวเรา ย้ายไปไหนก็เลขเดิม' },
-  { id: 'lifeLbl2', kind: 'label', x: 480, y: 465, label: '🏠 บ้านเลขที่ = ติดบ้าน ย้ายบ้านก็ได้เลขใหม่' },
+  h({ id: 'man', kind: 'person', x: 260, y: 190, label: 'ตัวเรา' }),
+  h({ id: 'home', kind: 'house', x: 700, y: 190, label: 'บ้านเรา' }),
+  h({ id: 'lifeLbl1', kind: 'label', x: 480, y: 400, label: '🪪 เลขบัตรประชาชน = ติดตัวเรา ย้ายไปไหนก็เลขเดิม' }),
+  h({ id: 'lifeLbl2', kind: 'label', x: 480, y: 465, label: '🏠 บ้านเลขที่ = ติดบ้าน ย้ายบ้านก็ได้เลขใหม่' }),
 
   // ฉาก 2: MAC address = เลขบัตรประชาชนของเครื่อง
-  hidden({ id: 'mPc', kind: 'pc', x: 480, y: 170, label: 'คอม' }),
-  hidden({ id: 'mLbl1', kind: 'label', x: 480, y: 370, label: '🪪 MAC address = เลขบัตรประชาชนของเครื่อง' }),
-  hidden({ id: 'mLbl2', kind: 'label', x: 480, y: 430, label: 'โรงงานฝังมากับการ์ดแลน (NIC) ติดเครื่องตลอด' }),
-  hidden({ id: 'mLbl3', kind: 'label', x: 480, y: 490, label: 'เช่น AA:BB:CC:11:22:33 · มีเลข 0-9 กับตัว A-F รวม 12 ตัว' }),
+  h({ id: 'mPc', kind: 'pc', x: 480, y: 170, label: 'คอม' }),
+  h({ id: 'mLbl1', kind: 'label', x: 480, y: 370, label: '🪪 MAC address = เลขบัตรประชาชนของเครื่อง' }),
+  h({ id: 'mLbl2', kind: 'label', x: 480, y: 430, label: 'โรงงานฝังมากับการ์ดแลน (NIC) ติดเครื่องตลอด' }),
+  h({ id: 'mLbl3', kind: 'label', x: 480, y: 490, label: 'เช่น AA:BB:CC:11:22:33 · มีเลข 0-9 กับตัว A-F รวม 12 ตัว' }),
 
   // ฉาก 3: IP address = บ้านเลขที่ / IPv4
-  hidden({ id: 'iPc', kind: 'pc', x: 480, y: 170, label: 'คอม' }),
-  hidden({ id: 'iLbl1', kind: 'label', x: 480, y: 370, label: '🏠 IP address = บ้านเลขที่ของเครื่อง' }),
-  hidden({ id: 'iLbl2', kind: 'label', x: 480, y: 430, label: 'IPv4 เช่น 192.168.1.10 = เลข 4 ชุด คั่นด้วยจุด' }),
-  hidden({ id: 'iLbl3', kind: 'label', x: 480, y: 490, label: 'แต่ละชุด เป็นเลข 0 ถึง 255 · หมู่บ้านเดียวกัน ห้ามซ้ำ' }),
+  h({ id: 'iPc', kind: 'pc', x: 480, y: 170, label: 'คอม' }),
+  h({ id: 'iLbl1', kind: 'label', x: 480, y: 370, label: '🏠 IP address = บ้านเลขที่ของเครื่อง' }),
+  h({ id: 'iLbl2', kind: 'label', x: 480, y: 430, label: 'IPv4 เช่น 192.168.1.10 = เลข 4 ชุด คั่นด้วยจุด' }),
+  h({ id: 'iLbl3', kind: 'label', x: 480, y: 490, label: 'แต่ละชุด เป็นเลข 0 ถึง 255 · หมู่บ้านเดียวกัน ห้ามซ้ำ' }),
 
   // ฉาก 4: หิ้วโน้ตบุ๊กไปร้านกาแฟ = ย้ายหมู่บ้าน
-  hidden({ id: 'vHome', kind: 'label', x: 220, y: 60, label: '🏠 หมู่บ้าน: เน็ตบ้าน' }),
-  hidden({ id: 'vCafe', kind: 'label', x: 740, y: 60, label: '☕ หมู่บ้าน: ไวไฟร้านกาแฟ' }),
-  hidden({ id: 'lap', kind: 'laptop', x: 220, y: 220, label: 'IP 192.168.1.10' }),
-  hidden({ id: 'vLbl1', kind: 'label', x: 480, y: 420, label: '🔄 ย้ายหมู่บ้าน ได้ IP ใหม่: 192.168.1.10 → 10.0.0.25' }),
-  hidden({ id: 'vLbl2', kind: 'label', x: 480, y: 480, label: '✅ MAC AA:BB:CC:11:22:33 เลขเดิม (ฝังในการ์ดแลน)' }),
+  h({ id: 'vHome', kind: 'label', x: 220, y: 60, label: '🏠 หมู่บ้าน: เน็ตบ้าน' }),
+  h({ id: 'vCafe', kind: 'label', x: 740, y: 60, label: '☕ หมู่บ้าน: ไวไฟร้านกาแฟ' }),
+  h({ id: 'lap', kind: 'laptop', x: 220, y: 220, label: 'IP 192.168.1.10' }),
+  h({ id: 'vLbl1', kind: 'label', x: 480, y: 420, label: '🔄 ย้ายหมู่บ้าน ได้ IP ใหม่: 192.168.1.10 → 10.0.0.25' }),
+  h({ id: 'vLbl2', kind: 'label', x: 480, y: 480, label: '✅ MAC AA:BB:CC:11:22:33 เลขเดิม (ฝังในการ์ดแลน)' }),
 
   // ฉาก 5: ข้ามหมู่บ้าน Router ดู IP
-  hidden({ id: 'rVA', kind: 'label', x: 190, y: 50, label: 'หมู่บ้านเอ' }),
-  hidden({ id: 'rVB', kind: 'label', x: 770, y: 50, label: 'หมู่บ้านบี' }),
-  hidden({ id: 'rPc', kind: 'pc', x: 110, y: 170, label: 'คอมเรา' }),
-  hidden({ id: 'rSwA', kind: 'switch', x: 230, y: 320, label: 'Switch' }),
-  hidden({ id: 'rR', kind: 'router', x: 480, y: 320, label: 'Router' }),
-  hidden({ id: 'rSwB', kind: 'switch', x: 730, y: 320, label: 'Switch' }),
-  hidden({ id: 'rDst', kind: 'pc', x: 850, y: 170, label: 'ปลายทาง' }),
-  hidden({ id: 'rc1', kind: 'cable', x: 110, y: 170, to: 'rSwA' }),
-  hidden({ id: 'rc2', kind: 'cable', x: 230, y: 320, to: 'rR' }),
-  hidden({ id: 'rc3', kind: 'cable', x: 480, y: 320, to: 'rSwB' }),
-  hidden({ id: 'rc4', kind: 'cable', x: 730, y: 320, to: 'rDst' }),
-  hidden({ id: 'rBox', kind: 'box', x: 110, y: 170 }),
-  hidden({ id: 'rLbl1', kind: 'label', x: 480, y: 450, label: '🏠 ข้ามหมู่บ้าน: Router ดู IP ผู้รับ แล้วเลือกทาง' }),
-  hidden({ id: 'rLbl2', kind: 'label', x: 480, y: 505, label: 'ส่วนหนึ่งของ IP บอกหมู่บ้าน · ส่วนไหน เดี๋ยวภาค 1 เล่า' }),
+  h({ id: 'rVA', kind: 'label', x: 260, y: 50, label: 'หมู่บ้านเอ' }),
+  h({ id: 'rVB', kind: 'label', x: 700, y: 50, label: 'หมู่บ้านบี' }),
+  h({ id: 'rPc', kind: 'pc', x: 110, y: 170, label: 'คอมเรา' }),
+  h({ id: 'rSwA', kind: 'switch', x: 230, y: 320, label: 'Switch' }),
+  h({ id: 'rR', kind: 'router', x: 480, y: 320, label: 'Router' }),
+  h({ id: 'rSwB', kind: 'switch', x: 730, y: 320, label: 'Switch' }),
+  h({ id: 'rDst', kind: 'pc', x: 850, y: 170, label: 'ปลายทาง' }),
+  h({ id: 'rc1', kind: 'cable', x: 110, y: 170, to: 'rSwA' }),
+  h({ id: 'rc2', kind: 'cable', x: 230, y: 320, to: 'rR' }),
+  h({ id: 'rc3', kind: 'cable', x: 480, y: 320, to: 'rSwB' }),
+  h({ id: 'rc4', kind: 'cable', x: 730, y: 320, to: 'rDst' }),
+  h({ id: 'rBox', kind: 'card', x: 110, y: 85, lines: ['IP ผู้รับ: ปลายทาง'], tone: 'deliver' }),
+  h({ id: 'rLbl1', kind: 'label', x: 480, y: 450, label: '🏠 ข้ามหมู่บ้าน: Router ดู IP ผู้รับ แล้วเลือกทาง' }),
+  h({ id: 'rLbl2', kind: 'label', x: 480, y: 505, label: 'ส่วนหนึ่งของ IP บอกหมู่บ้าน · ส่วนไหน เดี๋ยวภาค 1 เล่า' }),
 
   // ฉาก 6: ในหมู่บ้าน ยื่นของด้วย MAC
-  hidden({ id: 'tR', kind: 'router', x: 480, y: 80, label: 'Router' }),
-  hidden({ id: 'tSw', kind: 'switch', x: 480, y: 230, label: 'Switch' }),
-  hidden({ id: 't1', kind: 'pc', x: 200, y: 380, label: 'MAC ...:01' }),
-  hidden({ id: 't2', kind: 'pc', x: 480, y: 380, label: 'MAC ...:02' }),
-  hidden({ id: 't3', kind: 'pc', x: 760, y: 380, label: 'MAC ...:03' }),
-  hidden({ id: 'tc0', kind: 'cable', x: 480, y: 80, to: 'tSw' }),
-  hidden({ id: 'tc1', kind: 'cable', x: 480, y: 230, to: 't1' }),
-  hidden({ id: 'tc2', kind: 'cable', x: 480, y: 230, to: 't2' }),
-  hidden({ id: 'tc3', kind: 'cable', x: 480, y: 230, to: 't3' }),
-  hidden({ id: 'tBox', kind: 'box', x: 480, y: 80, label: 'ถึง MAC ...:03' }),
-  hidden({ id: 'tLbl', kind: 'label', x: 480, y: 505, label: '🪪 ในหมู่บ้าน: ยื่นของด้วย MAC ให้ถูกเครื่อง' }),
+  h({ id: 'tR', kind: 'router', x: 480, y: 80, label: 'Router' }),
+  h({ id: 'tSw', kind: 'switch', x: 480, y: 230, label: 'Switch' }),
+  h({ id: 't1', kind: 'pc', x: 200, y: 380, label: 'MAC ...:01' }),
+  h({ id: 't2', kind: 'pc', x: 480, y: 380, label: 'MAC ...:02' }),
+  h({ id: 't3', kind: 'pc', x: 760, y: 380, label: 'MAC ...:03' }),
+  h({ id: 'tc0', kind: 'cable', x: 480, y: 80, to: 'tSw' }),
+  h({ id: 'tc1', kind: 'cable', x: 480, y: 230, to: 't1' }),
+  h({ id: 'tc2', kind: 'cable', x: 480, y: 230, to: 't2' }),
+  h({ id: 'tc3', kind: 'cable', x: 480, y: 230, to: 't3' }),
+  h({ id: 'tBox', kind: 'card', x: 650, y: 80, lines: ['ถึง MAC ...:03'], tone: 'deliver' }),
+  h({ id: 'tLbl', kind: 'label', x: 480, y: 505, label: '🪪 ในหมู่บ้าน: ยื่นของด้วย MAC ให้ถูกเครื่อง' }),
 
-  // ฉาก 7: ARP = ตะโกนถามในหมู่บ้าน
-  hidden({ id: 'aLbl1', kind: 'label', x: 480, y: 40, label: '📢 คอมเรา: ใครใช้ IP 192.168.1.30 ขอ MAC หน่อย' }),
-  hidden({ id: 'aLbl2', kind: 'label', x: 480, y: 95, label: '🙋 คอม 3: ฉันเอง นี่ MAC ของฉัน · เครื่องอื่นเงียบ' }),
-  hidden({ id: 'aAsk', kind: 'pc', x: 150, y: 230, label: 'คอมเรา' }),
-  hidden({ id: 'aSw', kind: 'switch', x: 480, y: 230, label: 'Switch' }),
-  hidden({ id: 'a1', kind: 'pc', x: 300, y: 400, label: 'คอม 1' }),
-  hidden({ id: 'a2', kind: 'pc', x: 540, y: 400, label: 'คอม 2' }),
-  hidden({ id: 'a3', kind: 'pc', x: 790, y: 400, label: 'คอม 3 · 192.168.1.30' }),
-  hidden({ id: 'ac0', kind: 'cable', x: 150, y: 230, to: 'aSw' }),
-  hidden({ id: 'ac1', kind: 'cable', x: 480, y: 230, to: 'a1' }),
-  hidden({ id: 'ac2', kind: 'cable', x: 480, y: 230, to: 'a2' }),
-  hidden({ id: 'ac3', kind: 'cable', x: 480, y: 230, to: 'a3' }),
-  hidden({ id: 'aQ1', kind: 'envelope', x: 150, y: 230 }),
-  hidden({ id: 'aQ2', kind: 'envelope', x: 150, y: 230 }),
-  hidden({ id: 'aQ3', kind: 'envelope', x: 150, y: 230 }),
-  hidden({ id: 'aAns', kind: 'envelope', x: 790, y: 400 }),
+  // ฉาก ARP (6 ขั้น): คอมเรา Switch คอม 3 เครื่องเรียงแนวตั้ง และสมุดจดของคอมเรา
+  h({ id: 'me', kind: 'pc', x: 130, y: 250, label: 'คอมเรา\n192.168.1.10' }),
+  h({ id: 'sw', kind: 'switch', x: 360, y: 250, label: 'Switch' }),
+  h({ id: 'pc1', kind: 'pc', x: 750, y: 110, label: 'คอม 1\n192.168.1.20', labelSide: 'right' }),
+  h({ id: 'pc2', kind: 'pc', x: 750, y: 270, label: 'คอม 2\n192.168.1.25', labelSide: 'right' }),
+  h({ id: 'pc3', kind: 'pc', x: 750, y: 430, label: 'คอม 3\n192.168.1.30', labelSide: 'right' }),
+  h({ id: 'ac0', kind: 'cable', x: 130, y: 250, to: 'sw' }),
+  h({ id: 'ac1', kind: 'cable', x: 360, y: 250, to: 'pc1' }),
+  h({ id: 'ac2', kind: 'cable', x: 360, y: 250, to: 'pc2' }),
+  h({ id: 'ac3', kind: 'cable', x: 360, y: 250, to: 'pc3' }),
+  h({ id: 'nb', kind: 'table', x: 215, y: 443, titleTh: '📒 สมุดจดของคอมเรา', columns: ['IP', 'MAC'], rows: [] }),
+  h({ id: 'q0', kind: 'card', x: 130, y: 155, lines: askLines('192.168.1.30'), tone: 'bcast' }),
+  h({ id: 'q1', kind: 'card', x: 360, y: 155, lines: askLines('192.168.1.30'), tone: 'bcast' }),
+  h({ id: 'q2', kind: 'card', x: 360, y: 155, lines: askLines('192.168.1.30'), tone: 'bcast' }),
+  h({ id: 'q3', kind: 'card', x: 360, y: 155, lines: askLines('192.168.1.30'), tone: 'bcast' }),
+  h({ id: 'ans', kind: 'card', x: 570, y: 430, lines: ['ถึง: คอมเรา', 'ฉันคือ 192.168.1.30', 'MAC ฉัน: …:00:03'], tone: 'reply' }),
+  h({ id: 'pkt', kind: 'card', x: 130, y: 155, lines: ['📦 ถึง MAC …:00:03', 'IP ผู้รับ: 192.168.1.30'], tone: 'deliver' }),
 
-  // ฉาก 8: ปลายทางนอกหมู่บ้าน ถาม MAC ของ Gateway
-  hidden({ id: 'gLbl1', kind: 'label', x: 480, y: 40, label: '🚪 ปลายทางอยู่นอกหมู่บ้าน: ถามหา MAC ของ Gateway' }),
-  hidden({ id: 'gLbl2', kind: 'label', x: 480, y: 95, label: '📦 IP ผู้รับบนกล่อง = เครื่องปลายทาง (ไม่เปลี่ยน)' }),
-  hidden({ id: 'gPc', kind: 'pc', x: 130, y: 280, label: 'คอมเรา' }),
-  hidden({ id: 'gSw', kind: 'switch', x: 360, y: 280, label: 'Switch' }),
-  hidden({ id: 'gR', kind: 'router', x: 600, y: 280, label: 'Gateway (Router)' }),
-  hidden({ id: 'gNet', kind: 'cloud', x: 840, y: 280, label: 'นอกหมู่บ้าน' }),
-  hidden({ id: 'gc1', kind: 'cable', x: 130, y: 280, to: 'gSw' }),
-  hidden({ id: 'gc2', kind: 'cable', x: 360, y: 280, to: 'gR' }),
-  hidden({ id: 'gc3', kind: 'cable', x: 600, y: 280, to: 'gNet' }),
-  hidden({ id: 'gAsk', kind: 'envelope', x: 130, y: 280 }),
-  hidden({ id: 'gBox', kind: 'box', x: 130, y: 280 }),
+  // ฉาก Gateway: ปลายทางอยู่นอกหมู่บ้าน
+  h({ id: 'gLbl1', kind: 'label', x: 480, y: 40, label: '🚪 ปลายทางอยู่นอกหมู่บ้าน: ถามหา MAC ของ Gateway' }),
+  h({ id: 'gLbl2', kind: 'label', x: 480, y: 95, label: '📦 IP ผู้รับบนกล่อง = เครื่องปลายทาง (ไม่เปลี่ยน)' }),
+  h({ id: 'gPc', kind: 'pc', x: 130, y: 280, label: 'คอมเรา' }),
+  h({ id: 'gSw', kind: 'switch', x: 360, y: 280, label: 'Switch' }),
+  h({ id: 'gR', kind: 'router', x: 600, y: 280, label: 'Gateway (Router)' }),
+  h({ id: 'gNet', kind: 'cloud', x: 840, y: 280, label: 'นอกหมู่บ้าน' }),
+  h({ id: 'gc1', kind: 'cable', x: 130, y: 280, to: 'gSw' }),
+  h({ id: 'gc2', kind: 'cable', x: 360, y: 280, to: 'gR' }),
+  h({ id: 'gc3', kind: 'cable', x: 600, y: 280, to: 'gNet' }),
+  h({ id: 'gAsk', kind: 'card', x: 130, y: 185, lines: ['ถึง: ทุกเครื่อง', 'ใครคือ Gateway ?'], tone: 'bcast' }),
+  h({ id: 'gBox', kind: 'card', x: 130, y: 185, lines: ['📦 ถึง MAC ของ Gateway', 'IP ผู้รับ: ปลายทาง'], tone: 'deliver' }),
 
-  // ฉาก 9: IP ซ้ำ
-  hidden({ id: 'dLbl1', kind: 'label', x: 480, y: 40, label: '❓ IP ซ้ำ: สองเครื่องตอบ ARP · คอมไม่รู้จะส่งให้ใคร' }),
-  hidden({ id: 'dLbl2', kind: 'label', x: 480, y: 95, label: '✅ ใน network เดียวกัน IP ต้องไม่ซ้ำกัน' }),
-  hidden({ id: 'dSend', kind: 'pc', x: 140, y: 300, label: 'คอม 3' }),
-  hidden({ id: 'dSw', kind: 'switch', x: 400, y: 300, label: 'Switch' }),
-  hidden({ id: 'd1', kind: 'pc', x: 700, y: 190, label: 'คอม 1 · 192.168.1.10' }),
-  hidden({ id: 'd2', kind: 'pc', x: 700, y: 400, label: 'คอม 2 · 192.168.1.10' }),
-  hidden({ id: 'dc0', kind: 'cable', x: 140, y: 300, to: 'dSw' }),
-  hidden({ id: 'dc1', kind: 'cable', x: 400, y: 300, to: 'd1' }),
-  hidden({ id: 'dc2', kind: 'cable', x: 400, y: 300, to: 'd2' }),
-  hidden({ id: 'dQ1', kind: 'envelope', x: 140, y: 300 }),
-  hidden({ id: 'dQ2', kind: 'envelope', x: 140, y: 300 }),
-  hidden({ id: 'dA1', kind: 'envelope', x: 700, y: 190 }),
-  hidden({ id: 'dA2', kind: 'envelope', x: 700, y: 400 }),
+  // ฉาก IP ซ้ำ: ถามก่อน แล้วได้คำตอบสองเครื่อง
+  h({ id: 'dLbl1', kind: 'label', x: 480, y: 40, label: '❓ IP ซ้ำ: สองเครื่องตอบ ARP · คอมไม่รู้จะส่งให้ใคร' }),
+  h({ id: 'dLbl2', kind: 'label', x: 480, y: 95, label: '✅ ใน network เดียวกัน IP ต้องไม่ซ้ำกัน' }),
+  h({ id: 'dSend', kind: 'pc', x: 130, y: 315, label: 'คอม 3' }),
+  h({ id: 'dSw', kind: 'switch', x: 380, y: 315, label: 'Switch' }),
+  h({ id: 'd1', kind: 'pc', x: 750, y: 210, label: 'คอม 1\n192.168.1.10', labelSide: 'right' }),
+  h({ id: 'd2', kind: 'pc', x: 750, y: 420, label: 'คอม 2\n192.168.1.10', labelSide: 'right' }),
+  h({ id: 'dc0', kind: 'cable', x: 130, y: 315, to: 'dSw' }),
+  h({ id: 'dc1', kind: 'cable', x: 380, y: 315, to: 'd1' }),
+  h({ id: 'dc2', kind: 'cable', x: 380, y: 315, to: 'd2' }),
+  h({ id: 'dQ0', kind: 'card', x: 130, y: 220, lines: askLines('192.168.1.10'), tone: 'bcast' }),
+  h({ id: 'dQ1', kind: 'card', x: 380, y: 220, lines: askLines('192.168.1.10'), tone: 'bcast' }),
+  h({ id: 'dQ2', kind: 'card', x: 380, y: 220, lines: askLines('192.168.1.10'), tone: 'bcast' }),
+  h({ id: 'dA1', kind: 'card', x: 570, y: 210, lines: ['ถึง: คอม 3', 'ฉันคือ 192.168.1.10', 'MAC ฉัน: …:00:01'], tone: 'reply' }),
+  h({ id: 'dA2', kind: 'card', x: 570, y: 420, lines: ['ถึง: คอม 3', 'ฉันคือ 192.168.1.10', 'MAC ฉัน: …:00:02'], tone: 'reply' }),
 
-  // ฉาก 10: สรุป
-  hidden({ id: 'sum1', kind: 'label', x: 480, y: 70, label: 'MAC address = เลขบัตรประชาชน ฝังในการ์ดแลน ติดเครื่องตลอด' }),
-  hidden({ id: 'sum2', kind: 'label', x: 480, y: 160, label: 'IP address = บ้านเลขที่ ย้ายหมู่บ้านก็เปลี่ยน · IPv4 = เลข 4 ชุด' }),
-  hidden({ id: 'sum3', kind: 'label', x: 480, y: 250, label: 'ข้ามหมู่บ้าน ใช้ IP · ยื่นของในหมู่บ้าน ใช้ MAC' }),
-  hidden({ id: 'sum4', kind: 'label', x: 480, y: 340, label: 'ARP = ตะโกนถามในหมู่บ้าน ใครใช้ IP นี้ ขอ MAC หน่อย' }),
-  hidden({ id: 'sum5', kind: 'label', x: 480, y: 430, label: 'ใน network เดียวกัน IP ห้ามซ้ำ' }),
+  // ฉากสรุป
+  h({ id: 'sum1', kind: 'label', x: 480, y: 70, label: 'MAC address = เลขบัตรประชาชน ฝังในการ์ดแลน ติดเครื่องตลอด' }),
+  h({ id: 'sum2', kind: 'label', x: 480, y: 160, label: 'IP address = บ้านเลขที่ ย้ายหมู่บ้านก็เปลี่ยน · IPv4 = เลข 4 ชุด' }),
+  h({ id: 'sum3', kind: 'label', x: 480, y: 250, label: 'ข้ามหมู่บ้าน ใช้ IP · ยื่นของในหมู่บ้าน ใช้ MAC' }),
+  h({ id: 'sum4', kind: 'label', x: 480, y: 340, label: 'ARP = ตะโกนถามในหมู่บ้าน ใครใช้ IP นี้ ขอ MAC หน่อย' }),
+  h({ id: 'sum5', kind: 'label', x: 480, y: 430, label: 'ใน network เดียวกัน IP ห้ามซ้ำ' }),
 ]
 
 // ห้องทดลอง (เวที 800x480): หมู่บ้านเดียว คอม 3 เครื่อง เสียบเข้า Switch ไว้แล้ว ไม่มี Router
@@ -153,102 +157,213 @@ export const lesson: Lesson = {
   terms: ['mac-address', 'ip-address', 'ipv4', 'arp', 'nic', 'network', 'switch', 'router', 'gateway', 'packet'],
 
   scenes: {
+    style: 'v2',
     stage: { width: 960, height: 540 },
     actors,
     scenes: [
       {
-        id: 's1',
+        id: 's1', chipTh: 'เลขสองแบบ', lifeIcon: '🪪',
+        lifeTh: 'คนหนึ่งคนมีเลขสองแบบ เลขบัตรประชาชนติดตัวเรา ส่วนบ้านเลขที่ติดอยู่กับบ้าน',
         narrationTh: 'ลองนึกดูนะครับ เรามีเลขสองแบบ เลขบัตรประชาชน ติดตัวเราไปตลอด ย้ายไปไหนก็เลขเดิม ส่วนบ้านเลขที่ เป็นของบ้าน ย้ายบ้านเมื่อไหร่ ก็ได้บ้านเลขที่ใหม่',
-        actions: [{ type: 'highlight', actor: 'man' }],
+        setup: show('man', 'home'),
+        actions: [glow('man'), ...show('lifeLbl1', 'lifeLbl2')],
       },
       {
-        id: 's2',
+        id: 's2', chipTh: 'MAC', lifeIcon: '🪪',
+        lifeTh: 'เลขบัตรประชาชนได้มาตั้งแต่เกิด ย้ายไปอยู่ที่ไหนก็ยังเป็นเลขเดิม',
         narrationTh: 'เครื่องก็มีเลขสองแบบเหมือนกัน แบบแรก คือ MAC address เหมือนเลขบัตรประชาชน ของเครื่อง โรงงานฝังมากับการ์ดแลน หรือ NIC ตั้งแต่ผลิต เลขนี้ติดเครื่องไปตลอด',
-        actions: [...hide(...lifeIds), ...show(...macIds)],
+        setup: show('mPc'),
+        actions: show('mLbl1', 'mLbl2', 'mLbl3'),
       },
       {
-        id: 's3',
+        id: 's3', chipTh: 'IP', lifeIcon: '🏠',
+        lifeTh: 'บ้านเลขที่บอกว่าบ้านอยู่ตรงไหน ในหมู่บ้านเดียวกันจะมีสองบ้านเลขซ้ำกันไม่ได้',
         narrationTh: 'แบบที่สอง คือ IP address เหมือนบ้านเลขที่ เป็นเลขสี่ชุด คั่นด้วยจุด แต่ละชุด ศูนย์ ถึงสองร้อยห้าสิบห้า เรียกว่า IPv4 และในหมู่บ้านเดียวกัน เลขนี้ห้ามซ้ำกันนะ',
-        actions: [...hide(...macIds), ...show(...ipIds)],
+        setup: show('iPc'),
+        actions: show('iLbl1', 'iLbl2', 'iLbl3'),
       },
       {
-        id: 's4',
+        id: 's4', chipTh: 'ย้ายบ้าน', lifeIcon: '☕',
+        lifeTh: 'ย้ายไปอยู่หมู่บ้านใหม่ ก็ได้บ้านเลขที่ใหม่ แต่เลขบัตรประชาชนยังเป็นเลขเดิม',
         narrationTh: 'ลองหิ้วโน้ตบุ๊ก จากบ้าน ไปต่อไวไฟร้านกาแฟ ก็เหมือนย้ายไปอีกหมู่บ้าน เลยได้ IP ใหม่ ของหมู่บ้านนั้น แต่ MAC ยังเป็นเลขเดิม เพราะฝังอยู่ในการ์ดแลน',
+        setup: show('vHome', 'vCafe', 'lap'),
         actions: [
-          ...hide(...ipIds),
-          ...show(...moveIds),
           { type: 'move', actor: 'lap', x: 740, y: 220, ms: 2500 },
           { type: 'setLabel', actor: 'lap', label: 'IP 10.0.0.25' },
+          ...show('vLbl1', 'vLbl2'),
         ],
       },
       {
-        id: 's5',
+        id: 's5', chipTh: 'ข้ามหมู่บ้าน', lifeIcon: '📮',
+        lifeTh: 'ไปรษณีย์กลางดูที่อยู่บนกล่อง แล้วส่งไปถูกหมู่บ้าน ไม่ต้องรู้จักหน้าคนรับ',
         narrationTh: 'ทำไมต้องมีสองแบบ เพราะ IP บอกได้ ว่าเครื่องอยู่หมู่บ้านไหน Router หรือไปรษณีย์กลาง เลยดู IP ผู้รับ แล้วส่งกล่องไปถูกหมู่บ้าน ส่วน MAC บอกไม่ได้ ว่าเครื่องอยู่ที่ไหน',
+        setup: show('rVA', 'rVB', 'rPc', 'rSwA', 'rR', 'rSwB', 'rDst', 'rc1', 'rc2', 'rc3', 'rc4'),
         actions: [
-          ...hide(...moveIds),
-          ...show(...routeIds),
-          { type: 'highlight', actor: 'rR' },
-          { type: 'moveAlong', actor: 'rBox', path: ['rPc', 'rSwA', 'rR', 'rSwB', 'rDst'], msPerHop: 1100 },
+          glow('rR'),
+          { type: 'trail', path: ['rPc', 'rSwA', 'rR', 'rSwB', 'rDst'], tone: 'deliver' },
+          ...show('rBox'),
+          { type: 'moveAlong', actor: 'rBox', path: ['rPc', 'rSwA', 'rR', 'rSwB', 'rDst'], msPerHop: 1100, offset: { dx: 0, dy: -85 } },
+          ...show('rLbl1', 'rLbl2'),
         ],
       },
       {
-        id: 's6',
+        id: 's6', chipTh: 'ยื่นถึงเครื่อง', lifeIcon: '🛵',
+        lifeTh: 'ของมาถึงหมู่บ้านแล้ว ไรเดอร์ต้องยื่นให้ถูกคน',
         narrationTh: 'พอกล่องถึงหมู่บ้านแล้ว ขั้นสุดท้าย ต้องยื่นให้ถูกเครื่อง เลยใช้ MAC โดย Switch จะดู MAC ผู้รับบนกล่อง แล้วส่งไปช่อง ที่เครื่องนั้นเสียบอยู่',
+        setup: show('tR', 'tSw', 't1', 't2', 't3', 'tc0', 'tc1', 'tc2', 'tc3'),
         actions: [
-          ...hide(...routeIds),
-          ...show(...lastIds),
-          { type: 'highlight', actor: 'tc3' },
-          { type: 'moveAlong', actor: 'tBox', path: ['tR', 'tSw', 't3'], msPerHop: 1500 },
+          { type: 'trail', path: ['tR', 'tSw', 't3'], tone: 'deliver' },
+          ...show('tBox'),
+          { type: 'moveAlong', actor: 'tBox', path: ['tR', 'tSw', 't3'], msPerHop: 1500, offset: { dx: 0, dy: -76 } },
+          glow('t3'),
+          ...show('tLbl'),
+        ],
+      },
+
+      // ARP: หนึ่งฉากหนึ่งเหตุการณ์ ตามต้นแบบ spike/arp-scene.html
+      {
+        id: 'arp1', chipTh: 'ปัญหา', lifeIcon: '📦',
+        lifeTh: 'เรารู้บ้านเลขที่ของเพื่อน แต่ไรเดอร์ในซอยส่งของตามหน้าคน เราเลยต้องรู้ด้วยว่าใครคือเจ้าของบ้านนั้น',
+        narrationTh: 'คนส่งต้องเขียน MAC ผู้รับบนกล่องด้วย แต่คอมเรารู้แค่ IP ของคอมสาม ลองดูสมุดจดของคอมเราสิ ยังว่างอยู่ ไม่รู้ MAC ของเครื่องนี้เลย',
+        setup: show(...arpBase),
+        actions: [glow('me'), glow('nb')],
+      },
+      {
+        id: 'arp2', chipTh: 'ตะโกนถาม', lifeIcon: '📢',
+        lifeTh: 'ยืนหน้าซอยแล้วตะโกนว่า ใครอยู่บ้านเลขที่ 30 ช่วยขานหน่อย ทุกบ้านในซอยได้ยินหมด',
+        narrationTh: 'คอมเราเลยตะโกนถามทั้งหมู่บ้าน ว่าใครใช้ IP นี้ การส่งถึงทุกเครื่องแบบนี้ เรียกว่า broadcast Switch ก๊อปคำถาม ส่งออกไปทุกสาย',
+        setup: show(...arpBase),
+        actions: [
+          { type: 'ripple', actor: 'me', tone: 'bcast' },
+          { type: 'trail', path: ['me', 'sw'], tone: 'bcast' },
+          { type: 'trail', path: ['sw', 'pc1'], tone: 'bcast' },
+          { type: 'trail', path: ['sw', 'pc2'], tone: 'bcast' },
+          { type: 'trail', path: ['sw', 'pc3'], tone: 'bcast' },
+          ...show('q0'),
+          { type: 'moveAlong', actor: 'q0', path: ['me', 'sw'], msPerHop: 900, offset: ABOVE },
+          // Switch ก๊อปคำถามเป็นสามซอง
+          { type: 'hide', actor: 'q0' },
+          ...show('q1', 'q2', 'q3'),
+          { type: 'moveAlong', actor: 'q1', path: ['sw', 'pc1'], msPerHop: 900, offset: LEFT },
+          { type: 'moveAlong', actor: 'q2', path: ['sw', 'pc2'], msPerHop: 900, offset: LEFT },
+          { type: 'moveAlong', actor: 'q3', path: ['sw', 'pc3'], msPerHop: 900, offset: LEFT },
         ],
       },
       {
-        id: 's7',
-        narrationTh: 'คนส่งต้องเขียน MAC ผู้รับบนกล่องด้วย แล้วคอมรู้ MAC ของเพื่อนได้ไง ก็ตะโกนถามทั้งหมู่บ้าน ว่าใครใช้ IP นี้ ทุกเครื่องได้ยิน แต่ตอบแค่เจ้าของ IP นั้น เรียกว่า ARP',
+        id: 'arp3', chipTh: 'ใช่ฉันไหม', lifeIcon: '🙋',
+        lifeTh: 'บ้านเลขที่ 20 กับ 25 ได้ยินแล้วเงียบ เพราะไม่ใช่บ้านตัวเอง บ้านเลขที่ 30 ยกมือว่าฉันเอง',
+        narrationTh: 'ทุกเครื่องเปิดอ่าน แล้วดูว่า IP ที่ถาม ตรงกับของตัวเองไหม คอมหนึ่งกับคอมสองไม่ใช่ ก็เงียบไป ส่วนคอมสามใช่ เพราะเป็นเจ้าของ IP นั้น',
+        setup: show(...arpBase),
         actions: [
-          ...hide(...lastIds),
-          ...show(...arpIds),
-          { type: 'moveAlong', actor: 'aQ1', path: ['aAsk', 'aSw', 'a1'], msPerHop: 1200 },
-          { type: 'moveAlong', actor: 'aQ2', path: ['aAsk', 'aSw', 'a2'], msPerHop: 1200 },
-          { type: 'moveAlong', actor: 'aQ3', path: ['aAsk', 'aSw', 'a3'], msPerHop: 1200 },
-          // คำตอบรอให้คำถามไปถึงก่อน แล้วค่อยวิ่งกลับมาที่คอมเรา
-          { type: 'moveAlong', actor: 'aAns', path: ['a3', 'a3', 'a3', 'aSw', 'aAsk'], msPerHop: 1200 },
-          { type: 'highlight', actor: 'a3' },
+          { type: 'say', actor: 'pc1', text: 'ไม่ใช่ฉัน', mood: 'no' },
+          ...dim('pc1'),
+          { type: 'say', actor: 'pc2', text: 'ไม่ใช่ฉัน', mood: 'no' },
+          ...dim('pc2'),
+          { type: 'say', actor: 'pc3', text: 'ฉันเอง!', mood: 'yes' },
+          glow('pc3'),
         ],
       },
       {
-        id: 's8',
-        narrationTh: 'ถ้าปลายทางอยู่นอกหมู่บ้าน คอมจะถามหา MAC ของ Gateway แทน แล้วยื่นกล่องให้ประตูออกหมู่บ้าน ส่วน IP ผู้รับบนกล่อง ยังเป็นเครื่องปลายทาง ไม่เปลี่ยน',
+        id: 'arp4', chipTh: 'ตอบกลับ', lifeIcon: '🗣️',
+        lifeTh: 'เจ้าของบ้านเลขที่ 30 เดินมาบอกเราคนเดียวว่า ผมเอง หน้าตาผมเป็นแบบนี้ ไม่ต้องตะโกนบอกทั้งซอย',
+        narrationTh: 'คอมสามตอบกลับ หาคอมเราเครื่องเดียว การส่งถึงเครื่องเดียวแบบนี้ เรียกว่า unicast ในคำตอบมี MAC ของคอมสามอยู่ด้วย',
+        setup: [...show(...arpBase), ...dim('pc1', 'pc2'), glow('pc3')],
         actions: [
-          ...hide(...arpIds),
-          ...show(...gwIds),
-          { type: 'highlight', actor: 'gR' },
-          { type: 'moveAlong', actor: 'gAsk', path: ['gPc', 'gSw', 'gR', 'gSw', 'gPc'], msPerHop: 900 },
-          { type: 'moveAlong', actor: 'gBox', path: ['gPc', 'gPc', 'gPc', 'gPc', 'gPc', 'gSw', 'gR', 'gNet'], msPerHop: 900 },
+          { type: 'trail', path: ['pc3', 'sw', 'me'], tone: 'reply' },
+          ...show('ans'),
+          { type: 'moveAlong', actor: 'ans', path: ['pc3', 'sw', 'me'], msPerHop: 1000, offset: { dx: 0, dy: -110 } },
         ],
       },
       {
-        id: 's9',
-        narrationTh: 'แล้วถ้าสองเครื่อง ใช้ IP เดียวกันล่ะ พอคอมคนส่ง ตะโกนถามหา MAC ก็มีสองเครื่องตอบ คอมเลยไม่รู้ว่าเครื่องไหนตัวจริง ของอาจไปผิดเครื่อง หรือส่งไม่ถึง เดี๋ยวลองในห้องทดลองกัน',
+        id: 'arp5', chipTh: 'จดลงสมุด', lifeIcon: '📒',
+        lifeTh: 'เราจดไว้ในสมุดว่าบ้านเลขที่ 30 คือคนหน้าตาแบบนี้ ครั้งหน้าจะได้ไม่ต้องตะโกนถามอีก',
+        narrationTh: 'คอมเราจดลงสมุดว่า IP นี้ คือ MAC นี้ วิธีตะโกนถามหา MAC แบบนี้ เรียกว่า ARP ส่วนสมุดเล่มนี้ เรียกว่าตาราง ARP ครั้งหน้าจะได้ไม่ต้องถามซ้ำ',
+        setup: [...show(...arpBase), glow('pc3')],
+        actions: [{ type: 'setRows', actor: 'nb', rows: arpRows }, glow('nb')],
+      },
+      {
+        id: 'arp6', chipTh: 'ส่งของจริง', lifeIcon: '🛵',
+        lifeTh: 'ไรเดอร์ถือกล่องที่เขียนหน้าผู้รับไว้ชัด ๆ เดินไปส่งบ้านเลขที่ 30 บ้านเดียว บ้านอื่นไม่ได้อะไร',
+        narrationTh: 'คราวนี้ส่งของได้แล้ว บนกล่องเขียน MAC ผู้รับ Switch เลยส่งไปที่คอมสามเครื่องเดียว เครื่องอื่นไม่ได้รับ',
+        setup: [...show(...arpBase), { type: 'setRows', actor: 'nb', rows: arpRows }, ...dim('pc1', 'pc2')],
         actions: [
-          ...hide(...gwIds),
-          ...show(...dupIds),
-          { type: 'highlight', actor: 'd1' },
-          { type: 'highlight', actor: 'd2' },
-          { type: 'setLabel', actor: 'dSend', label: 'คอม 3: MAC ไหนดี?' },
-          // ตะโกนถามหา MAC ของ 192.168.1.10 แล้วได้คำตอบกลับมาสองซอง
-          { type: 'moveAlong', actor: 'dQ1', path: ['dSend', 'dSw', 'd1'], msPerHop: 1100 },
-          { type: 'moveAlong', actor: 'dQ2', path: ['dSend', 'dSw', 'd2'], msPerHop: 1100 },
-          { type: 'moveAlong', actor: 'dA1', path: ['d1', 'd1', 'd1', 'dSw', 'dSend'], msPerHop: 1100 },
-          { type: 'moveAlong', actor: 'dA2', path: ['d2', 'd2', 'd2', 'd2', 'dSw', 'dSend'], msPerHop: 1100 },
+          { type: 'trail', path: ['me', 'sw', 'pc3'], tone: 'deliver' },
+          ...show('pkt'),
+          { type: 'moveAlong', actor: 'pkt', path: ['me', 'sw'], msPerHop: 1000, offset: ABOVE },
+          glow('sw'), // Switch ดู MAC ผู้รับ แล้วเลือกสาย (รอซองมาถึงก่อน)
+          { type: 'moveAlong', actor: 'pkt', path: ['sw', 'pc3'], msPerHop: 1000, offset: LEFT },
+          glow('pc3'),
+        ],
+      },
+
+      {
+        id: 'gw1', chipTh: 'ถาม Gateway', lifeIcon: '🚪',
+        lifeTh: 'ของจะไปต่างหมู่บ้าน เราไม่ต้องรู้จักหน้าคนรับ แค่ถามหายามที่ประตูหมู่บ้าน',
+        narrationTh: 'ถ้าปลายทางอยู่นอกหมู่บ้าน คอมจะไม่ถามหาเครื่องปลายทาง แต่ถามหา MAC ของ Gateway แทน ซึ่งก็คือประตูออกหมู่บ้าน',
+        setup: show(...gwBase, 'gLbl1'),
+        actions: [
+          { type: 'ripple', actor: 'gPc', tone: 'bcast' },
+          { type: 'trail', path: ['gPc', 'gSw', 'gR'], tone: 'bcast' },
+          ...show('gAsk'),
+          { type: 'moveAlong', actor: 'gAsk', path: ['gPc', 'gSw', 'gR'], msPerHop: 900, offset: ABOVE },
+          glow('gR'),
         ],
       },
       {
-        id: 's10',
+        id: 'gw2', chipTh: 'ยื่นให้ประตู', lifeIcon: '📦',
+        lifeTh: 'ยื่นกล่องให้ยามที่ประตูหมู่บ้าน บนกล่องยังเขียนที่อยู่ปลายทางเหมือนเดิม',
+        narrationTh: 'แล้วคอมก็ยื่นกล่องให้ Gateway โดยเขียน MAC ของ Gateway บนกล่อง ส่วน IP ผู้รับบนกล่อง ยังเป็นเครื่องปลายทาง ไม่เปลี่ยน',
+        setup: [...show(...gwBase), glow('gR')],
+        actions: [
+          { type: 'trail', path: ['gPc', 'gSw', 'gR'], tone: 'deliver' },
+          ...show('gBox'),
+          { type: 'moveAlong', actor: 'gBox', path: ['gPc', 'gSw', 'gR'], msPerHop: 900, offset: ABOVE },
+          ...show('gLbl2'),
+        ],
+      },
+
+      {
+        id: 'dup1', chipTh: 'IP ซ้ำ', lifeIcon: '📢',
+        lifeTh: 'ตะโกนถามหาบ้านเลขที่ 10 เหมือนทุกครั้ง',
+        narrationTh: 'แล้วถ้าสองเครื่อง ใช้ IP เดียวกันล่ะ คอมสามอยากส่งของให้เลขนี้ ก็ตะโกนถามหา MAC ทั้งหมู่บ้านเหมือนเดิม',
+        setup: show(...dupBase),
+        actions: [
+          { type: 'ripple', actor: 'dSend', tone: 'bcast' },
+          { type: 'trail', path: ['dSend', 'dSw'], tone: 'bcast' },
+          { type: 'trail', path: ['dSw', 'd1'], tone: 'bcast' },
+          { type: 'trail', path: ['dSw', 'd2'], tone: 'bcast' },
+          ...show('dQ0'),
+          { type: 'moveAlong', actor: 'dQ0', path: ['dSend', 'dSw'], msPerHop: 900, offset: ABOVE },
+          { type: 'hide', actor: 'dQ0' },
+          ...show('dQ1', 'dQ2'),
+          { type: 'moveAlong', actor: 'dQ1', path: ['dSw', 'd1'], msPerHop: 900, offset: LEFT },
+          { type: 'moveAlong', actor: 'dQ2', path: ['dSw', 'd2'], msPerHop: 900, offset: LEFT },
+        ],
+      },
+      {
+        id: 'dup2', chipTh: 'ตอบสองเครื่อง', lifeIcon: '🤷',
+        lifeTh: 'มีสองบ้านขานว่าฉันเอง ไรเดอร์เลยไม่รู้ว่าจะส่งให้บ้านไหน',
+        narrationTh: 'คราวนี้มีสองเครื่องตอบ คอมเลยไม่รู้ว่าเครื่องไหนตัวจริง ของอาจไปผิดเครื่อง หรือส่งไม่ถึง เดี๋ยวลองในห้องทดลองกัน',
+        setup: show(...dupBase),
+        actions: [
+          { type: 'say', actor: 'd1', text: 'ฉันเอง!', mood: 'yes' },
+          { type: 'say', actor: 'd2', text: 'ฉันเอง!', mood: 'yes' },
+          { type: 'trail', path: ['d1', 'dSw', 'dSend'], tone: 'reply' },
+          { type: 'trail', path: ['d2', 'dSw', 'dSend'], tone: 'reply' },
+          ...show('dA1', 'dA2'),
+          { type: 'moveAlong', actor: 'dA1', path: ['d1', 'dSw', 'dSend'], msPerHop: 1000, offset: { dx: 0, dy: -165 } },
+          { type: 'moveAlong', actor: 'dA2', path: ['d2', 'dSw', 'dSend'], msPerHop: 1000, offset: { dx: 0, dy: 146 } },
+          { type: 'say', actor: 'dSend', text: 'MAC ไหนดี?', mood: 'no' },
+          ...show('dLbl1', 'dLbl2'),
+        ],
+      },
+
+      {
+        id: 's10', chipTh: 'สรุป', lifeIcon: '📝',
+        lifeTh: 'บัตรประชาชนติดตัว บ้านเลขที่ติดบ้าน ไม่รู้ว่าใครเป็นเจ้าของบ้าน ก็ตะโกนถามในซอย',
         narrationTh: 'สรุปนะครับ MAC คือเลขบัตรประชาชน ติดเครื่องตลอด IP คือบ้านเลขที่ ย้ายหมู่บ้านก็เปลี่ยน ส่งข้ามหมู่บ้านใช้ IP ยื่นของในหมู่บ้านใช้ MAC และหา MAC ด้วย ARP',
-        actions: [
-          ...hide(...dupIds),
-          ...show('sum1', 'sum2', 'sum3', 'sum4', 'sum5'),
-        ],
+        setup: [],
+        actions: show('sum1', 'sum2', 'sum3', 'sum4', 'sum5'),
       },
     ],
   },
