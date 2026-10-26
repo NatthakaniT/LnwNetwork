@@ -207,3 +207,5 @@
 .deep-dive summary:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
 .deep-skip { opacity: 0.75; font-size: 0.9rem; }
 .precheck .quiz { margin-bottom: 1.2rem; }
+.ask-tutor { margin: 2rem 0 0; }
+.ask-tutor textarea { width: 100%; box-sizing: border-box; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--text); border-radius: 8px; padding: 0.5rem; }

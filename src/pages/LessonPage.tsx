@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { course } from '../content'
-import type { Lesson, Part } from '../content/types'
+import type { Lesson, Part, QuizQuestion } from '../content/types'
 import { QuizView } from '../quiz/QuizView'
 import { ScenePlayer } from '../scenes/ScenePlayer'
 import { LabView } from '../lab/LabView'
@@ -12,6 +12,8 @@ import { navigate } from '../router'
 import { VideoStep } from './VideoStep'
 import { PrecheckStep } from './PrecheckStep'
 import { RichText } from '../glossary/RichText'
+import { AskTutor } from '../tutor/AskTutor'
+import { tutorPrompt } from '../tutor/tutorPrompt'
 import { PART_COLORS } from '../ui/contrast'
 import './lesson.css'
 
@@ -92,6 +94,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
     return s
   })
   const [passed, setPassed] = useState(completedAtStart)
+  const [wrongPrompt, setWrongPrompt] = useState<string>()
 
   const termIds = lesson.terms ?? NO_TERMS
   const markDone = useCallback((k: StepKey) => setDone((d) => (d.has(k) ? d : new Set(d).add(k))), [])
@@ -117,6 +120,9 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
     markDone('quiz')
     setPassed(true)
   }, [lesson.id, storage, markDone])
+
+  // ข้อภาษาอังกฤษใช้โจทย์ไทยถ้ามี เพราะผู้เรียนคุยกับครูเป็นภาษาไทย
+  const onQuizWrong = useCallback((q: QuizQuestion) => setWrongPrompt((q.layer === 'en' && q.promptTh) || q.prompt), [])
 
   const next = passed ? nextReadyLesson(parts, lesson.id) : undefined
   const nextOpen = next && isUnlocked(next.id, parts, progressRef.current) ? next : undefined
@@ -174,7 +180,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
             ? <LabView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />
             : <ActivityView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />)
           : <p>บทนี้ไม่มีให้ลองเล่น ไปขั้นต่อไปได้เลย</p>)}
-        {step === 'quiz' && <QuizView key={lesson.id} questions={lesson.quiz!} termIds={termIds} onPass={onQuizPass} />}
+        {step === 'quiz' && <QuizView key={lesson.id} questions={lesson.quiz!} termIds={termIds} onPass={onQuizPass} onWrong={onQuizWrong} />}
       </section>
 
       {step !== 'check' && step !== 'video' && step !== 'quiz' && (
@@ -204,6 +210,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
             : <a className="btn primary" href="#/">กลับไปแผนที่</a>}
         </p>
       )}
+      <AskTutor text={tutorPrompt({ lessonTitle: lesson.titleTh, stepLabel: STEPS[stepIdx].label, wrongPrompt })} />
     </main>
   )
 }

@@ -42,9 +42,10 @@ export interface QuizViewProps {
   onPass: () => void
   shuffle?: Shuffle
   termIds?: string[]
+  onWrong?: (q: QuizQuestion) => void
 }
 
-export function QuizView({ questions, onPass, shuffle = fisherYates, termIds = [] }: QuizViewProps) {
+export function QuizView({ questions, onPass, shuffle = fisherYates, termIds = [], onWrong }: QuizViewProps) {
   const [list, setList] = useState(() => order(questions, shuffle))
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
@@ -164,6 +165,7 @@ export function QuizView({ questions, onPass, shuffle = fisherYates, termIds = [
           onClick={() => {
             setSubmitted(true)
             setAnswers((a) => ({ ...a, [q.id]: selected }))
+            if (!isCorrect(q, selected)) onWrong?.(q)
           }}
         >
           ส่งคำตอบ

@@ -171,4 +171,14 @@ describe('QuizView motion feedback', () => {
     await u.click(screen.getByRole('button', { name: 'ดูคะแนน' }))
     expect(screen.getByText('ได้ 0 จาก 1 ข้อ')).not.toHaveClass('celebrate')
   })
+
+  it('ตอบผิดเรียก onWrong พร้อมคำถามนั้น', async () => {
+    const u = userEvent.setup()
+    const onWrong = vi.fn()
+    render(<QuizView questions={[mk('w', 'th', ['a'])]} onPass={() => {}} onWrong={onWrong} shuffle={(xs) => xs} />)
+    await pick(u, 'w', 'b')
+    await u.click(screen.getByRole('button', { name: 'ส่งคำตอบ' }))
+    expect(onWrong).toHaveBeenCalledTimes(1)
+    expect(onWrong.mock.calls[0][0].id).toBe('w')
+  })
 })
