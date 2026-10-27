@@ -52,7 +52,9 @@ describe('course outline', () => {
       else if (v && typeof v === 'object') Object.values(v).forEach(walk)
     }
     walk(course.flatMap((p) => p.lessons).filter((l) => l.status === 'ready'))
-    const byNumber = /บทที่s*([0-9]|หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ)/
+    const byNumber = /บทที่\s*([0-9]|หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ)/
+    for (const t of ['บทที่ 4 เล่า', 'บทที่4', 'บทที่สี่', 'บทที่ สี่']) expect(byNumber.test(t), t).toBe(true)
+    expect(byNumber.test('บทที่แล้ว')).toBe(false)
     expect(texts.filter((t) => byNumber.test(t))).toEqual([])
   })
 

@@ -105,6 +105,16 @@ describe('lesson p0-bits', () => {
     expect(valueOf(onAfter('s8'))).toBe(65)
   })
 
+  it('ฉาก A = 65: ป้ายผลลัพธ์โผล่หลังเปิดสวิตช์ ไม่ใช่ก่อน (กฎ 3.1 ข้อ 2) / transistor สลับตามไฟที่สั่ง', () => {
+    const s8 = lesson.scenes!.scenes.find((s) => s.id === 's8')!
+    expect(s8.setup).not.toContainEqual({ type: 'show', actor: 'aLbl0' })
+    const at = s8.actions.findIndex((a) => a.type === 'show' && a.actor === 'aLbl0')
+    const lastFlip = s8.actions.map((a) => a.type === 'setLabel').lastIndexOf(true)
+    expect(at).toBeGreaterThan(lastFlip)
+    expect(lesson.deepDives![0].bodyTh).not.toContain('สลับเปิดปิดเอง')
+    expect(lesson.deepDives![0].bodyTh).toContain('ตามไฟที่สั่ง')
+  })
+
   it('ห้องทดลองจับคู่เลขกับแถวสวิตช์ 8 หลักที่ถูกต้อง', () => {
     const lab = lesson.lab as ActivityLab
     expect(lab.kind).toBe('match')

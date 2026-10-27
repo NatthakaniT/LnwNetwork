@@ -171,7 +171,10 @@ describe('lesson p0-l4', () => {
     expect(set.actors.filter((a) => a.id.startsWith('iLbl')).map((a) => a.label).join(' ')).toMatch(/1 byte[\s\S]*32 bit/)
     const ids = set.scenes.map((s) => s.id)
     expect(ids.indexOf('s2b')).toBe(ids.indexOf('s2') + 1)
-    expect(n('s2b')).toMatch(/สี่สิบแปด bit[\s\S]*สิบหก[\s\S]*สิบสองตัว/)
+    expect(n('s2b')).toMatch(/สี่สิบแปด bit[\s\S]*สิบหก[\s\S]*แบ่งทีละสี่ bit ได้สิบสองตัว/)
+    expect(n('s2b')).not.toContain('รวมสิบสองตัว') // 12 = 48 ÷ 4 ไม่ใช่ 0-9 บวก A-F
+    expect(glossary.find((g) => g.id === 'mac-address')!.explainTh).toMatch(/16 แบบ[\s\S]*48 bit ÷ 4 = 12 ตัว/)
+    expect(glossary.find((g) => g.id === 'mac-address')!.explainTh).not.toContain('A-F รวม 12')
     expect(label('mxLbl1')).toContain('48 bit')
     expect(set.actors.filter((a) => a.id.startsWith('mxLbl')).map((a) => a.label).join(' ')).toMatch(/A-F[\s\S]*12 ตัว/)
     expect(glossary.find((g) => g.id === 'mac-address')!.explainTh).toContain('48 bit')

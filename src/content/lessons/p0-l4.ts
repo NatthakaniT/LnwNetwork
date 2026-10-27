@@ -33,7 +33,7 @@ const actors: Actor[] = [
   h({ id: 'mxLbl1', kind: 'label', x: 480, y: 70, label: '🪪 MAC ยาว 48 bit = 6 byte' }),
   h({ id: 'mxLbl2', kind: 'label', x: 480, y: 160, label: 'เขียน 0 กับ 1 ยาว 48 ตัวไม่ไหว · ทีละ 4 bit = 1 ตัว' }),
   h({ id: 'mxLbl3', kind: 'label', x: 480, y: 250, label: '4 bit ได้ 16 แบบ · แต่เลข 0-9 มีแค่ 10 ตัว' }),
-  h({ id: 'mxLbl4', kind: 'label', x: 480, y: 340, label: 'เลยเพิ่มตัว A-F แทน 10 ถึง 15 (เลขฐานสิบหก)' }),
+  h({ id: 'mxLbl4', kind: 'label', x: 480, y: 340, label: 'เลยเพิ่ม A-F แทน 10 ถึง 15 · รวม 16 แบบ' }),
   h({ id: 'mxLbl5', kind: 'label', x: 480, y: 430, label: '48 ÷ 4 = 12 ตัว เช่น AA:BB:CC:11:22:33' }),
 
   // ฉาก 3: IP address = บ้านเลขที่ / IPv4
@@ -188,7 +188,7 @@ export const lesson: Lesson = {
       {
         id: 's2b', chipTh: 'MAC 48 bit', lifeIcon: '💵',
         lifeTh: 'เงินเยอะ ๆ นับทีละใบไม่ไหว เลยนับเป็นปึก ปึกละร้อยใบ ตัวเลขก็สั้นลง',
-        narrationTh: 'MAC ยาวสี่สิบแปด bit หรือหก byte เขียนเป็นศูนย์กับหนึ่งยาวไป เลยเขียนทีละสี่ bit เป็นตัวเดียว สี่ bit ได้สิบหกแบบ แต่เลขมีแค่ศูนย์ถึงเก้า เลยเพิ่มตัวเอถึงเอฟ รวมสิบสองตัว',
+        narrationTh: 'MAC ยาวสี่สิบแปด bit เขียนเป็นศูนย์กับหนึ่งยาวไป เลยเขียนสี่ bit เป็นตัวเดียว สี่ bit ได้สิบหกแบบ ใช้ศูนย์ถึงเก้า กับเอถึงเอฟ สี่สิบแปด bit แบ่งทีละสี่ bit ได้สิบสองตัว',
         setup: [],
         actions: show('mxLbl1', 'mxLbl2', 'mxLbl3', 'mxLbl4', 'mxLbl5'),
       },
