@@ -121,6 +121,7 @@ const actors: Actor[] = [
   h({ id: 'sAns2', kind: 'card', x: 640, y: 230, lines: ['ถึง: คอมเรา', '✅ เลขที่อยู่ถูก 🔒'], tone: 'reply' }),
   h({ id: 'sBox', kind: 'card', x: 300, y: 410, lines: ['📦 ผู้รับ: huggingface.co'], tone: 'deliver' }),
   h({ id: 'sLbl1', kind: 'label', x: 480, y: 450, label: '❌ เน็ตบ้าน: สมุดให้เลขผิด เปิดไม่ได้' }),
+  h({ id: 'sLbl3', kind: 'label', x: 480, y: 450, label: '✅ สมุดอีกเล่ม ให้เลขที่อยู่ที่ถูก' }),
   h({ id: 'sLbl2', kind: 'label', x: 480, y: 505, label: '✅ Chrome: ถามสมุดอีกเล่ม ได้เลขถูก เปิดได้' }),
 
   // ฉาก 10: สรุป
@@ -324,13 +325,22 @@ export const lesson: Lesson = {
       },
       {
         id: 's9b', chipTh: 'สมุดอีกเล่ม', lifeIcon: '✅',
-        lifeTh: 'เปิดสมุดอีกเล่มที่เบอร์ถูก โทรไปก็เจอร้าน',
-        narrationTh: 'แต่ Chrome ไปถามสมุดอีกเล่ม แบบเข้ารหัส ได้เลขที่ถูก เลยเปิดได้ ตัวเว็บไม่ได้เสียเลย',
+        lifeTh: 'เปิดสมุดอีกเล่ม ได้เบอร์ร้านที่ถูก',
+        narrationTh: 'แต่ Chrome ไปถามสมุดอีกเล่ม แบบเข้ารหัส ได้เลขที่อยู่ที่ถูกกลับมา',
         setup: [...show(...storyBase), ...dim('sBad')],
         actions: [
           { type: 'trail', path: ['sGood', 'sPc'], tone: 'reply' },
           ...show('sAns2'),
           { type: 'moveAlong', actor: 'sAns2', path: ['sGood', 'sPc'], msPerHop: 1800, offset: ABOVE },
+          ...show('sLbl3'),
+        ],
+      },
+      {
+        id: 's9c', chipTh: 'เปิดได้', lifeIcon: '🌐',
+        lifeTh: 'ได้เบอร์ที่ถูก โทรไปก็เจอร้าน ร้านไม่ได้ปิดเลย',
+        narrationTh: 'คอมเขียนเลขที่ถูกบนกล่อง ส่งไปถึงเว็บ เลยเปิดได้ ตัวเว็บไม่ได้เสียเลย',
+        setup: [...show(...storyBase), ...dim('sBad'), { type: 'trail', path: ['sGood', 'sPc'], tone: 'reply' }],
+        actions: [
           { type: 'trail', path: ['sPc', 'sWeb'], tone: 'deliver' },
           ...show('sBox'),
           { type: 'moveAlong', actor: 'sBox', path: ['sPc', 'sWeb'], msPerHop: 2000, offset: { dx: 0, dy: 120 } },

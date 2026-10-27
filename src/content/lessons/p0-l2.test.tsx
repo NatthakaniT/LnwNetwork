@@ -54,6 +54,8 @@ describe('lesson p0-l2', () => {
     const ids = set.scenes.map((s) => s.id)
     expect(set.scenes[0].narrationTh.startsWith('จะต่อคอมหลายเครื่อง')).toBe(true) // กฎ 4.4 เปิดด้วยปัญหา
     expect(ids.indexOf('s3b')).toBe(ids.indexOf('s3') + 1)
+    // ขาดแค่สายกลาง คอม 3 กับคอม 4 ยังถึงกัน แต่ไปหาคอม 1 คอม 2 ไม่ได้
+    expect(set.scenes.find((s) => s.id === 's3b')!.narrationTh).toContain('ส่งไปหาคอมหนึ่งกับคอมสองไม่ได้')
     expect(ids.indexOf('s6b')).toBe(ids.indexOf('s6') + 1)
     const s6 = set.scenes.find((s) => s.id === 's6')!
     expect(s6.actions.some((a) => a.type === 'say')).toBe(false) // ฉากส่งได้ ยังไม่บอกว่าข้ามไม่ได้

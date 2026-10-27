@@ -87,7 +87,11 @@ describe('lesson p0-l5', () => {
     expect(narration('s5')).toContain('bits')
     expect(narration('s5')).toContain('encapsulation')
     expect(narration('s6')).toContain('แกะย้อนกลับ')
-    expect(narration('s6')).toContain('de-encapsulation')
+    expect(narration('s6b')).toContain('de-encapsulation')
+    expect(narration('s6')).not.toContain('de-encapsulation') // แกะชั้นนอกก่อน ค่อยได้ data กับชื่อเรียกในฉากถัดไป
+    expect(narration('s6')).not.toContain('port')
+    // ตาราง OSI บอกชื่อของที่ห่อแล้วของแต่ละชั้น (ข้อสอบถาม PDU ของ Data Link)
+    for (const [id, pdu] of [['o4', 'segment'], ['o3', 'packet'], ['o2', 'frame'], ['o1', 'bits']]) expect(lesson.scenes!.actors.find((a) => a.id === id)!.label, id).toContain(pdu)
     expect(narration('s7')).toContain('ทำไม')
     expect(narration('s7')).toMatch(/สายแลน[\s\S]*ไวไฟ/)
     expect(narration('s7')).toContain('ไม่ต้อง')

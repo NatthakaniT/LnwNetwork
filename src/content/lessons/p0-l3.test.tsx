@@ -47,10 +47,10 @@ describe('lesson p0-l3', () => {
     expect(glossary.some((g) => g.id === 'default-gateway')).toBe(false)
   })
 
-  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร ไม่มีตัวเลขหรือวงเล็บ และมี 6-16 ฉาก', () => {
+  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร ไม่มีตัวเลขหรือวงเล็บ และมี 6-18 ฉาก', () => {
     const scenes = lesson.scenes!.scenes
     expect(scenes.length).toBeGreaterThanOrEqual(6)
-    expect(scenes.length).toBeLessThanOrEqual(16)
+    expect(scenes.length).toBeLessThanOrEqual(18)
     for (const s of scenes) { expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(180); expect(s.narrationTh, s.id).not.toMatch(/[0-9()]/) }
   })
 
@@ -93,7 +93,7 @@ describe('lesson p0-l3', () => {
     }
     const ids = set.scenes.map((s) => s.id)
     // ถาม DNS → DNS ตอบ → ส่งกล่อง / กล่องหาย → ส่งใหม่ / ส่งไป → ตอบกลับ / สมุดผิด → สมุดอีกเล่ม
-    for (const seq of [['s8', 's8b', 's8c'], ['s4', 's4b'], ['s6', 's6b'], ['s9', 's9b'], ['s1', 's1b']]) {
+    for (const seq of [['s8', 's8b', 's8c'], ['s4', 's4b'], ['s6', 's6b'], ['s9', 's9b', 's9c'], ['s1', 's1b']]) {
       expect(ids.slice(ids.indexOf(seq[0]), ids.indexOf(seq[0]) + seq.length)).toEqual(seq)
     }
     // DNS: ถามและตอบเป็นการส่งหาเครื่องเดียว (ฟ้า) ส่วนกล่องที่ส่งของจริงใช้สีภาค
