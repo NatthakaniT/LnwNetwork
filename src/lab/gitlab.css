@@ -34,3 +34,7 @@ button.gl-file { cursor: pointer; }
 .gl-tag { margin-left: 0.3rem; padding: 0 0.4rem; border-radius: 6px; background: var(--part, var(--p2)); color: var(--bg); font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) { .gitlab * { transition: none !important; animation: none !important; } }
+.gl-from { margin-right: 0.3rem; color: var(--text-muted); font-size: 0.8rem; }
+.gl-fork { margin-left: 1rem; padding-left: 0.5rem; border-left: 2px solid var(--border); }
+.gl-dot.join { outline: 2px solid var(--warn); outline-offset: 1px; }
+.gl-join { padding: 0 0.4rem; border-radius: 6px; border: 1px solid var(--warn); color: var(--warn); font-size: 0.75rem; }

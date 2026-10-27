@@ -43,6 +43,15 @@ describe('checkGitGoal', () => {
     w = go(w, 'git push')
     expect(checkGitGoal(w, g('pushed'))).toBe(true)
   })
+  it('pushed: feature branch pushed passes', () => {
+    let f: World = { ...W0, friend: { ...W0.friend, repo: { commits: {}, branches: { main: null }, head: 'main' }, remote: 'origin' as const } }
+    f = friendDoes(friendDoes(f, { type: 'commit', file: 'a.txt', content: '1', message: 'm1' }), { type: 'push' })
+    let w = go(f, 'git clone https://github.com/x/y.git', 'git switch -c feature')
+    w = go(editFile(w, 'b.txt', 'b'), 'git add b.txt', 'git commit -m "b"')
+    expect(checkGitGoal(w, g('pushed'))).toBe(false)
+    w = go(w, 'git push')
+    expect(checkGitGoal(w, g('pushed'))).toBe(true)
+  })
   it('conflictFixed', () => {
     let f: World = { ...W0, friend: { ...W0.friend, repo: { commits: {}, branches: { main: null }, head: 'main' }, remote: 'origin' as const } }
     f = friendDoes(friendDoes(f, { type: 'commit', file: 'a.txt', content: '1', message: 'm1' }), { type: 'push' })

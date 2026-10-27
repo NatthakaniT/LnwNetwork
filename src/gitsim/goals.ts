@@ -28,7 +28,7 @@ export function checkGitGoal(world: World, g: GitGoal): boolean {
   switch (g.check) {
     case 'committed': return g.arg ? Object.values(repo.commits).some(c => c.message.includes(g.arg!)) : Object.keys(repo.commits).length > 0
     case 'staged': return !!world.me.staged && (!g.arg || g.arg in world.me.staged)
-    case 'pushed': return !!mine && tip(world.github) === mine
+    case 'pushed': return !!mine && world.github?.branches[repo.head] === mine
     case 'pulled': return !!world.github && world.me.remote === 'origin' && !world.conflict && !!tip(world.github) && tip(world.github)! in repo.commits && ancestors(repo, mine).has(tip(world.github)!)
     case 'onBranch': return repo.head === g.arg
     case 'merged': { const o = g.arg ? tip(repo, g.arg) : null; return !!o && !world.conflict && ancestors(repo, mine).has(o) }

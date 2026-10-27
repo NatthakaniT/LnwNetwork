@@ -16,23 +16,54 @@ function chain(repo: Repo, branch: string): string[] {
   return out
 }
 
-function Timeline({ title, repo }: { title: string; repo: Repo | null }) {
+/** เส้นหลักคือ main (ถ้าไม่มีใช้ branch แรกที่มี commit); branch อื่นมีเฉพาะ commit ของตัวเอง + จุดที่แยกออกมา */
+function layout(repo: Repo, branches: string[]) {
+  const trunk = branches.includes('main') ? 'main' : branches[0]
+  const trunkIds = chain(repo, trunk)
+  const onTrunk = new Set(trunkIds)
+  const rows = branches.filter(b => b !== trunk).map(b => {
+    const all = chain(repo, b)
+    let i = all.length
+    while (i > 0 && !onTrunk.has(all[i - 1])) i--
+    return { name: b, own: all.slice(i), fork: i > 0 ? all[i - 1] : null }
+  })
+  return { trunk, trunkIds, rows }
+}
+
+type Who = 'me' | 'friend' | 'github'
+
+function Timeline({ title, repo, who }: { title: string; repo: Repo | null; who: Who }) {
   const branches = repo ? Object.keys(repo.branches).filter(b => repo.branches[b]) : []
+  const tagOf = (b: string) => b + (who === 'me' && repo!.head === b ? ' ← ตรงนี้' : '')
+  const joinName = (id: string) => Object.keys(repo!.branches).find(b => repo!.branches[b] === id) ?? id.slice(0, 7)
+  const commit = (id: string, i: number, last: string | null) => {
+    const c = repo!.commits[id]
+    return (
+      <span key={id} className="gl-commit" title={c.message}>
+        {i > 0 && <span className="gl-link" aria-hidden="true" />}
+        <span className={`gl-dot${c.parent2 ? ' join' : ''}`} aria-hidden="true" />
+        <span className="gl-msg">{c.message}</span>
+        {c.parent2 && <span className="gl-join">รวมจาก {joinName(c.parent2)}</span>}
+        {last && <span className="gl-tag">{last}</span>}
+      </span>
+    )
+  }
+  const L = repo && branches.length ? layout(repo, branches) : null
   return (
     <section className="gl-line" aria-label={`ประวัติ ${title}`}>
       <h3>{title}</h3>
-      {!repo || !branches.length ? <p className="gl-empty">ยังไม่มี commit</p> : branches.map(b => (
-        <div key={b} className="gl-branch">
-          {chain(repo, b).map((id, i, a) => (
-            <span key={id} className="gl-commit" title={repo.commits[id].message}>
-              {i > 0 && <span className="gl-link" aria-hidden="true" />}
-              <span className="gl-dot" aria-hidden="true" />
-              <span className="gl-msg">{repo.commits[id].message}</span>
-              {i === a.length - 1 && <span className="gl-tag">{b}{repo.head === b ? ' ← ตรงนี้' : ''}</span>}
-            </span>
+      {!L ? <p className="gl-empty">ยังไม่มี commit</p> : (
+        <>
+          <div className="gl-branch gl-trunk">{L.trunkIds.map((id, i, a) => commit(id, i, i === a.length - 1 ? tagOf(L.trunk) : null))}</div>
+          {L.rows.map(r => (
+            <div key={r.name} className="gl-branch gl-fork">
+              {r.fork && <span className="gl-from">แยกจาก {repo!.commits[r.fork].message} →</span>}
+              {r.own.map((id, i, a) => commit(id, i, i === a.length - 1 ? tagOf(r.name) : null))}
+              {!r.own.length && <span className="gl-tag">{tagOf(r.name)}</span>}
+            </div>
           ))}
-        </div>
-      ))}
+        </>
+      )}
     </section>
   )
 }
@@ -61,17 +92,20 @@ export function GitLabView({ lab, onDone }: GitLabViewProps) {
     // งานชนกัน (conflict) เป็นสถานะปกติ ไม่ใช่ error
     const entries: Entry[] = [{ line, output: r.output, explainTh: r.explainTh, ok: r.ok || !!r.world.conflict }]
     let idx = goalIdx
-    // ผ่านทีละข้อต่อคำสั่ง เพื่อให้ผู้เรียนเห็นเป้าหมายทุกข้อ
-    if (idx < lab.goals.length && checkGitGoal(w, lab.goals[idx])) {
+    // ผ่านได้หลายข้อในคำสั่งเดียว ถ้าสภาพตอนนี้ตรงเป้าหมายถัดไปด้วย
+    while (idx < lab.goals.length && checkGitGoal(w, lab.goals[idx])) {
       for (const f of lab.friendScript ?? []) {
         if (f.afterGoal !== idx) continue
-        w = friendDoes(w, f.action)
+        const next = friendDoes(w, f.action)
+        if (next === w) continue // friendDoes คืน world เดิมเมื่อไม่มีอะไรเปลี่ยน
+        w = next
         entries.push({ note: f.action.type === 'push' ? 'เพื่อนเพิ่ง push งานขึ้น GitHub' : 'เพื่อนเพิ่งแก้งานในเครื่องของเขา' })
       }
       idx++
       setHint(false)
-      if (idx >= lab.goals.length && !doneRef.current) { doneRef.current = true; onDone() }
     }
+    if (idx >= lab.goals.length && !doneRef.current) { doneRef.current = true; onDone() }
+    setEditing(null)
     setGoalIdx(idx)
     setWorld(w)
     setLog(l => [...l, ...entries])
@@ -147,15 +181,15 @@ export function GitLabView({ lab, onDone }: GitLabViewProps) {
             <div className="gl-edit">
               <label>
                 <span>แก้ไฟล์ {editing.file}</span>
-                <textarea aria-label={`แก้ไฟล์ ${editing.file}`} value={editing.draft} onChange={e => setEditing({ ...editing, draft: e.target.value })} />
+                <textarea autoFocus aria-label={`แก้ไฟล์ ${editing.file}`} value={editing.draft} onChange={e => setEditing({ ...editing, draft: e.target.value })} />
               </label>
               <button type="button" className="btn small" onClick={() => { setWorld(editFile(world, editing.file, editing.draft)); setEditing(null) }}>บันทึกไฟล์</button>
               <button type="button" className="btn small" onClick={() => setEditing(null)}>ปิด</button>
             </div>
           )}
-          <Timeline title="เครื่องเรา" repo={world.me.repo} />
-          <Timeline title="GitHub" repo={world.github} />
-          <Timeline title="เครื่องเพื่อน" repo={world.friend.repo} />
+          <Timeline title="เครื่องเรา" repo={world.me.repo} who="me" />
+          <Timeline title="GitHub" repo={world.github} who="github" />
+          <Timeline title="เครื่องเพื่อน" repo={world.friend.repo} who="friend" />
         </div>
       </div>
     </section>
