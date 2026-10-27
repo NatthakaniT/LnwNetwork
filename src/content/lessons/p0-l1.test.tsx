@@ -18,15 +18,36 @@ describe('lesson p0-l1', () => {
     expect(l).toBe(lesson)
     expect(l.status).toBe('ready')
     expect(l.ciscoModules).toEqual(['ITN 1'])
-    // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    expect(validateCourse(course, glossary).filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
   })
 
-  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร และมี 6-10 ฉาก', () => {
+  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร ไม่มีตัวเลขหรือวงเล็บ และมี 6-10 ฉาก', () => {
     const scenes = lesson.scenes!.scenes
     expect(scenes.length).toBeGreaterThanOrEqual(6)
     expect(scenes.length).toBeLessThanOrEqual(10)
-    for (const s of scenes) expect([...s.narrationTh].length).toBeLessThanOrEqual(180)
+    for (const s of scenes) {
+      expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(180)
+      expect(s.narrationTh, s.id).not.toMatch(/[0-9()]/)
+    }
+  })
+
+  it('เป็นฉากแบบ v2: ทุกฉากมีชื่อฉากและแถบชีวิตจริง ของที่วิ่งเป็นซองมีป้ายหน้าซอง', () => {
+    const set = lesson.scenes!
+    expect(set.style).toBe('v2')
+    for (const s of set.scenes) {
+      expect(s.chipTh, s.id).toBeTruthy()
+      expect(s.lifeTh, s.id).toBeTruthy()
+      expect(s.lifeIcon, s.id).toBeTruthy()
+      for (const a of s.actions) {
+        if (a.type === 'moveAlong') expect(set.actors.find((x) => x.id === a.actor)!.kind, `${s.id} ${a.actor}`).toBe('card')
+      }
+    }
+    // บทนี้สอนคำว่า data ในความหมาย ข้อมูลที่ส่ง (บทห่อของใช้ต่อเป็นชั้นในสุด)
+    expect(lesson.terms).toContain('data')
+    expect(set.scenes.find((s) => s.id === 's3')!.narrationTh).toContain('เรียกว่า data')
+    // ฉาก network มีคอมมากกว่าสองเครื่อง ตามที่บทพูดบอกว่า หลายเครื่อง
+    const s4 = set.scenes.find((s) => s.id === 's4')!
+    expect((s4.setup ?? []).filter((a) => a.type === 'show' && set.actors.find((x) => x.id === a.actor)!.kind === 'pc').length).toBeGreaterThan(2)
   })
 
   it('เล่นได้ครบ: คลิป → ภาพทบทวน → กิจกรรม → คำถาม', async () => {

@@ -39,7 +39,7 @@ const quizTexts = (qs: QuizQuestion[]): string[] =>
 
 /** ข้อความที่ผู้เรียนเห็นในบท ready */
 function learnerTexts(l: Lesson): string[] {
-  const out = [l.analogyTh, ...quizTexts(l.quiz ?? []), ...quizTexts(l.precheck ?? [])]
+  const out = [l.analogyTh, ...quizTexts(l.quiz ?? []), ...quizTexts(l.precheck ?? []), ...l.videos.map((v) => v.noteTh ?? '')]
   for (const a of l.scenes?.actors ?? []) {
     out.push(a.label ?? '', ...(a.lines ?? []), a.titleTh ?? '', ...(a.columns ?? []), ...(a.rows ?? []).flat())
   }
@@ -49,6 +49,7 @@ function learnerTexts(l: Lesson): string[] {
   }
   if (l.lab) out.push(l.lab.introTh)
   if (l.lab?.kind === 'network') for (const g of l.lab.goals) out.push(g.taskTh, g.hintTh)
+  else if (l.lab) out.push(...l.lab.items.map((i) => i.textTh), l.lab.explainTh, l.lab.rightTh ?? '')
   return out
 }
 
@@ -72,10 +73,12 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
     if (!l.quiz.some((q) => q.layer === 'en')) errs.push(`บท ${id}: quiz ไม่มีคำถามชั้นภาษาอังกฤษ (en)`)
     for (const q of l.quiz) {
       if (q.layer === 'en' && !q.promptTh) errs.push(`บท ${id}: คำถาม ${q.id} (en) ไม่มีคำแปลไทย promptTh`)
-      const choiceIds = new Set(q.choices.map((c) => c.id))
-      for (const c of q.correct) {
-        if (!choiceIds.has(c)) errs.push(`บท ${id}: คำถาม ${q.id} มีคำตอบที่ถูกอ้างถึง choice "${c}" ซึ่งไม่มีอยู่`)
-      }
+    }
+  }
+  for (const q of [...(l.quiz ?? []), ...(l.precheck ?? [])]) {
+    const choiceIds = new Set(q.choices.map((c) => c.id))
+    for (const c of q.correct) {
+      if (!choiceIds.has(c)) errs.push(`บท ${id}: คำถาม ${q.id} มีคำตอบที่ถูกอ้างถึง choice "${c}" ซึ่งไม่มีอยู่`)
     }
   }
 
@@ -108,7 +111,7 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
       l.scenes.scenes.forEach((s, i) => {
         if (!s.chipTh?.trim()) errs.push(`บท ${id}: ฉาก ${s.id} ไม่มีชื่อฉาก (chipTh)`)
         if (!s.lifeTh?.trim()) errs.push(`บท ${id}: ฉาก ${s.id} ไม่มีแถบชีวิตจริง (lifeTh)`)
-        for (const [a, b] of overlaps(stateAfterScene(l.scenes!, i))) errs.push(`บท ${id}: ฉาก ${s.id} ตอนจบมีของซ้อนกัน: ${a} กับ ${b}`)
+        for (const [a, b] of overlaps(stateAfterScene(l.scenes!, i), l.scenes!.stage)) errs.push(`บท ${id}: ฉาก ${s.id} ตอนจบมีของซ้อนกัน: ${a} กับ ${b}`)
       })
     }
   }

@@ -72,10 +72,14 @@ export function bubbleBox(a: StageActor, text: string): Box {
   return { x: a.x - w / 2, y: cy - BUBBLE.h / 2, w, h: BUBBLE.h }
 }
 
-const hit = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
+/** ระยะห่างน้อยสุดระหว่างของสองชิ้น และระหว่างของกับขอบเวที */
+export const GAP = 8
+const hit = (a: Box, b: Box) =>
+  a.x < b.x + b.w + GAP && b.x < a.x + a.w + GAP && a.y < b.y + b.h + GAP && b.y < a.y + a.h + GAP
 
-/** คู่ของที่มองเห็นแล้วกรอบทับกัน (ไม่นับสาย) ป้ายพูดใช้ id `<actor>:bubble` */
-export function overlaps(state: StageState): [string, string][] {
+/** คู่ของที่มองเห็นแล้วกรอบห่างกันไม่ถึง GAP (ไม่นับสาย) ป้ายพูดใช้ id `<actor>:bubble`
+ *  ส่ง stage มาด้วย = ตรวจขอบเวทีด้วย คืนคู่ [id, 'ขอบเวที'] */
+export function overlaps(state: StageState, stage?: { width: number; height: number }): [string, string][] {
   const items: [string, Box][] = Object.values(state.actors)
     .filter((a) => !a.hidden && a.kind !== 'cable' && !(a.kind === 'label' && !a.label))
     .map((a) => [a.id, boxOf(a)])
@@ -84,6 +88,11 @@ export function overlaps(state: StageState): [string, string][] {
     if (a) items.push([`${b.actor}:bubble`, bubbleBox(a, b.text)])
   }
   const out: [string, string][] = []
+  if (stage) {
+    for (const [id, b] of items) {
+      if (b.x < GAP || b.y < GAP || b.x + b.w > stage.width - GAP || b.y + b.h > stage.height - GAP) out.push([id, 'ขอบเวที'])
+    }
+  }
   for (let i = 0; i < items.length; i++) {
     for (let j = i + 1; j < items.length; j++) if (hit(items[i][1], items[j][1])) out.push([items[i][0], items[j][0]])
   }

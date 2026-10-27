@@ -40,9 +40,7 @@ describe('course outline', () => {
   })
 
   it('passes validation', () => {
-    // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    const errs = validateCourse(course, glossary)
-    expect(errs.filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
   })
 })
 
@@ -140,7 +138,7 @@ describe('validateCourse', () => {
 
   describe('ฉากแบบ v2', () => {
     const v2 = (sceneOver: object, actors = [{ id: 'a1', kind: 'pc' as const, x: 100, y: 100 }]) => scenes({
-      style: 'v2', actors,
+      style: 'v2', actors, stage: { width: 960, height: 540 },
       scenes: [{ id: 's1', narrationTh: 'n', chipTh: 'ถาม', lifeTh: 'ชีวิตจริง', actions: [{ type: 'show', actor: 'a1' }], ...sceneOver }],
     })
     it('ผ่านเมื่อมี chipTh lifeTh และไม่มีของทับกัน', () => {
@@ -154,6 +152,10 @@ describe('validateCourse', () => {
       const two = [{ id: 'a1', kind: 'pc' as const, x: 100, y: 100 }, { id: 'a2', kind: 'pc' as const, x: 120, y: 110 }]
       const errs = validateCourse(parts(readyOk({ scenes: v2({}, two) })), gl)
       expect(has(errs, 'ซ้อนกัน') && has(errs, 'a2')).toBe(true)
+    })
+    it('ของห่างขอบเวทีไม่ถึง 8 px', () => {
+      const errs = validateCourse(parts(readyOk({ scenes: v2({}, [{ id: 'a1', kind: 'pc' as const, x: 20, y: 100 }]) })), gl)
+      expect(has(errs, 'ซ้อนกัน') && has(errs, 'ขอบเวที')).toBe(true)
     })
     it('อ้าง actor ที่ไม่มีใน setup, trail และ say', () => {
       const errs = validateCourse(parts(readyOk({ scenes: v2({
@@ -209,6 +211,22 @@ describe('validateCourse', () => {
       expect(validateCourse(parts(l1({ terms: ['mac'] }), l2({ scenes: early.scenes })), gl)).toEqual([])
       const macaroni = l1({ scenes: scenes({ scenes: [{ id: 's1', narrationTh: 'macaroni', actions: [] }] }) })
       expect(validateCourse(parts(macaroni, l2({ terms: ['mac'] })), gl)).toEqual([])
+    })
+
+    it('scans activity lab items, explainTh, rightTh and video noteTh for terms used too early', () => {
+      const later = l2({ terms: ['mac'] })
+      const early = [
+        l1({ lab: { ...lab, items: [{ id: 'a', textTh: 'ป้าย MAC' }] } }),
+        l1({ lab: { ...lab, explainTh: 'ดู MAC' } }),
+        l1({ lab: { ...lab, rightTh: 'ใช่ MAC' } }),
+        l1({ videos: [{ ...video, noteTh: 'จับแค่ MAC' }] }),
+      ]
+      for (const e of early) expect(has(validateCourse(parts(e, later), gl), 'ใช้ศัพท์ "MAC" ก่อนบทที่สอน')).toBe(true)
+    })
+
+    it('checks precheck choices like quiz choices', () => {
+      const errs = validateCourse(parts(l1(), l2({ requires: req, precheck: [pre({ correct: ['zzz'] })] })), gl)
+      expect(has(errs, 'pq') && has(errs, 'zzz')).toBe(true)
     })
 
     it('firstTaughtIn maps each term to its first lesson', () => {

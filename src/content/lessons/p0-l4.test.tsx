@@ -34,8 +34,7 @@ describe('lesson p0-l4', () => {
     expect(l.videos[0].noteTh).toContain('ภาค 1')
     expect(l.videos[0].noteTh).not.toContain('ถ้าคลิป') // บอกชัด ไม่ใช่ถ้า
     expect(l.videos[1].noteTh).toContain('ARP = ตะโกนถามหา MAC ในหมู่บ้าน')
-    // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    expect(validateCourse(course, glossary).filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
   })
 
   it('ศัพท์ใหม่ MAC address, IPv4, ARP, NIC อยู่ในคลังศัพท์ (ไม่ซ้ำ) และอยู่ใน terms ของบท', () => {
@@ -114,6 +113,17 @@ describe('lesson p0-l4', () => {
     expect(all.some((n) => n.includes('ได้ IP ใหม่') && n.includes('MAC') && n.includes('เลขเดิม'))).toBe(true)
     expect(all.some((n) => n.includes('ARP'))).toBe(true)
     expect(all.some((n) => n.includes('MAC ของ Gateway'))).toBe(true)
+  })
+
+  it('Gateway: ถามหา MAC → Gateway ตอบเครื่องเดียว (unicast) → ยื่นกล่องโดยใช้ MAC นั้น / เปิดบทด้วยคำถาม', () => {
+    const set = lesson.scenes!
+    const ids = set.scenes.map((s) => s.id)
+    expect(ids.slice(ids.indexOf('gw1'), ids.indexOf('gw1') + 3)).toEqual(['gw1', 'gwr', 'gw2'])
+    const reply = set.scenes.find((s) => s.id === 'gwr')!
+    expect(reply.chipTh && reply.lifeTh).toBeTruthy()
+    expect(reply.actions).toContainEqual({ type: 'trail', path: ['gR', 'gSw', 'gPc'], tone: 'reply' })
+    expect(reply.narrationTh).toContain('unicast')
+    expect(set.scenes[0].narrationTh.startsWith('ทำไมเครื่องต้องมีที่อยู่ถึงสองแบบ')).toBe(true) // กฎ 4.4
   })
 
   it('คำถาม: th 3-4 ข้อ, en 2-3 ข้อ มีคำแปลและ keywords ครบ และคำอธิบายไม่ไล่ข้อความตัวเลือก', () => {
@@ -316,8 +326,7 @@ describe('lesson p0-l4', () => {
       // 4. คำถาม: ข้อแรกเป็นชั้น th
       const firstTh = lesson.quiz!.find((q) => q.layer === 'th')!
       expect(container.querySelector('.quiz-prompt')).toHaveTextContent(firstTh.prompt)
-      // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    expect(validateCourse(course, glossary).filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
       expect(errSpy).not.toHaveBeenCalled()
     }, 30000)
   })

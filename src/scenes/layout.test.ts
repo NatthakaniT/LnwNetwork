@@ -29,6 +29,23 @@ describe('layout', () => {
     expect(overlaps(bubbled)).toEqual([['b', 'a:bubble']])
   })
 
+  it('ของต้องห่างกันอย่างน้อย 8 px: ห่าง 5 นับว่าซ้อน ห่าง 10 ไม่ซ้อน', () => {
+    // pc ไม่มีป้าย กว้างครึ่งละ 48: ระยะระหว่างจุดกลาง 96 = ขอบชนกันพอดี
+    const bare = (id: string, x: number) => pc(id, x, 300, { label: undefined })
+    expect(overlaps(stage([bare('a', 100), bare('b', 100 + 96 + 5)]))).toEqual([['a', 'b']])
+    expect(overlaps(stage([bare('a', 100), bare('b', 100 + 96 + 10)]))).toEqual([])
+  })
+
+  it('ส่งขนาดเวทีมา: ของที่ห่างขอบเวทีไม่ถึง 8 px นับว่าชนขอบ', () => {
+    const size = { width: 960, height: 540 }
+    const bare = (x: number, y: number) => pc('a', x, y, { label: undefined })
+    expect(overlaps(stage([bare(60, 300)]), size)).toEqual([])
+    expect(overlaps(stage([bare(52, 300)]), size)).toEqual([['a', 'ขอบเวที']])
+    expect(overlaps(stage([bare(910, 300)]), size)).toEqual([['a', 'ขอบเวที']])
+    expect(overlaps(stage([bare(400, 490)]), size)).toEqual([['a', 'ขอบเวที']])
+    expect(overlaps(stage([bare(52, 300)]))).toEqual([]) // ไม่ส่งขนาดเวที ไม่ตรวจขอบ
+  })
+
   it('กรอบของ card โตตามจำนวนบรรทัด table โตตามจำนวนแถว ป้ายข้างไอคอนอยู่ทางขวา', () => {
     const c1 = boxOf({ id: 'c', kind: 'card', x: 0, y: 0, lines: ['ก'] })
     const c3 = boxOf({ id: 'c', kind: 'card', x: 0, y: 0, lines: ['ก', 'ข', 'ค'] })

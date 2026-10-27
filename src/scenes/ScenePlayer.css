@@ -78,7 +78,7 @@
 .sp-card rect { fill: var(--text); stroke: var(--tone); stroke-width: 4; }
 .sp-card text, .sp-table text { fill: var(--bg); }
 .sp-table .sp-paper { fill: var(--text); stroke: var(--bg); stroke-width: 3; }
-.sp-table text.sp-muted { fill: var(--disabled-fg); }
+.sp-table text.sp-muted { fill: var(--paper-muted); }
 .sp-table .sp-rule { stroke: var(--text-muted); stroke-width: 2; }
 .sp-label-sub { fill: var(--text-muted); }
 

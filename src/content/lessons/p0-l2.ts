@@ -1,90 +1,99 @@
 import type { Actor, Device, Lesson, SceneAction } from '../types'
 
-const hidden = (a: Actor): Actor => ({ ...a, hidden: true })
+// ฉากแบบ v2 (ดู p0-l4): ทุกอย่างซ่อนไว้ก่อน แต่ละฉากโชว์ของที่ตัวเองใช้ใน setup
+const h = (a: Actor): Actor => ({ ...a, hidden: true })
 const show = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'show', actor }))
-const hide = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'hide', actor }))
+const dim = (...ids: string[]): SceneAction[] => ids.map((actor) => ({ type: 'dim', actor }))
+const glow = (actor: string): SceneAction => ({ type: 'glow', actor })
 
-const endIds = ['e1', 'e2', 'e3', 'eLbl']
-const cableIds = ['c1', 'c2', 'cab', 'cData', 'cLbl1', 'cLbl2']
-const chainIds = ['d1', 'd2', 'd3', 'd4', 'dc1', 'dc2', 'dc3', 'dLbl1', 'dLbl2']
-const starIds = ['st1', 'st2', 'st3', 'st4', 'sw', 'sc1', 'sc2', 'sc3', 'sc4']
-const villageIds = ['vA', 'vB', 'a1', 'a2', 'swA', 'ac1', 'ac2', 'b1', 'b2', 'swB', 'bc1', 'bc2']
-const homeIds = ['homeBox', 'h1', 'h2', 'h3']
+// ซองจอดเหนือเครื่อง (หมู่บ้าน) / ใต้เครื่อง (Switch อยู่ล่าง ไม่มีที่เหนือคอม)
+const ABOVE = { dx: 0, dy: -80 }
+const BELOW = { dx: 0, dy: 130 }
+
+const chainBase = ['d1', 'd2', 'd3', 'd4', 'dc1', 'dc2', 'dc3']
+const starBase = ['st1', 'st2', 'st3', 'st4', 'sw', 'sc1', 'sc2', 'sc3', 'sc4']
+const villageBase = ['vA', 'vB', 'a1', 'a2', 'swA', 'ac1', 'ac2', 'b1', 'b2', 'swB', 'bc1', 'bc2']
+const routerBase = [...villageBase, 'router', 'rc1', 'rc2']
 
 const actors: Actor[] = [
   // ฉาก 1: end device = บ้าน
-  { id: 'e1', kind: 'pc', x: 220, y: 200, label: 'คอม' },
-  { id: 'e2', kind: 'laptop', x: 480, y: 200, label: 'โน้ตบุ๊ก' },
-  { id: 'e3', kind: 'server', x: 740, y: 200, label: 'เซิร์ฟเวอร์ (เก็บเว็บ)' },
-  { id: 'eLbl', kind: 'label', x: 480, y: 420, label: 'End device = บ้าน = เครื่องที่ส่ง และรับข้อมูล' },
+  h({ id: 'eQ', kind: 'label', x: 480, y: 60, label: '❓ ต่อคอมหลายเครื่อง ให้ส่งของหากันได้ ต้องมีอะไรบ้าง' }),
+  h({ id: 'e1', kind: 'pc', x: 220, y: 200, label: 'คอม' }),
+  h({ id: 'e2', kind: 'laptop', x: 480, y: 200, label: 'โน้ตบุ๊ก' }),
+  h({ id: 'e3', kind: 'server', x: 740, y: 200, label: 'เซิร์ฟเวอร์ (เก็บเว็บ)' }),
+  h({ id: 'eLbl', kind: 'label', x: 480, y: 420, label: 'End device = บ้าน = เครื่องที่ส่ง และรับข้อมูล' }),
 
   // ฉาก 2: สาย = ถนน
-  hidden({ id: 'c1', kind: 'pc', x: 200, y: 190, label: 'คอม 1' }),
-  hidden({ id: 'c2', kind: 'pc', x: 760, y: 190, label: 'คอม 2' }),
-  hidden({ id: 'cab', kind: 'cable', x: 200, y: 190, to: 'c2' }),
-  hidden({ id: 'cData', kind: 'envelope', x: 200, y: 190, label: 'ข้อมูล' }),
-  hidden({ id: 'cLbl1', kind: 'label', x: 480, y: 380, label: 'สาย (cable) = ถนน ให้ข้อมูลวิ่ง' }),
-  hidden({ id: 'cLbl2', kind: 'label', x: 480, y: 450, label: 'สายแลน ส่งเป็นไฟฟ้า · สายไฟเบอร์ ส่งเป็นแสง ไปได้ไกลกว่า' }),
+  h({ id: 'c1', kind: 'pc', x: 200, y: 190, label: 'คอม 1' }),
+  h({ id: 'c2', kind: 'pc', x: 760, y: 190, label: 'คอม 2' }),
+  h({ id: 'cab', kind: 'cable', x: 200, y: 190, to: 'c2' }),
+  h({ id: 'cData', kind: 'card', x: 200, y: 80, lines: ['💬 ข้อมูล', 'ถึง: คอม 2'], tone: 'deliver' }),
+  h({ id: 'cLbl1', kind: 'label', x: 480, y: 380, label: 'สาย (cable) = ถนน ให้ข้อมูลวิ่ง' }),
+  h({ id: 'cLbl2', kind: 'label', x: 480, y: 440, label: 'สายแลน ส่งเป็นไฟฟ้า · สายไฟเบอร์ ส่งเป็นแสง ไปได้ไกลกว่า' }),
+  h({ id: 'cLbl3', kind: 'label', x: 480, y: 500, label: '📶 ไวไฟ = ถนนแบบไม่ใช้สาย' }),
 
   // ฉาก 3: ต่อคอมเป็นทอด ๆ (ของจริงไม่ทำแบบนี้)
-  hidden({ id: 'd1', kind: 'pc', x: 150, y: 200, label: 'คอม 1' }),
-  hidden({ id: 'd2', kind: 'pc', x: 370, y: 200, label: 'คอม 2' }),
-  hidden({ id: 'd3', kind: 'pc', x: 590, y: 200, label: 'คอม 3' }),
-  hidden({ id: 'd4', kind: 'pc', x: 810, y: 200, label: 'คอม 4' }),
-  hidden({ id: 'dc1', kind: 'cable', x: 150, y: 200, to: 'd2' }),
-  hidden({ id: 'dc2', kind: 'cable', x: 370, y: 200, to: 'd3' }),
-  hidden({ id: 'dc3', kind: 'cable', x: 590, y: 200, to: 'd4' }),
-  hidden({ id: 'dLbl1', kind: 'label', x: 480, y: 380, label: '✂️ สายเส้นกลางขาด คอม 3 กับคอม 4 หลุดหมด' }),
-  hidden({ id: 'dLbl2', kind: 'label', x: 480, y: 450, label: 'คอมส่วนมาก มีช่องเสียบสายแลนแค่ช่องเดียว' }),
+  h({ id: 'd1', kind: 'pc', x: 150, y: 200, label: 'คอม 1' }),
+  h({ id: 'd2', kind: 'pc', x: 370, y: 200, label: 'คอม 2' }),
+  h({ id: 'd3', kind: 'pc', x: 590, y: 200, label: 'คอม 3' }),
+  h({ id: 'd4', kind: 'pc', x: 810, y: 200, label: 'คอม 4' }),
+  h({ id: 'dc1', kind: 'cable', x: 150, y: 200, to: 'd2' }),
+  h({ id: 'dc2', kind: 'cable', x: 370, y: 200, to: 'd3' }),
+  h({ id: 'dc3', kind: 'cable', x: 590, y: 200, to: 'd4' }),
+  h({ id: 'dCut', kind: 'label', x: 480, y: 210, label: '✂️' }),
+  h({ id: 'dLbl1', kind: 'label', x: 480, y: 400, label: '✂️ สายเส้นกลางขาด คอม 3 กับคอม 4 หลุดหมด' }),
+  h({ id: 'dLbl2', kind: 'label', x: 480, y: 400, label: 'คอมส่วนมาก มีช่องเสียบสายแลนแค่ช่องเดียว' }),
 
   // ฉาก 4-5: ทุกเครื่องเสียบสายเข้า Switch
-  hidden({ id: 'st1', kind: 'pc', x: 150, y: 100, label: 'คอม 1' }),
-  hidden({ id: 'st2', kind: 'pc', x: 370, y: 100, label: 'คอม 2' }),
-  hidden({ id: 'st3', kind: 'pc', x: 590, y: 100, label: 'คอม 3' }),
-  hidden({ id: 'st4', kind: 'pc', x: 810, y: 100, label: 'คอม 4' }),
-  hidden({ id: 'sw', kind: 'switch', x: 480, y: 320, label: 'Switch' }),
-  hidden({ id: 'sc1', kind: 'cable', x: 150, y: 100, to: 'sw' }),
-  hidden({ id: 'sc2', kind: 'cable', x: 370, y: 100, to: 'sw' }),
-  hidden({ id: 'sc3', kind: 'cable', x: 590, y: 100, to: 'sw' }),
-  hidden({ id: 'sc4', kind: 'cable', x: 810, y: 100, to: 'sw' }),
-  hidden({ id: 'sEnv', kind: 'envelope', x: 150, y: 100 }),
-  hidden({ id: 'sLbl', kind: 'label', x: 480, y: 480, label: 'Switch = ไปรษณีย์ในหมู่บ้าน' }),
-  hidden({ id: 's5Lbl', kind: 'label', x: 480, y: 480, label: '✂️ สายเส้นนี้ขาด หลุดแค่คอม 4 เครื่องเดียว' }),
+  h({ id: 'st1', kind: 'pc', x: 150, y: 130, label: 'คอม 1' }),
+  h({ id: 'st2', kind: 'pc', x: 370, y: 130, label: 'คอม 2' }),
+  h({ id: 'st3', kind: 'pc', x: 590, y: 130, label: 'คอม 3' }),
+  h({ id: 'st4', kind: 'pc', x: 810, y: 130, label: 'คอม 4' }),
+  h({ id: 'sw', kind: 'switch', x: 480, y: 360, label: 'Switch' }),
+  h({ id: 'sc1', kind: 'cable', x: 150, y: 130, to: 'sw' }),
+  h({ id: 'sc2', kind: 'cable', x: 370, y: 130, to: 'sw' }),
+  h({ id: 'sc3', kind: 'cable', x: 590, y: 130, to: 'sw' }),
+  h({ id: 'sc4', kind: 'cable', x: 810, y: 130, to: 'sw' }),
+  h({ id: 'sEnv', kind: 'card', x: 150, y: 260, lines: ['📦 ถึง: คอม 3'], tone: 'deliver' }),
+  h({ id: 'sLbl', kind: 'label', x: 480, y: 40, label: 'Switch = ไปรษณีย์ในหมู่บ้าน' }),
+  h({ id: 's5Lbl', kind: 'label', x: 480, y: 500, label: '✂️ สายเส้นนี้ขาด หลุดแค่คอม 4 เครื่องเดียว' }),
 
   // ฉาก 6-8: สองหมู่บ้าน กับ Router
-  hidden({ id: 'vA', kind: 'label', x: 220, y: 40, label: 'หมู่บ้านเอ' }),
-  hidden({ id: 'vB', kind: 'label', x: 740, y: 40, label: 'หมู่บ้านบี' }),
-  hidden({ id: 'a1', kind: 'pc', x: 120, y: 140, label: 'คอม 1' }),
-  hidden({ id: 'a2', kind: 'pc', x: 320, y: 140, label: 'คอม 2' }),
-  hidden({ id: 'swA', kind: 'switch', x: 220, y: 320, label: 'Switch เอ' }),
-  hidden({ id: 'ac1', kind: 'cable', x: 120, y: 140, to: 'swA' }),
-  hidden({ id: 'ac2', kind: 'cable', x: 320, y: 140, to: 'swA' }),
-  hidden({ id: 'b1', kind: 'pc', x: 640, y: 140, label: 'คอม 3' }),
-  hidden({ id: 'b2', kind: 'pc', x: 840, y: 140, label: 'คอม 4' }),
-  hidden({ id: 'swB', kind: 'switch', x: 740, y: 320, label: 'Switch บี' }),
-  hidden({ id: 'bc1', kind: 'cable', x: 640, y: 140, to: 'swB' }),
-  hidden({ id: 'bc2', kind: 'cable', x: 840, y: 140, to: 'swB' }),
-  hidden({ id: 'vEnv', kind: 'envelope', x: 120, y: 140 }),
-  hidden({ id: 'vLbl', kind: 'label', x: 480, y: 480, label: '❌ Switch ส่งของข้ามหมู่บ้านเองไม่ได้' }),
-  hidden({ id: 'router', kind: 'router', x: 480, y: 320, label: 'Router' }),
-  hidden({ id: 'rc1', kind: 'cable', x: 220, y: 320, to: 'router' }),
-  hidden({ id: 'rc2', kind: 'cable', x: 480, y: 320, to: 'swB' }),
-  hidden({ id: 'rEnv', kind: 'envelope', x: 120, y: 140 }),
-  hidden({ id: 'rLbl', kind: 'label', x: 480, y: 480, label: 'Router = ไปรษณีย์กลาง ส่งของข้ามหมู่บ้าน' }),
-  hidden({ id: 'gLbl', kind: 'label', x: 480, y: 480, label: 'Gateway = ประตูออกหมู่บ้าน = Router ฝั่งหมู่บ้านเรา' }),
+  h({ id: 'vA', kind: 'label', x: 220, y: 40, label: 'หมู่บ้านเอ' }),
+  h({ id: 'vB', kind: 'label', x: 740, y: 40, label: 'หมู่บ้านบี' }),
+  h({ id: 'a1', kind: 'pc', x: 120, y: 170, label: 'คอม 1' }),
+  h({ id: 'a2', kind: 'pc', x: 320, y: 170, label: 'คอม 2' }),
+  h({ id: 'swA', kind: 'switch', x: 220, y: 370, label: 'Switch เอ' }),
+  h({ id: 'ac1', kind: 'cable', x: 120, y: 170, to: 'swA' }),
+  h({ id: 'ac2', kind: 'cable', x: 320, y: 170, to: 'swA' }),
+  h({ id: 'b1', kind: 'pc', x: 640, y: 170, label: 'คอม 3' }),
+  h({ id: 'b2', kind: 'pc', x: 840, y: 170, label: 'คอม 4' }),
+  h({ id: 'swB', kind: 'switch', x: 740, y: 370, label: 'Switch บี' }),
+  h({ id: 'bc1', kind: 'cable', x: 640, y: 170, to: 'swB' }),
+  h({ id: 'bc2', kind: 'cable', x: 840, y: 170, to: 'swB' }),
+  h({ id: 'vEnv', kind: 'card', x: 120, y: 90, lines: ['📦 ถึง: คอม 2'], tone: 'deliver' }),
+  h({ id: 'xEnv', kind: 'card', x: 120, y: 90, lines: ['📦 ถึง: คอม 3'], tone: 'deliver' }),
+  h({ id: 'vLbl', kind: 'label', x: 480, y: 500, label: '❌ Switch ส่งของข้ามหมู่บ้านเองไม่ได้' }),
+  h({ id: 'vOk', kind: 'label', x: 480, y: 500, label: '✅ ในหมู่บ้านเดียวกัน Switch ส่งให้ได้เลย' }),
+  h({ id: 'router', kind: 'router', x: 480, y: 370, label: 'Router' }),
+  h({ id: 'rc1', kind: 'cable', x: 220, y: 370, to: 'router' }),
+  h({ id: 'rc2', kind: 'cable', x: 480, y: 370, to: 'swB' }),
+  h({ id: 'rEnv', kind: 'card', x: 120, y: 90, lines: ['📦 ถึง: คอม 3'], tone: 'deliver' }),
+  h({ id: 'rLbl', kind: 'label', x: 480, y: 500, label: 'Router = ไปรษณีย์กลาง ส่งของข้ามหมู่บ้าน' }),
+  h({ id: 'gLbl', kind: 'label', x: 480, y: 500, label: 'Gateway = ประตูออกหมู่บ้าน = Router ฝั่งหมู่บ้านเรา' }),
 
   // ฉาก 9: กล่องเน็ตที่บ้าน
-  hidden({ id: 'homeBox', kind: 'router', x: 480, y: 160, label: 'กล่องเน็ตที่บ้าน' }),
-  hidden({ id: 'h1', kind: 'label', x: 480, y: 330, label: '🔌 ช่องเสียบสายหลังกล่อง = Switch' }),
-  hidden({ id: 'h2', kind: 'label', x: 480, y: 400, label: '📶 ไวไฟ = ถนนแบบไม่ใช้สาย' }),
-  hidden({ id: 'h3', kind: 'label', x: 480, y: 470, label: '🚪 พาของออกไป Internet = Router' }),
+  h({ id: 'homeBox', kind: 'router', x: 480, y: 160, label: 'กล่องเน็ตที่บ้าน' }),
+  h({ id: 'h1', kind: 'label', x: 480, y: 330, label: '🔌 ช่องเสียบสายหลังกล่อง = Switch' }),
+  h({ id: 'h2', kind: 'label', x: 480, y: 400, label: '📶 ไวไฟ = ถนนแบบไม่ใช้สาย' }),
+  h({ id: 'h3', kind: 'label', x: 480, y: 470, label: '🚪 พาของออกไป Internet = Router' }),
 
   // ฉาก 10: สรุป
-  hidden({ id: 'sum1', kind: 'label', x: 480, y: 70, label: 'End device = บ้าน (เครื่องที่ส่ง และรับข้อมูล)' }),
-  hidden({ id: 'sum2', kind: 'label', x: 480, y: 160, label: 'สาย (cable) = ถนน' }),
-  hidden({ id: 'sum3', kind: 'label', x: 480, y: 250, label: 'Switch = ไปรษณีย์ในหมู่บ้าน ส่งในหมู่บ้านเดียวกัน' }),
-  hidden({ id: 'sum4', kind: 'label', x: 480, y: 340, label: 'Router = ไปรษณีย์กลาง ส่งข้ามหมู่บ้าน' }),
-  hidden({ id: 'sum5', kind: 'label', x: 480, y: 430, label: 'คุยกันแค่ในหมู่บ้าน ไม่ต้องใช้ Router' }),
+  h({ id: 'sum1', kind: 'label', x: 480, y: 70, label: 'End device = บ้าน (เครื่องที่ส่ง และรับข้อมูล)' }),
+  h({ id: 'sum2', kind: 'label', x: 480, y: 160, label: 'สาย (cable) = ถนน' }),
+  h({ id: 'sum3', kind: 'label', x: 480, y: 250, label: 'Switch = ไปรษณีย์ในหมู่บ้าน ส่งในหมู่บ้านเดียวกัน' }),
+  h({ id: 'sum4', kind: 'label', x: 480, y: 340, label: 'Router = ไปรษณีย์กลาง ส่งข้ามหมู่บ้าน' }),
+  h({ id: 'sum5', kind: 'label', x: 480, y: 430, label: 'คุยกันแค่ในหมู่บ้าน ไม่ต้องใช้ Router' }),
 ]
 
 // ห้องทดลอง (เวที 800x480): หมู่บ้านเอ ซ้าย / หมู่บ้านบี ขวา / Router ตรงกลางล่าง
@@ -122,92 +131,125 @@ export const lesson: Lesson = {
   terms: ['end-device', 'cable', 'switch', 'router', 'gateway', 'ip-address', 'network', 'lan', 'internet'],
 
   scenes: {
+    style: 'v2',
     stage: { width: 960, height: 540 },
     actors,
     scenes: [
       {
-        id: 's1',
-        narrationTh: 'จำได้ไหมครับ บ้าน คือเครื่อง เช่น คอม โน้ตบุ๊ก หรือเซิร์ฟเวอร์ ที่เก็บเว็บ เครื่องพวกนี้ เป็นคนส่งของ และคนรับของ เราเรียกว่า end device',
-        actions: [],
+        id: 's1', chipTh: 'ต้องมีอะไรบ้าง', lifeIcon: '🏘️',
+        lifeTh: 'ในหมู่บ้านมีหลายบ้าน แต่ละบ้านส่งของและรับของได้',
+        narrationTh: 'จะต่อคอมหลายเครื่อง ให้ส่งของหากันได้ ต้องมีอุปกรณ์อะไรบ้าง เริ่มจากตัวเครื่องก่อนนะครับ คอม โน้ตบุ๊ก หรือเซิร์ฟเวอร์ที่เก็บเว็บ เป็นคนส่งและคนรับของ เรียกว่า end device',
+        setup: show('eQ'),
+        actions: show('e1', 'e2', 'e3', 'eLbl'),
       },
       {
-        id: 's2',
+        id: 's2', chipTh: 'สาย', lifeIcon: '🛣️',
+        lifeTh: 'ถนนพาของจากบ้านหนึ่งไปอีกบ้าน ถนนต่างแบบ พาของไปได้ไกลไม่เท่ากัน',
         narrationTh: 'ส่วนถนน ก็คือสาย ภาษาอังกฤษเรียกว่า cable สายแลน ส่งข้อมูลเป็นไฟฟ้า สายไฟเบอร์ ส่งเป็นแสง เลยไปได้ไกลกว่า หรือจะใช้ไวไฟแทนสายก็ได้',
+        setup: show('c1', 'c2', 'cab', 'cData'),
         actions: [
-          ...hide(...endIds),
-          ...show(...cableIds),
-          { type: 'move', actor: 'cData', x: 620, y: 190, ms: 2500 },
+          { type: 'trail', path: ['c1', 'c2'], tone: 'deliver' },
+          { type: 'moveAlong', actor: 'cData', path: ['c1', 'c2'], msPerHop: 2500, offset: { dx: 0, dy: -110 } },
+          ...show('cLbl1', 'cLbl2', 'cLbl3'),
         ],
       },
       {
-        id: 's3',
-        narrationTh: 'บทที่แล้ว เราวาดง่าย ๆ ให้เห็นภาพก่อน แต่ของจริง ไม่ต่อคอมเป็นทอด ๆ นะ เพราะคอมส่วนมาก มีช่องเสียบสายแลนช่องเดียว และถ้าสายขาดเส้นเดียว เครื่องที่อยู่ถัดไป ก็หลุดหมด',
+        id: 's3', chipTh: 'ต่อเป็นทอด', lifeIcon: '🚪',
+        lifeTh: 'บ้านส่วนมากมีประตูหน้าบานเดียว ต่อถนนเข้าบ้านได้เส้นเดียว',
+        narrationTh: 'บทที่แล้ว เราวาดง่าย ๆ ให้เห็นภาพก่อน แต่ของจริง ไม่ต่อคอมเป็นทอด ๆ นะ เพราะคอมส่วนมาก มีช่องเสียบสายแลนช่องเดียว',
+        setup: show(...chainBase),
+        actions: [{ type: 'say', actor: 'd2', text: 'ช่องไม่พอ', mood: 'no' }, ...show('dLbl2')],
+      },
+      {
+        id: 's3b', chipTh: 'สายขาด', lifeIcon: '✂️',
+        lifeTh: 'ถนนที่ต่อกันเป็นทอด ขาดช่วงเดียว บ้านที่อยู่ถัดไปก็ออกไปไหนไม่ได้',
+        narrationTh: 'แล้วถ้าสายขาดเส้นเดียว เครื่องที่อยู่ถัดไป ก็หลุดหมด คอมสามกับคอมสี่ ส่งของหาใครไม่ได้เลย',
+        setup: show(...chainBase),
         actions: [
-          ...hide(...cableIds),
-          ...show(...chainIds),
-          { type: 'highlight', actor: 'dc2' },
+          { type: 'hide', actor: 'dc2' },
+          ...show('dCut'),
+          ...dim('d3', 'd4'),
+          ...show('dLbl1'),
         ],
       },
       {
-        id: 's4',
+        id: 's4', chipTh: 'Switch', lifeIcon: '📮',
+        lifeTh: 'ทุกบ้านส่งของไปที่ไปรษณีย์ในหมู่บ้าน แล้วไปรษณีย์ส่งต่อให้บ้านปลายทาง',
         narrationTh: 'ของจริง เขาเสียบสายจากคอมทุกเครื่อง เข้ากล่องตรงกลาง ชื่อ Switch เหมือนไปรษณีย์ในหมู่บ้าน บ้านไหนจะส่งของ ก็ส่งมาที่ไปรษณีย์ แล้วไปรษณีย์ส่งต่อ ให้บ้านปลายทาง',
+        setup: show(...starBase, 'sLbl'),
         actions: [
-          ...hide(...chainIds),
-          ...show(...starIds, 'sEnv', 'sLbl'),
-          { type: 'moveAlong', actor: 'sEnv', path: ['st1', 'sw', 'st3'], msPerHop: 1500 },
+          { type: 'trail', path: ['st1', 'sw', 'st3'], tone: 'deliver' },
+          ...show('sEnv'),
+          { type: 'moveAlong', actor: 'sEnv', path: ['st1', 'sw', 'st3'], msPerHop: 1500, offset: BELOW },
+          glow('st3'),
         ],
       },
       {
-        id: 's5',
+        id: 's5', chipTh: 'ขาดเส้นเดียว', lifeIcon: '✂️',
+        lifeTh: 'ทุกบ้านมีถนนของตัวเองไปถึงไปรษณีย์ ถนนเส้นไหนขาด ก็เดือดร้อนแค่บ้านเดียว',
         narrationTh: 'แบบนี้ดีกว่าเยอะ ทุกเครื่องมีสายของตัวเอง สายเส้นไหนขาด ก็หลุดแค่เครื่องนั้น และ Switch จำได้ ว่าเครื่องไหนเสียบช่องไหน เลยส่งของไปถูกเครื่อง',
+        setup: show(...starBase),
+        actions: [{ type: 'hide', actor: 'sc4' }, ...dim('st4'), ...show('s5Lbl')],
+      },
+      {
+        id: 's6', chipTh: 'ในหมู่บ้าน', lifeIcon: '🏘️',
+        lifeTh: 'ไปรษณีย์ในหมู่บ้านส่งของให้บ้านในหมู่บ้านเดียวกันได้เลย',
+        narrationTh: 'ทีนี้มีสองหมู่บ้าน เป็นคนละ network กัน ส่งของในหมู่บ้านเดียวกัน Switch ส่งให้ได้เลย',
+        setup: show(...villageBase),
         actions: [
-          ...hide('sEnv', 'sLbl'),
-          { type: 'highlight', actor: 'sc4' },
-          ...show('s5Lbl'),
+          { type: 'trail', path: ['a1', 'swA', 'a2'], tone: 'deliver' },
+          ...show('vEnv'),
+          { type: 'moveAlong', actor: 'vEnv', path: ['a1', 'swA', 'a2'], msPerHop: 1500, offset: ABOVE },
+          glow('a2'),
+          ...show('vOk'),
         ],
       },
       {
-        id: 's6',
-        narrationTh: 'ทีนี้มีสองหมู่บ้าน เป็นคนละ network กัน ส่งของในหมู่บ้านเดียวกัน Switch ส่งให้ได้เลย แต่ถ้าจะส่งข้ามหมู่บ้าน Switch ส่งเองไม่ได้ เพราะมันดูแลแค่หมู่บ้านตัวเอง',
+        id: 's6b', chipTh: 'ข้ามไม่ได้', lifeIcon: '🚫',
+        lifeTh: 'ไปรษณีย์ในหมู่บ้าน ดูแลแค่หมู่บ้านตัวเอง ส่งของไปหมู่บ้านอื่นเองไม่ได้',
+        narrationTh: 'แต่ถ้าจะส่งข้ามหมู่บ้าน Switch ส่งเองไม่ได้ เพราะมันดูแลแค่หมู่บ้านตัวเอง ของเลยไปต่อไม่ได้',
+        setup: show(...villageBase),
         actions: [
-          ...hide(...starIds, 's5Lbl'),
-          ...show(...villageIds, 'vEnv', 'vLbl'),
-          { type: 'moveAlong', actor: 'vEnv', path: ['a1', 'swA', 'a2'], msPerHop: 1500 },
+          { type: 'trail', path: ['a1', 'swA'], tone: 'deliver' },
+          ...show('xEnv'),
+          { type: 'move', actor: 'xEnv', x: 380, y: 370, ms: 2000 },
+          { type: 'say', actor: 'swA', text: 'ข้ามหมู่บ้านไม่ได้', mood: 'no' },
+          ...show('vLbl'),
         ],
       },
       {
-        id: 's7',
+        id: 's7', chipTh: 'Router', lifeIcon: '🏤',
+        lifeTh: 'ของที่จะไปหมู่บ้านอื่น ต้องผ่านไปรษณีย์กลางที่มีถนนไปหลายหมู่บ้าน',
         narrationTh: 'ต้องมี Router ครับ เหมือนไปรษณีย์กลาง ที่มีถนนไปหลายหมู่บ้าน ของที่จะออกนอกหมู่บ้าน ส่งไปที่ Router ก่อน แล้ว Router ส่งต่อ ไปถึงหมู่บ้านปลายทาง',
+        setup: show(...routerBase),
         actions: [
-          ...hide('vEnv', 'vLbl'),
-          ...show('router', 'rc1', 'rc2', 'rEnv', 'rLbl'),
-          { type: 'moveAlong', actor: 'rEnv', path: ['a1', 'swA', 'router', 'swB', 'b1'], msPerHop: 1100 },
+          { type: 'trail', path: ['a1', 'swA', 'router', 'swB', 'b1'], tone: 'deliver' },
+          ...show('rEnv'),
+          { type: 'moveAlong', actor: 'rEnv', path: ['a1', 'swA', 'router', 'swB', 'b1'], msPerHop: 1100, offset: ABOVE },
+          glow('b1'),
+          ...show('rLbl'),
         ],
       },
       {
-        id: 's8',
+        id: 's8', chipTh: 'Gateway', lifeIcon: '🚪',
+        lifeTh: 'จะออกนอกหมู่บ้าน ต้องผ่านประตูหมู่บ้านก่อน',
         narrationTh: 'คอมรู้ได้ไง ว่าของต้องออกนอกหมู่บ้าน ดูจากเลขที่อยู่ของเครื่อง เดี๋ยวบทที่สี่เล่าละเอียด ถ้าต้องออก คอมจะส่งไปที่ประตูออกหมู่บ้าน เรียกว่า Gateway ก็คือ Router ฝั่งหมู่บ้านเรา',
-        actions: [
-          ...hide('rEnv', 'rLbl'),
-          { type: 'highlight', actor: 'router' },
-          ...show('gLbl'),
-        ],
+        setup: show(...routerBase),
+        actions: [glow('router'), ...show('gLbl')],
       },
       {
-        id: 's9',
+        id: 's9', chipTh: 'กล่องเน็ตบ้าน', lifeIcon: '📦',
+        lifeTh: 'กล่องเน็ตที่บ้าน เหมือนมีไปรษณีย์ในหมู่บ้าน ไปรษณีย์กลาง และถนนไร้สาย รวมอยู่ในกล่องเดียว',
         narrationTh: 'กล่องเน็ตที่บ้านเรา ที่ชอบเรียกว่าเราเตอร์ จริง ๆ ในกล่องเดียว มีหลายอย่างรวมกัน มีช่องเสียบสาย ที่ทำงานแบบ Switch มีไวไฟ และมี Router คอยพาของ ออกไป Internet',
-        actions: [
-          ...hide(...villageIds, 'router', 'rc1', 'rc2', 'gLbl'),
-          ...show(...homeIds),
-        ],
+        setup: show('homeBox'),
+        actions: [glow('homeBox'), ...show('h1', 'h2', 'h3')],
       },
       {
-        id: 's10',
+        id: 's10', chipTh: 'สรุป', lifeIcon: '📝',
+        lifeTh: 'บ้าน ถนน ไปรษณีย์ในหมู่บ้าน ไปรษณีย์กลาง แต่ละอย่างมีงานของตัวเอง',
         narrationTh: 'สรุปนะครับ end device คือเครื่องที่ส่งและรับของ สายคือถนน Switch ส่งของในหมู่บ้านเดียวกัน Router ส่งของข้ามหมู่บ้าน ถ้าคุยกันแค่ในหมู่บ้าน ก็ไม่ต้องใช้ Router',
-        actions: [
-          ...hide(...homeIds),
-          ...show('sum1', 'sum2', 'sum3', 'sum4', 'sum5'),
-        ],
+        setup: [],
+        actions: show('sum1', 'sum2', 'sum3', 'sum4', 'sum5'),
       },
     ],
   },

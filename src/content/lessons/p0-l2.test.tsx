@@ -27,15 +27,36 @@ describe('lesson p0-l2', () => {
     expect(l.status).toBe('ready')
     expect(l.ciscoModules).toEqual(['ITN 1', 'ITN 11'])
     expect(l.videos.map((v) => v.youtubeId)).toEqual(['WunDlV89wpQ', 'q0t7Wtux-VM'])
-    // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    expect(validateCourse(course, glossary).filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
   })
 
-  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร และมี 6-10 ฉาก', () => {
+  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร ไม่มีตัวเลขหรือวงเล็บ และมี 6-14 ฉาก', () => {
     const scenes = lesson.scenes!.scenes
     expect(scenes.length).toBeGreaterThanOrEqual(6)
-    expect(scenes.length).toBeLessThanOrEqual(10)
-    for (const s of scenes) expect([...s.narrationTh].length).toBeLessThanOrEqual(180)
+    expect(scenes.length).toBeLessThanOrEqual(14)
+    for (const s of scenes) {
+      expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(180)
+      expect(s.narrationTh, s.id).not.toMatch(/[0-9()]/)
+    }
+  })
+
+  it('เป็นฉากแบบ v2: เปิดด้วยปัญหา / ต่อเป็นทอดกับสายขาด และส่งในหมู่บ้านกับข้ามไม่ได้ แยกฉากกัน', () => {
+    const set = lesson.scenes!
+    expect(set.style).toBe('v2')
+    for (const s of set.scenes) {
+      expect(s.chipTh, s.id).toBeTruthy()
+      expect(s.lifeTh, s.id).toBeTruthy()
+      expect(s.lifeIcon, s.id).toBeTruthy()
+      for (const a of s.actions) {
+        if (a.type === 'moveAlong' || a.type === 'move') expect(set.actors.find((x) => x.id === a.actor)!.kind, `${s.id} ${a.actor}`).toBe('card')
+      }
+    }
+    const ids = set.scenes.map((s) => s.id)
+    expect(set.scenes[0].narrationTh.startsWith('จะต่อคอมหลายเครื่อง')).toBe(true) // กฎ 4.4 เปิดด้วยปัญหา
+    expect(ids.indexOf('s3b')).toBe(ids.indexOf('s3') + 1)
+    expect(ids.indexOf('s6b')).toBe(ids.indexOf('s6') + 1)
+    const s6 = set.scenes.find((s) => s.id === 's6')!
+    expect(s6.actions.some((a) => a.type === 'say')).toBe(false) // ฉากส่งได้ ยังไม่บอกว่าข้ามไม่ได้
   })
 
   it('คำถาม: th 3-4 ข้อ, en 2-3 ข้อ มีคำแปลและ keywords ครบ', () => {
@@ -169,8 +190,8 @@ describe('lesson p0-l2', () => {
       const scenes = lesson.scenes!.scenes
       expect(container.querySelector('.sp-caption')).toHaveTextContent(scenes[0].narrationTh) // ข้อความถูกห่อ Term จึงแยกเป็นหลายท่อน
       const nextScene = screen.getByRole('button', { name: /ฉากต่อไป/ })
-      for (let i = 0; i < 3; i++) await u.click(nextScene)
-      expect(screen.getAllByRole('button', { name: 'Switch' }).length).toBeGreaterThan(0) // ศัพท์ในคำบรรยายกดได้
+      while (!container.querySelector('.sp-caption')!.textContent!.includes('ชื่อ Switch')) await u.click(nextScene)
+      expect(container.querySelector('.sp-caption button')).toBeInTheDocument() // ศัพท์ในคำบรรยายกดได้
       while (!(nextScene as HTMLButtonElement).disabled) await u.click(nextScene)
       fireEvent.ended(container.querySelector('audio')!) // ฉากสุดท้ายเล่นจบ
       await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))

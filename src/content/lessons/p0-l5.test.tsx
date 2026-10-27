@@ -7,7 +7,6 @@ import { LessonPage } from '../../pages/LessonPage'
 import { memoryStorage } from '../../pages/fixture'
 import { saveProgress } from '../../progress/progress'
 import { ActivityView } from '../../lab/ActivityView'
-import { initialState, applyScene } from '../../scenes/timeline'
 import { lesson } from './p0-l5'
 
 const lab = lesson.lab as ActivityLab
@@ -40,8 +39,7 @@ describe('lesson p0-l5', () => {
     for (const v of l.videos) expect(v.channel).toBe('9hua Training')
     expect(l.videos[0].noteTh).toBeTruthy()
     expect(l.videos[1].noteTh).toContain('ดูผ่าน ๆ ได้')
-    // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    expect(validateCourse(course, glossary).filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
   })
 
   it('ศัพท์ใหม่อยู่ในคลังศัพท์ (ไม่ซ้ำ) และอยู่ใน terms ของบท', () => {
@@ -58,17 +56,17 @@ describe('lesson p0-l5', () => {
     // Application layer = ชั้นที่โปรแกรมใช้คุยกับ network ไม่ใช่ตัวโปรแกรม
     expect(glossary.find((g) => g.id === 'application-layer')!.explainTh).toContain('ชั้นที่โปรแกรมใช้คุยกับ network')
     expect(glossary.find((g) => g.id === 'tcp-ip-model')!.explainTh).toContain('บางตำราแบ่งเป็น 5 ชั้น')
-    expect(lesson.scenes!.actors.find((a) => a.id === 'tInt')!.label).toBe('TCP/IP: Internet layer · IP = ชั้น 3')
+    expect(lesson.scenes!.actors.find((a) => a.id === 'tInt')!.label).toBe('TCP/IP: Internet · IP = 3')
     expect(glossary.find((g) => g.id === 'data-link-layer')!.explainTh).toContain('MAC')
     expect(glossary.find((g) => g.id === 'network-layer')!.explainTh).toContain('IP')
     // TCP กับ UDP แค่บอกชื่อ เรียนจริงภาคหน้า
     expect(glossary.find((g) => g.id === 'transport-layer')!.explainTh).toMatch(/TCP กับ UDP[\s\S]*ภาค 1/)
   })
 
-  it('บทพูด: 6-10 ฉาก ไม่เกิน 170 ตัวอักษร ไม่มีวงเล็บ ไม่มีตัวเลขให้ TTS อ่านเพี้ยน', () => {
+  it('บทพูด: 6-14 ฉาก ไม่เกิน 170 ตัวอักษร ไม่มีวงเล็บ ไม่มีตัวเลขให้ TTS อ่านเพี้ยน', () => {
     const scenes = lesson.scenes!.scenes
     expect(scenes.length).toBeGreaterThanOrEqual(6)
-    expect(scenes.length).toBeLessThanOrEqual(10)
+    expect(scenes.length).toBeLessThanOrEqual(14)
     for (const s of scenes) {
       expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(170)
       expect(s.narrationTh, s.id).not.toMatch(/[()]/)
@@ -93,21 +91,19 @@ describe('lesson p0-l5', () => {
     expect(narration('s7')).toContain('ทำไม')
     expect(narration('s7')).toMatch(/สายแลน[\s\S]*ไวไฟ/)
     expect(narration('s7')).toContain('ไม่ต้อง')
-    expect(narration('s8')).toContain('TCP/IP model')
+    expect(narration('s8b')).toContain('TCP/IP model')
     expect(narration('s8')).toContain('OSI model')
     expect(narration('s8')).toContain('นับ')
-    const s8 = lesson.scenes!.scenes.find((s) => s.id === 's8')!
-    // ชั้น 1-4 ในตารางติดสัญลักษณ์เดียวกับตอนห่อ (กรอบ highlight ใหญ่เท่าไอคอน จะทับแถวข้าง ๆ)
+    // ชั้น 1-4 ในตาราง OSI ติดสัญลักษณ์เดียวกับตอนห่อ (กล่อง ใบปะหน้า รถ ถนน)
     const marks: Record<string, string> = { o4: '📦', o3: '🏷️', o2: '🚚', o1: '〰️' }
     for (const [id, mark] of Object.entries(marks)) {
-      const set = s8.actions.find((a) => a.type === 'setLabel' && a.actor === id) as { label: string } | undefined
-      expect(set?.label, id).toMatch(new RegExp(`^${mark} `))
+      expect(lesson.scenes!.actors.find((a) => a.id === id)!.label, id).toMatch(new RegExp(`^${mark} `))
     }
-    expect(s8.actions.some((a) => a.type === 'highlight')).toBe(false)
     // สะพานจาก p0-l4: MAC อยู่ชั้นนอก (รถ) ไม่ใช่บนกล่อง
     expect(narration('s4')).toContain('จริง ๆ ติดอยู่บนรถ')
     // TCP/IP สี่ชั้น ไม่ได้เท่ากับแถว OSI หนึ่งถึงสี่
-    expect(narration('s8')).toContain('รวมบางชั้นเข้าด้วยกัน')
+    expect(narration('s8b')).toContain('รวมบางชั้นเข้าด้วยกัน')
+    expect(narration('s8')).toContain('ข้อตกลง') // กฎ 4.3: บอกว่าจำนวนชั้นไม่มีสูตร
     expect(lesson.quiz!.find((q) => q.id === 'q7')!.choices[0].textTh).toBe('Application (ชั้นที่โปรแกรมใช้คุย บนสุด)')
     expect(narration('s9')).toMatch(/ชั้นที่สอง[\s\S]*MAC[\s\S]*Switch/)
     expect(narration('s9')).toMatch(/ชั้นที่สาม[\s\S]*IP[\s\S]*Router/)
@@ -121,41 +117,24 @@ describe('lesson p0-l5', () => {
     expect(all).not.toMatch(/Switch ดู IP|Switch ดู[^\n]{0,10}IP/)
     const labels = lesson.scenes!.actors.map((a) => a.label ?? '')
     for (const row of ['7 Application', '6 Presentation', '5 Session', '4 Transport', '3 Network', '2 Data Link', '1 Physical']) {
-      expect(labels.some((l) => l.startsWith(row)), row).toBe(true)
+      expect(labels.some((l) => l.includes(row)), row).toBe(true)
     }
     for (const row of ['Application', 'Transport', 'Internet', 'Network Access']) {
       expect(labels.some((l) => l.startsWith(`TCP/IP: ${row}`)), row).toBe(true)
     }
   })
 
-  it('ทุกฉาก: ไอคอนที่โชว์อยู่ห่างกัน ≥ 120 และป้ายข้อความไม่ทับกัน', () => {
+  it('เป็นฉากแบบ v2: เปิดด้วยปัญหา ทุกฉากมีชื่อฉากและแถบชีวิตจริง ของที่วิ่งเป็นซองมีป้ายหน้าซอง', () => {
     const set = lesson.scenes!
-    let st = initialState(set)
-    for (const sc of set.scenes) {
-      st = applyScene(st, sc)
-      const vis = Object.values(st.actors).filter((a) => !a.hidden && a.kind !== 'cable')
-      const icons = vis.filter((a) => a.kind !== 'label' && a.kind !== 'box' && a.kind !== 'envelope')
-      const labels = vis.filter((a) => a.kind === 'label')
-      for (let i = 0; i < icons.length; i++) {
-        for (let j = i + 1; j < icons.length; j++) {
-          const d = Math.hypot(icons[i].x - icons[j].x, icons[i].y - icons[j].y)
-          expect(d, `${sc.id}: ${icons[i].id} กับ ${icons[j].id}`).toBeGreaterThanOrEqual(120)
-        }
-      }
-      for (const a of vis) {
-        expect(a.x, `${sc.id}: ${a.id}`).toBeGreaterThanOrEqual(60)
-        expect(a.x, `${sc.id}: ${a.id}`).toBeLessThanOrEqual(900)
-        expect(a.y, `${sc.id}: ${a.id}`).toBeLessThanOrEqual(510)
-      }
-      for (let i = 0; i < labels.length; i++) {
-        for (let j = i + 1; j < labels.length; j++) {
-          const apart = Math.abs(labels[i].y - labels[j].y) >= 50 || Math.abs(labels[i].x - labels[j].x) >= 400
-          expect(apart, `${sc.id}: ${labels[i].id} กับ ${labels[j].id}`).toBe(true)
-        }
-        for (const ic of icons) {
-          const clash = Math.abs(labels[i].x - ic.x) < 300 && labels[i].y > ic.y - 75 && labels[i].y < ic.y + 110
-          expect(clash, `${sc.id}: ป้าย ${labels[i].id} ทับ ${ic.id}`).toBe(false)
-        }
+    expect(set.style).toBe('v2')
+    expect(set.scenes[0].id).toBe('s0')
+    expect(set.scenes[0].narrationTh).toMatch(/สายแลน[\s\S]*ไวไฟ[\s\S]*ใหม่หมดไหม/) // กฎ 4.4: ปัญหาที่การแยกชั้นแก้
+    for (const s of set.scenes) {
+      expect(s.chipTh, s.id).toBeTruthy()
+      expect(s.lifeTh, s.id).toBeTruthy()
+      expect(s.lifeIcon, s.id).toBeTruthy()
+      for (const a of s.actions) {
+        if (a.type === 'moveAlong' || a.type === 'move') expect(set.actors.find((x) => x.id === a.actor)!.kind, `${s.id} ${a.actor}`).toBe('card')
       }
     }
   })
@@ -253,8 +232,7 @@ describe('lesson p0-l5', () => {
       // 4. คำถาม: ข้อแรกเป็นชั้น th
       const firstTh = lesson.quiz!.find((q) => q.layer === 'th')!
       expect(container.querySelector('.quiz-prompt')).toHaveTextContent(firstTh.prompt)
-      // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    expect(validateCourse(course, glossary).filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
       expect(errSpy).not.toHaveBeenCalled()
     }, 30000)
   })

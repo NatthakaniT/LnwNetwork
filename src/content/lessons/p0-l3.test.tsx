@@ -7,7 +7,6 @@ import { LessonPage } from '../../pages/LessonPage'
 import { memoryStorage } from '../../pages/fixture'
 import { saveProgress } from '../../progress/progress'
 import { ActivityView } from '../../lab/ActivityView'
-import { initialState, applyScene } from '../../scenes/timeline'
 import { lesson } from './p0-l3'
 
 const lab = lesson.lab as ActivityLab
@@ -36,8 +35,7 @@ describe('lesson p0-l3', () => {
     expect(l.titleTh).toBe('ข้อมูลเดินทางยังไง')
     expect(l.ciscoModules).toEqual(['ITN 3'])
     expect(l.videos[0]).toMatchObject({ youtubeId: 'jjs02wLiXmQ', channel: '9hua Training' })
-    // shortcut: กรองข้อศัพท์ก่อนสอนไว้จนกว่า Task 7 จะแก้ภาค 0, ลบตัวกรองใน Task 7
-    expect(validateCourse(course, glossary).filter(e => !e.includes('ก่อนบทที่สอน'))).toEqual([])
+    expect(validateCourse(course, glossary)).toEqual([])
   })
 
   it('ศัพท์ใหม่ packet, source, destination, DNS อยู่ในคลังศัพท์ และอยู่ใน terms ของบท', () => {
@@ -49,11 +47,11 @@ describe('lesson p0-l3', () => {
     expect(glossary.some((g) => g.id === 'default-gateway')).toBe(false)
   })
 
-  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร และมี 6-10 ฉาก', () => {
+  it('บทพูดทุกฉากไม่เกิน 180 ตัวอักษร ไม่มีตัวเลขหรือวงเล็บ และมี 6-16 ฉาก', () => {
     const scenes = lesson.scenes!.scenes
     expect(scenes.length).toBeGreaterThanOrEqual(6)
-    expect(scenes.length).toBeLessThanOrEqual(10)
-    for (const s of scenes) expect([...s.narrationTh].length).toBeLessThanOrEqual(180)
+    expect(scenes.length).toBeLessThanOrEqual(16)
+    for (const s of scenes) { expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(180); expect(s.narrationTh, s.id).not.toMatch(/[0-9()]/) }
   })
 
   it('ยังไม่ใช้เรื่องที่สอนบทหลัง (MAC, OSI, port, TCP)', () => {
@@ -74,7 +72,7 @@ describe('lesson p0-l3', () => {
   })
 
   it('ฉาก 7 บอกชัดว่าที่อยู่ผู้รับไม่เปลี่ยนเป็น Gateway / ฉาก 8 เรียกเครื่อง DNS ว่า DNS server', () => {
-    const [s7, s8] = [lesson.scenes!.scenes[6], lesson.scenes!.scenes[7]]
+    const [s7, s8] = ['s7', 's8'].map((id) => lesson.scenes!.scenes.find((s) => s.id === id)!)
     expect(s7.narrationTh).toContain('ไม่เปลี่ยนเป็น Gateway')
     expect(s8.narrationTh).toContain('เครื่อง DNS server')
     expect(s8.narrationTh).not.toMatch(/[()]/) // TTS อ่านวงเล็บตรง ๆ
@@ -82,32 +80,27 @@ describe('lesson p0-l3', () => {
     expect(glossary.find((g) => g.id === 'dns')!.explainTh).toContain('สมุดของคอม ไม่ได้ให้เบอร์โทร แต่ให้เลขที่อยู่ของเว็บ')
   })
 
-  it('ทุกฉาก: ไอคอนที่โชว์อยู่ห่างกัน ≥ 120 และป้ายข้อความไม่ทับกัน', () => {
+  it('เป็นฉากแบบ v2: คำถามกับคำตอบ เหตุกับผล แยกฉาก ของที่วิ่งเป็นซองมีป้ายหน้าซอง', () => {
     const set = lesson.scenes!
-    let st = initialState(set)
-    for (const sc of set.scenes) {
-      st = applyScene(st, sc)
-      const vis = Object.values(st.actors).filter((a) => !a.hidden && a.kind !== 'cable')
-      const icons = vis.filter((a) => a.kind !== 'label' && a.kind !== 'box' && a.kind !== 'envelope') // ของที่วิ่งไปมาไม่นับ
-      const labels = vis.filter((a) => a.kind === 'label')
-      for (let i = 0; i < icons.length; i++) {
-        for (let j = i + 1; j < icons.length; j++) {
-          const d = Math.hypot(icons[i].x - icons[j].x, icons[i].y - icons[j].y)
-          expect(d, `${sc.id}: ${icons[i].id} กับ ${icons[j].id}`).toBeGreaterThanOrEqual(120)
-        }
-      }
-      for (let i = 0; i < labels.length; i++) {
-        for (let j = i + 1; j < labels.length; j++) {
-          const apart = Math.abs(labels[i].y - labels[j].y) >= 50 || Math.abs(labels[i].x - labels[j].x) >= 400
-          expect(apart, `${sc.id}: ${labels[i].id} กับ ${labels[j].id}`).toBe(true)
-        }
-        for (const ic of icons) {
-          // ไอคอนกินที่ราว y-60 ถึง y+95 (รวมชื่อใต้ไอคอน)
-          const clash = Math.abs(labels[i].x - ic.x) < 300 && labels[i].y > ic.y - 75 && labels[i].y < ic.y + 110
-          expect(clash, `${sc.id}: ป้าย ${labels[i].id} ทับ ${ic.id}`).toBe(false)
-        }
+    expect(set.style).toBe('v2')
+    for (const s of set.scenes) {
+      expect(s.chipTh, s.id).toBeTruthy()
+      expect(s.lifeTh, s.id).toBeTruthy()
+      expect(s.lifeIcon, s.id).toBeTruthy()
+      for (const a of s.actions) {
+        if (a.type === 'moveAlong' || a.type === 'move') expect(set.actors.find((x) => x.id === a.actor)!.kind, `${s.id} ${a.actor}`).toBe('card')
       }
     }
+    const ids = set.scenes.map((s) => s.id)
+    // ถาม DNS → DNS ตอบ → ส่งกล่อง / กล่องหาย → ส่งใหม่ / ส่งไป → ตอบกลับ / สมุดผิด → สมุดอีกเล่ม
+    for (const seq of [['s8', 's8b', 's8c'], ['s4', 's4b'], ['s6', 's6b'], ['s9', 's9b'], ['s1', 's1b']]) {
+      expect(ids.slice(ids.indexOf(seq[0]), ids.indexOf(seq[0]) + seq.length)).toEqual(seq)
+    }
+    // DNS: ถามและตอบเป็นการส่งหาเครื่องเดียว (ฟ้า) ส่วนกล่องที่ส่งของจริงใช้สีภาค
+    const tones = (id: string) => set.scenes.find((s) => s.id === id)!.actions.flatMap((a) => (a.type === 'trail' ? [a.tone] : []))
+    expect(tones('s8')).toEqual(['reply'])
+    expect(tones('s8b')).toEqual(['reply'])
+    expect(tones('s8c')).toEqual(['deliver'])
   })
 
   it('คำถาม: th 3-4 ข้อ, en 2-3 ข้อ มีคำแปลและ keywords ครบ', () => {

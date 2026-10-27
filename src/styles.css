@@ -29,6 +29,8 @@
   /* สีการส่งในภาพเคลื่อนไหว ใช้ชุดเดียวทั้งคอร์ส: ถามทุกเครื่อง (broadcast) / ตอบเครื่องเดียว (unicast) ส่วนส่งของจริงใช้ --part */
   --tone-bcast: #ffb547;
   --tone-reply: #59c7ff;
+  /* ตัวหนังสือจางบนกระดาษสีอ่อน (หัวตารางสมุดบนเวที) contrast กับ --text ≥ 4.5 (มี test) */
+  --paper-muted: #5c5f6a;
   --disabled-fg: #70737e;
   --disabled-bg: #1d1f27;
   --disabled-border: #2a2d38;

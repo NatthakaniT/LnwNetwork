@@ -225,6 +225,14 @@ describe('quiz / lab / scene css (token เท่านั้น + motion)', () 
     expect(contrastRatio(stage, token('text'))).toBeGreaterThan(contrastRatio(token('surface'), token('text')))
     expect(contrastRatio(stage, token('text'))).toBeLessThan(contrastRatio(token('bg'), token('text')))
   })
+  it('หัวตารางและคำว่า ยังว่างอยู่ ในสมุดบนเวที อ่านชัดบนกระดาษ (contrast ≥ 4.5)', async () => {
+    const { contrastRatio } = await import('./ui/contrast')
+    const sp = files['scenes/ScenePlayer.css']
+    const tok = (sel: string, prop: string) => rule(sp, sel).match(new RegExp(`${prop}:\\s*var\\(--([a-z-]+)\\)`))![1]
+    const paper = tok('.sp-table .sp-paper', 'fill')
+    const muted = tok('.sp-table text.sp-muted', 'fill')
+    expect(contrastRatio(token(muted), token(paper))).toBeGreaterThanOrEqual(4.5)
+  })
   it('ป๊อปอัปศัพท์ มุม 14px มีเงา และปุ่มมี focus-visible', () => {
     const g = files['glossary/glossary.css']
     expect(rule(g, '.term-pop')).toMatch(/border-radius:\s*14px/)
