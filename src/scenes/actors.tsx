@@ -246,14 +246,12 @@ export function ActorView({
         return (
           <text
             key={i}
-            className={i > 0 ? 'sp-label-sub' : undefined}
+            className={i > 0 ? 'sp-label sp-label-sub' : 'sp-label'}
             x={side ? HALF[actor.kind][0] + 12 : 0}
             y={y0 + i * 28}
             textAnchor={side ? 'start' : 'middle'}
             fontSize={actor.kind === 'label' ? 26 : i > 0 ? 20 : 24}
             fontWeight={i > 0 ? 400 : 600}
-            fill="#e6edf3"
-            stroke="#0f1419"
             strokeWidth="4"
             paintOrder="stroke"
           >

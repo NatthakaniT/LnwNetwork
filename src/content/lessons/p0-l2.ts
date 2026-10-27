@@ -124,6 +124,35 @@ export const lesson: Lesson = {
   titleTh: 'อุปกรณ์มีอะไรบ้าง',
   analogyTh: 'คอม สาย Switch Router = บ้าน ถนน ไปรษณีย์ในหมู่บ้าน ไปรษณีย์กลาง',
   ciscoModules: ['ITN 1', 'ITN 11'],
+  requires: [{ lesson: 'p0-l1', useTh: 'network คือเครื่องที่ต่อถึงกันจนส่งข้อมูลหากันได้ บทนี้ดูว่าต่อกันด้วยอุปกรณ์อะไรบ้าง' }],
+  precheck: [
+    {
+      id: 'c1',
+      layer: 'th',
+      reviewLesson: 'p0-l1',
+      prompt: 'บ้านสองหลังอยู่ห่างกัน อยากส่งของถึงกัน ต้องมีอะไรก่อน',
+      choices: [
+        { id: 'a', text: 'ต้องมีถนนต่อถึงกันก่อน รถถึงจะวิ่งไปส่งได้' },
+        { id: 'b', text: 'ไม่ต้องมีอะไร ของไปถึงเอง' },
+        { id: 'c', text: 'แค่เขียนชื่อบ้านให้ตัวใหญ่ ๆ' },
+      ],
+      correct: ['a'],
+      explainTh: 'ของจะไปถึงอีกบ้านได้ ต้องมีทางให้รถวิ่ง คอมก็เหมือนกัน ต้องมีสายหรือไวไฟต่อกันก่อน บทนี้เราจะดูว่าทางของคอม มีอุปกรณ์อะไรบ้าง',
+    },
+    {
+      id: 'c2',
+      layer: 'th',
+      reviewLesson: 'p0-l1',
+      prompt: 'คอมกับโน้ตบุ๊กในบ้านเรา ต่อไวไฟเข้าหากัน แบบนี้เรียกว่าอะไร',
+      choices: [
+        { id: 'a', text: 'LAN คือ network เล็ก ๆ ในบ้านหรือในตึกเดียว' },
+        { id: 'b', text: 'WAN คือ network ที่ต่อข้ามเมือง' },
+        { id: 'c', text: 'ยังไม่ใช่ network เพราะไม่มีสาย' },
+      ],
+      correct: ['a'],
+      explainTh: 'เครื่องที่ต่อถึงกันในที่ใกล้ ๆ เช่น ในบ้านหรือออฟฟิศ เรียกว่า LAN ต่อด้วยไวไฟก็นับนะ ไม่ต้องมีสาย บทนี้จะดูว่าใน LAN มีอุปกรณ์อะไรช่วยให้เครื่องคุยกันได้',
+    },
+  ],
   videos: [
     { youtubeId: 'WunDlV89wpQ', titleTh: 'Basic Network ตอนที่ 3 ทำความรู้จักกับ Router', channel: '9hua Training' },
     { youtubeId: 'q0t7Wtux-VM', titleTh: 'Basic Network ตอนที่ 5 ทำความรู้จักกับ Switch', channel: '9hua Training' },

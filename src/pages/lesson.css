@@ -51,11 +51,11 @@
   font-weight: 700;
 }
 
-/* ---------- แท็บขั้น: แคปซูลเท่ากัน 4 ช่อง + แถบสีภาคที่เลื่อนไปตามขั้น ---------- */
+/* ---------- แท็บขั้น: แคปซูลเท่ากัน --n ช่อง (ตามจำนวนขั้น) + แถบสีภาคที่เลื่อนไปตามขั้น ---------- */
 .lesson-page .steps {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
   padding: 5px;
   margin: 1.3rem 0 1.5rem;
   background: var(--surface);
@@ -68,7 +68,7 @@
   top: 5px;
   bottom: 5px;
   left: 5px;
-  width: calc((100% - 10px) / 4);
+  width: calc((100% - 10px) / var(--n, 4));
   border-radius: 99px;
   background: var(--part, var(--p2));
   box-shadow: 0 8px 22px -12px var(--part, var(--p2));
@@ -184,7 +184,7 @@
   .lesson-page .lesson-head h1 { font-size: 1.9rem; }
   .lesson-page .steps { border-radius: 18px; }
   .lesson-page .step { font-size: 0.8rem; padding: 0.45rem 0.25rem; border-radius: 14px; }
-  .steps-indicator { border-radius: 14px; }
+  .steps-indicator { border-radius: 14px; } /* แท็บยังอยู่แถวเดียวเสมอ (grid --n ช่อง) ข้อความยาวขึ้นบรรทัดใหม่ในช่อง แถบสีจึงตรงช่อง */
 }
 
 @media (prefers-reduced-motion: reduce) {

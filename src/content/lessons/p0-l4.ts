@@ -157,7 +157,35 @@ export const lesson: Lesson = {
   titleTh: 'ที่อยู่ 2 แบบ: MAC กับ IP',
   analogyTh: 'เลขบัตรประชาชน กับบ้านเลขที่',
   ciscoModules: ['ITN 7', 'ITN 9', 'ITN 11'],
-  requires: [{ lesson: 'p0-bits', useTh: 'เลข 0 ถึง 255 ของแต่ละก้อนมาจาก 1 byte' }],
+  requires: [{ lesson: 'p0-bits', useTh: 'IP ตัดเป็น 4 ก้อน แต่ละก้อนคือ 1 byte เลยเป็นเลข 0 ถึง 255' }],
+  precheck: [
+    {
+      id: 'c1',
+      layer: 'th',
+      reviewLesson: 'p0-bits',
+      prompt: '1 byte คือสวิตช์ไฟกี่ตัว และเก็บเลขได้ช่วงไหน',
+      choices: [
+        { id: 'a', text: '8 ตัว เก็บได้ 0 ถึง 255' },
+        { id: 'b', text: '10 ตัว เก็บได้ 0 ถึง 1000' },
+        { id: 'c', text: '1 ตัว เก็บได้ 0 ถึง 9' },
+      ],
+      correct: ['a'],
+      explainTh: 'เพิ่มสวิตช์ 1 ตัว จำนวนแบบเพิ่มเป็น 2 เท่า สวิตช์ 8 ตัวเลยได้ 256 แบบ คือ 0 ถึง 255 บทนี้ IP แต่ละก้อนก็ใช้เลขช่วงนี้',
+    },
+    {
+      id: 'c2',
+      layer: 'th',
+      reviewLesson: 'p0-bits',
+      prompt: 'IP อย่าง 192.168.10.1 มีกี่ก้อน แต่ละก้อนยาวกี่ bit',
+      choices: [
+        { id: 'a', text: '4 ก้อน ก้อนละ 8 bit รวม 32 bit' },
+        { id: 'b', text: '4 ก้อน ก้อนละ 1 bit' },
+        { id: 'c', text: '10 ก้อน ก้อนละ 2 bit' },
+      ],
+      correct: ['a'],
+      explainTh: 'IPv4 คือสวิตช์ 32 ตัวเรียงกัน อ่านยาก เลยตัดเป็น 4 ก้อน ก้อนละ 8 ตัว คือ 1 byte แต่ละก้อนเป็นเลข 0 ถึง 255 แล้วคั่นด้วยจุด',
+    },
+  ],
   videos: [
     { youtubeId: 'u6W4u0R5P0w', titleTh: 'Basic Network ตอนที่ 2 : ทำความรู้จักกับ IP Address Version 4', channel: '9hua Training',
       noteTh: 'ตอนนี้จับแค่ว่า IPv4 เป็นเลข 4 ชุด คั่นด้วยจุด แต่ละชุดคือ 1 byte เลยเป็น 0 ถึง 255 ช่วงที่คลิปแปลงเลข 0 กับ 1 ดูตามได้ เหมือนแผงสวิตช์ที่เพิ่งลองกด ส่วนเรื่อง Class A B C หรือ Subnet ดูผ่าน ๆ ได้เลย ภาค 1 เล่าให้ฟังทีละขั้น' },

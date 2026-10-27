@@ -219,8 +219,13 @@ describe('quiz / lab / scene css (token เท่านั้น + motion)', () 
   })
   it('ป้ายใต้ไอคอนใน actors.tsx ยังอ่านชัดบนพื้นเวทีใหม่ (contrast ≥ 4.5) และพื้นเวทีอยู่ระหว่าง --bg กับ --surface', async () => {
     const { contrastRatio } = await import('./ui/contrast')
-    const label = actors.match(/<text[\s\S]*?fill="(#[0-9a-fA-F]{6})"/)![1]
+    // ป้ายใช้ token ผ่าน .sp-label ไม่เขียน hex ใน component
+    for (const t of actors.match(/<text[\s\S]*?<\/text>/g) ?? []) expect(t).not.toMatch(/(fill|stroke)="#/)
+    const sp = files['scenes/ScenePlayer.css']
+    const label = token(rule(sp, '.sp-label').match(/fill:\s*var\(--([a-z-]+)\)/)![1])
+    expect(rule(sp, '.sp-label')).toMatch(/stroke:\s*var\(--stage\)/)
     const stage = token('stage')
+    expect(contrastRatio(token(rule(sp, '.sp-label-sub').match(/fill:\s*var\(--([a-z-]+)\)/)![1]), stage)).toBeGreaterThanOrEqual(4.5)
     expect(contrastRatio(label, stage)).toBeGreaterThanOrEqual(4.5)
     expect(contrastRatio(stage, token('text'))).toBeGreaterThan(contrastRatio(token('surface'), token('text')))
     expect(contrastRatio(stage, token('text'))).toBeLessThan(contrastRatio(token('bg'), token('text')))

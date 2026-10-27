@@ -80,6 +80,7 @@
 .sp-table .sp-paper { fill: var(--text); stroke: var(--bg); stroke-width: 3; }
 .sp-table text.sp-muted { fill: var(--paper-muted); }
 .sp-table .sp-rule { stroke: var(--text-muted); stroke-width: 2; }
+.sp-label { fill: var(--text); stroke: var(--stage); }
 .sp-label-sub { fill: var(--text-muted); }
 
 .sp-bubble rect { stroke: var(--bg); stroke-width: 2; }

@@ -79,19 +79,19 @@ export function LessonPage({ id, parts = course, storage, onBlocked }: Props) {
 function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts: Part[]; storage?: Storage; initial: Progress }) {
   const progressRef = useRef(initial)
   // ขั้นเช็กพื้นฐานมีเฉพาะบทที่มี precheck
-  const STEPS = lesson.precheck && lesson.precheck.length > 0 ? [CHECK_STEP, ...BASE_STEPS] : BASE_STEPS
+  const steps = lesson.precheck && lesson.precheck.length > 0 ? [CHECK_STEP, ...BASE_STEPS] : BASE_STEPS
   const completedAtStart = initial.completed.includes(lesson.id)
   const startIdx =
     initial.lastLesson === lesson.id && initial.lastStep
-      ? Math.max(0, STEPS.findIndex((s) => s.key === initial.lastStep))
+      ? Math.max(0, steps.findIndex((s) => s.key === initial.lastStep))
       : 0
 
   const [stepIdx, setStepIdx] = useState(startIdx)
   // ขั้นที่ทำเสร็จแล้ว: คลิปถือว่าเสร็จเสมอ; กลับมาที่ขั้นไหน ขั้นก่อนหน้าถือว่าผ่านแล้ว
   const [done, setDone] = useState<Set<StepKey>>(() => {
     const s = new Set<StepKey>(['check', 'video'])
-    STEPS.slice(0, startIdx).forEach((st) => s.add(st.key))
-    if (completedAtStart) STEPS.forEach((st) => s.add(st.key))
+    steps.slice(0, startIdx).forEach((st) => s.add(st.key))
+    if (completedAtStart) steps.forEach((st) => s.add(st.key))
     return s
   })
   // ขั้นภาพทบทวนเสร็จเมื่อดูฉากจบ และทำ tryIt ครบ (ถ้าบทมี)
@@ -101,7 +101,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
 
   const termIds = lesson.terms ?? NO_TERMS
   const markDone = useCallback((k: StepKey) => setDone((d) => (d.has(k) ? d : new Set(d).add(k))), [])
-  const step = STEPS[stepIdx].key
+  const step = steps[stepIdx].key
 
   useEffect(() => {
     const p = { ...progressRef.current, lastLesson: lesson.id, lastStep: step }
@@ -112,7 +112,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   // ขั้นที่บทไม่มีเนื้อหา ถือว่าผ่านเอง
   const missing: Partial<Record<StepKey, boolean>> = { scenes: !lesson.scenes, lab: !lesson.lab }
   const isDone = (k: StepKey) => done.has(k) || !!missing[k]
-  const canOpen = (i: number) => STEPS.slice(0, i).every((s) => isDone(s.key))
+  const canOpen = (i: number) => steps.slice(0, i).every((s) => isDone(s.key))
 
   useEffect(() => { if (fin.scenes && fin.tryIt) markDone('scenes') }, [fin, markDone])
   const onScenesFinished = useCallback(() => setFin((f) => ({ ...f, scenes: true })), [])
@@ -129,6 +129,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   // ข้อภาษาอังกฤษใช้โจทย์ไทยถ้ามี เพราะผู้เรียนคุยกับครูเป็นภาษาไทย
   const onQuizWrong = useCallback((q: QuizQuestion) => setWrongPrompt((q.layer === 'en' && q.promptTh) || q.prompt), [])
 
+  const tutorText = tutorPrompt({ lessonTitle: lesson.titleTh, stepLabel: steps[stepIdx].label, wrongPrompt })
   const next = passed ? nextReadyLesson(parts, lesson.id) : undefined
   const nextOpen = next && isUnlocked(next.id, parts, progressRef.current) ? next : undefined
 
@@ -155,9 +156,9 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
         )}
       </header>
 
-      <nav className="steps rise d2" aria-label="ขั้นของบทเรียน">
+      <nav className="steps rise d2" aria-label="ขั้นของบทเรียน" style={{ '--n': steps.length } as CSSProperties}>
         <span className="steps-indicator" aria-hidden="true" style={{ '--i': stepIdx } as CSSProperties} />
-        {STEPS.map((s, i) => (
+        {steps.map((s, i) => (
           <button
             key={s.key}
             type="button"
@@ -216,7 +217,8 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
             : <a className="btn primary" href="#/">กลับไปแผนที่</a>}
         </p>
       )}
-      <AskTutor text={tutorPrompt({ lessonTitle: lesson.titleTh, stepLabel: STEPS[stepIdx].label, wrongPrompt })} />
+      {/* key: ข้อความเปลี่ยน (เปลี่ยนขั้น/ตอบผิด) ป้าย "คัดลอกแล้ว" จึงเริ่มใหม่ */}
+      <AskTutor key={tutorText} text={tutorText} />
     </main>
   )
 }

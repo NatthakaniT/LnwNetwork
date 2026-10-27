@@ -191,6 +191,25 @@ describe('LessonPage foundations', () => {
     expect(screen.queryByText(/เรื่องนี้ต่อจาก/)).toBeNull()
     expect(screen.queryByText(/เช็กพื้นฐาน/)).toBeNull()
   })
+  it('nav sets --n to the number of steps (5 with precheck, 4 without)', () => {
+    done()
+    const { container, unmount } = render(<LessonPage id="t1" parts={withReq(pre)} storage={storage} />)
+    const nav = container.querySelector('nav.steps') as HTMLElement
+    expect(nav.style.getPropertyValue('--n')).toBe('5')
+    expect(nav.querySelectorAll('.step')).toHaveLength(5)
+    unmount()
+    const r = render(<LessonPage id="f1" parts={fixture} storage={storage} />)
+    expect((r.container.querySelector('nav.steps') as HTMLElement).style.getPropertyValue('--n')).toBe('4')
+  })
+  it('"คัดลอกแล้ว" หายเมื่อเปลี่ยนขั้น (ข้อความที่จะคัดลอกเปลี่ยน)', async () => {
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn().mockResolvedValue(undefined) }, configurable: true })
+    render(<LessonPage id="f1" parts={fixture} storage={storage} />)
+    fireEvent.click(screen.getByRole('button', { name: /คัดลอกไปถามครู/ }))
+    expect(await screen.findByText(/คัดลอกแล้ว/)).toBeInTheDocument()
+    fireEvent.click(nextBtn())
+    expect(screen.queryByText(/คัดลอกแล้ว/)).toBeNull()
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+  })
   it('resumes at check from saved progress', () => {
     saveProgress({ version: 1, completed: ['r1'], lastLesson: 't1', lastStep: 'check' }, storage)
     render(<LessonPage id="t1" parts={withReq(pre)} storage={storage} />)

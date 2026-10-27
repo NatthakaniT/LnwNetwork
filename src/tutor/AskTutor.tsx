@@ -5,7 +5,7 @@ export function AskTutor({ text }: { text: string }) {
   const taRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (state === 'manual') taRef.current?.select()
+    if (state === 'manual') { taRef.current?.focus(); taRef.current?.select() }
   }, [state])
 
   const copy = () => {

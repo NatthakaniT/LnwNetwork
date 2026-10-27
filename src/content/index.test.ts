@@ -45,6 +45,11 @@ describe('course outline', () => {
     expect(validateCourse(course, glossary)).toEqual([])
   })
 
+  it('glossary cards have distinct Thai titles (ignoring the bracket note)', () => {
+    const heads = glossary.map((g) => g.th.split(' (')[0])
+    expect(heads.filter((h, i) => heads.indexOf(h) !== i)).toEqual([])
+  })
+
   it('no lesson text names another lesson by number (numbers shift when a lesson is added)', () => {
     const texts: string[] = []
     const walk = (v: unknown) => {

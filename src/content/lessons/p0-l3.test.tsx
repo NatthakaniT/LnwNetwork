@@ -160,6 +160,10 @@ describe('lesson p0-l3', () => {
       saveProgress({ version: 1, completed: ['p0-l1', 'p0-l2'] }, storage)
       const { container } = render(<LessonPage id="p0-l3" storage={storage} />)
 
+      // 0. เช็กพื้นฐาน (ไม่บังคับตอบ) แล้วเริ่มเรียน
+      expect(screen.getByRole('button', { name: /1. เช็กพื้นฐาน/ })).toHaveAttribute('aria-current', 'step')
+      await u.click(screen.getByRole('button', { name: 'เริ่มเรียน' }))
+
       // 1. คลิป (มีโน้ตเหนือคลิป)
       expect(screen.getByTitle(lesson.videos[0].titleTh)).toBeInTheDocument()
       expect(container.querySelector('.video-note')).toHaveTextContent(lesson.videos[0].noteTh!)
@@ -187,5 +191,19 @@ describe('lesson p0-l3', () => {
       expect(container.querySelector('.quiz-prompt')).toHaveTextContent(firstTh.prompt)
       expect(errSpy).not.toHaveBeenCalled()
     }, 20000)
+  })
+})
+
+describe('lesson p0-l3 foundations', () => {
+  it('มี requires และเช็กพื้นฐาน 2 ข้อชี้กลับบทใน requires', () => {
+    expect(lesson.requires!.map((r) => r.lesson)).toEqual(['p0-l2'])
+    for (const r of lesson.requires!) expect(r.useTh.trim()).not.toBe('')
+    expect(lesson.precheck).toHaveLength(2)
+    for (const q of lesson.precheck!) {
+      expect(q.layer).toBe('th')
+      expect(['p0-l2']).toContain(q.reviewLesson)
+      expect(q.explainTh.trim()).not.toBe('')
+    }
+    expect(validateCourse(course, glossary)).toEqual([])
   })
 })

@@ -23,6 +23,7 @@ describe('AskTutor', () => {
     const ta = (await screen.findByLabelText('ข้อความสำหรับคัดลอก')) as HTMLTextAreaElement
     expect(ta.value).toBe('สวัสดี')
     expect(screen.getByText('คัดลอกอัตโนมัติไม่ได้ กด Ctrl+C เพื่อคัดลอก')).toBeInTheDocument()
+    expect(document.activeElement).toBe(ta)
   })
 
   it('ไม่มี navigator.clipboard แสดง textarea', async () => {
