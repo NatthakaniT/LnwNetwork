@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { course } from '../content'
-import type { Lesson, Part } from '../content/types'
+import { ccna } from '../content/courses'
+import type { Course, Lesson, Part } from '../content/types'
 import { countCompleted, firstOpenLesson, isUnlocked, loadProgress, percentComplete, totalLessons } from '../progress/progress'
 import { PART_COLORS } from '../ui/contrast'
 import { stickerText } from '../ui/sticker'
 import './map.css'
 
 interface Props {
+  course?: Course
   parts?: Part[]
   storage?: Storage
   notice?: string | null
@@ -16,8 +17,8 @@ interface Props {
 
 type ChipState = 'done' | 'now' | 'lock' | 'building'
 
-export function CourseMap({ parts = course, storage, notice, onDismissNotice }: Props) {
-  const [progress] = useState(() => loadProgress(storage))
+export function CourseMap({ course = ccna, parts = course.parts, storage, notice, onDismissNotice }: Props) {
+  const [progress] = useState(() => loadProgress(storage, course.storageKey))
   const pct = percentComplete(parts, progress)
   const total = totalLessons(parts)
   const doneCount = countCompleted(parts, progress)
@@ -47,14 +48,15 @@ export function CourseMap({ parts = course, storage, notice, onDismissNotice }: 
       )}
       <header className="map-head">
         <span className="sticker">{stickerText(parts, progress)}</span>
-        <h1 className="rise">เรียน CCNA <span className="h1-line">แบบเข้าใจจริง</span></h1>
+        <h1 className="rise">เรียน {course.titleTh} <span className="h1-line">{course.taglineTh}</span></h1>
         <p className="map-progress-text rise d1">เรียนแล้ว {doneCount} จาก {total} บท</p>
         <div className="bar rise d1" role="progressbar" aria-label="ความคืบหน้า" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
           <div style={{ width: `${pct}%` }} />
         </div>
         <p className="map-actions rise d2">
           {continueId && <a className="btn primary" href={`#/lesson/${continueId}`}>เรียนต่อ</a>}
-          <a className="btn" href="#/glossary">📖 คลังศัพท์</a>
+          <a className="btn" href="#/">← เลือกวิชา</a>
+          <a className="btn" href={`#/c/${course.id}/glossary`}>📖 คลังศัพท์</a>
         </p>
       </header>
       <div className="map">

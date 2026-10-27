@@ -31,7 +31,7 @@ describe('CourseMap', () => {
     const notReady = course.flatMap((p) => p.lessons).filter((l) => l.status !== 'ready').length
     expect(screen.queryAllByText('กำลังทำ')).toHaveLength(notReady)
     expect(screen.getByText(`เรียนแล้ว 0 จาก ${course.flatMap((p) => p.lessons).length} บท`)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /คลังศัพท์/ })).toHaveAttribute('href', '#/glossary')
+    expect(screen.getByRole('link', { name: /คลังศัพท์/ })).toHaveAttribute('href', '#/c/ccna/glossary')
     expect(screen.queryByRole('link', { name: 'เรียนต่อ' })).toBeNull()
   })
 

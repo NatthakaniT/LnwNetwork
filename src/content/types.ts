@@ -73,3 +73,10 @@ export interface Lesson {
 }
 export interface Part { part: number; titleTh: string; examDomain: string; lessons: Lesson[] }
 export interface GlossaryTerm { id: string; en: string; th: string; explainTh: string }
+
+export type CourseId = 'ccna' | 'git'
+// requireEnglishQuiz: ต้องมีคำถามชั้น en ทุกบท (CCNA ใช่ เพราะข้อสอบจริงเป็นภาษาอังกฤษ)
+export interface Course {
+  id: CourseId; titleTh: string; taglineTh: string; parts: Part[]; glossary: GlossaryTerm[]; storageKey: string
+  requireEnglishQuiz: boolean
+}

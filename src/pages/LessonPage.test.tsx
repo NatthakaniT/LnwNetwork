@@ -16,6 +16,7 @@ import { fixture, mk, memoryStorage } from './fixture'
 import { loadProgress, saveProgress } from '../progress/progress'
 import type { NetworkLab, Part } from '../content/types'
 import { PART_COLORS } from '../ui/contrast'
+import { courseById } from '../content/courses'
 
 let storage: Storage
 beforeEach(() => { storage = memoryStorage(); window.location.hash = ''; sceneProps.length = 0 })
@@ -68,7 +69,7 @@ describe('LessonPage', () => {
     fireEvent.click(screen.getByText('จบกิจกรรม')); fireEvent.click(nextBtn())
     fireEvent.click(screen.getByText('ผ่านคำถาม'))
     expect(screen.queryByRole('link', { name: 'ไปบทถัดไป' })).toBeNull()
-    expect(screen.getByRole('link', { name: 'กลับไปแผนที่' })).toHaveAttribute('href', '#/')
+    expect(screen.getByRole('link', { name: 'กลับไปแผนที่' })).toHaveAttribute('href', '#/c/ccna')
   })
 
   it('network lab uses LabView', () => {
@@ -99,7 +100,7 @@ describe('LessonPage', () => {
     const { container } = render(<LessonPage id="f3" parts={fixture} storage={storage} onBlocked={onBlocked} />)
     expect(onBlocked).toHaveBeenCalledWith(MSG_LOCKED)
     expect(MSG_LOCKED).toBe('ต้องเรียนบทก่อนหน้าก่อนนะ')
-    expect(window.location.hash).toBe('#/')
+    expect(window.location.hash).toBe('#/c/ccna')
     expect(container).toBeEmptyDOMElement()
   })
 
@@ -237,5 +238,23 @@ describe('LessonPage tryIt', () => {
     act(() => { vi.advanceTimersByTime(1400) })
     expect(nextBtn()).toBeEnabled()
     vi.useRealTimers()
+  })
+})
+
+describe('LessonPage หลายวิชา', () => {
+  it('ลิงก์ ← กลับแผนที่ ของบท CCNA ชี้ #/c/ccna', () => {
+    render(<LessonPage id="p0-l1" storage={storage} />)
+    expect(screen.getByRole('link', { name: '← กลับแผนที่' })).toHaveAttribute('href', '#/c/ccna')
+  })
+  it('บทของวิชาอื่นใช้ลิงก์และ key ความคืบหน้าของวิชานั้น', () => {
+    const git = courseById('git')!
+    saveProgress({ version: 1, completed: ['f1'] }, storage, git.storageKey)
+    render(<LessonPage id="f2" course={git} parts={fixture} storage={storage} />)
+    expect(screen.getByRole('link', { name: '← กลับแผนที่' })).toHaveAttribute('href', '#/c/git')
+  })
+  it('บทที่ไม่มีจริงพากลับหน้าเลือกวิชา', () => {
+    window.location.hash = '#/lesson/nope'
+    render(<LessonPage id="nope" parts={fixture} storage={storage} onBlocked={vi.fn()} />)
+    expect(window.location.hash).toBe('#/')
   })
 })

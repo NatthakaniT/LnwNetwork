@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { course } from '../content'
-import type { Lesson, Part, QuizQuestion } from '../content/types'
+import { ccna } from '../content/courses'
+import type { Course, Lesson, Part, QuizQuestion } from '../content/types'
 import { QuizView } from '../quiz/QuizView'
 import { ScenePlayer } from '../scenes/ScenePlayer'
 import { Bits8 } from '../tryit/Bits8'
@@ -39,6 +39,7 @@ const CHECK_STEP = { key: 'check' as StepKey, label: 'เช็กพื้น�
 
 interface Props {
   id: string
+  course?: Course
   parts?: Part[]
   storage?: Storage
   onBlocked?: (message: string) => void
@@ -57,9 +58,9 @@ function nextReadyLesson(parts: Part[], id: string): Lesson | undefined {
 }
 
 /** เช็กสิทธิ์เข้าบทก่อน แล้วค่อยแสดงหน้า (แยกกันเพื่อให้ hook เรียงเท่าเดิมเสมอ) */
-export function LessonPage({ id, parts = course, storage, onBlocked }: Props) {
+export function LessonPage({ id, course = ccna, parts = course.parts, storage, onBlocked }: Props) {
   const lesson = findLesson(parts, id)
-  const [progress0] = useState(() => loadProgress(storage))
+  const [progress0] = useState(() => loadProgress(storage, course.storageKey))
 
   let blocked: string | null = null
   if (!lesson) blocked = MSG_LOCKED
@@ -69,14 +70,14 @@ export function LessonPage({ id, parts = course, storage, onBlocked }: Props) {
   useEffect(() => {
     if (!blocked) return
     onBlocked?.(blocked)
-    navigate('#/')
-  }, [blocked, onBlocked])
+    navigate(lesson ? `#/c/${course.id}` : '#/') // ไม่รู้ว่าบทนี้อยู่วิชาไหน -> หน้าเลือกวิชา
+  }, [blocked, onBlocked, lesson, course.id])
 
   if (blocked || !lesson) return null
-  return <LessonBody lesson={lesson} parts={parts} storage={storage} initial={progress0} />
+  return <LessonBody lesson={lesson} course={course} parts={parts} storage={storage} initial={progress0} />
 }
 
-function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts: Part[]; storage?: Storage; initial: Progress }) {
+function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesson; course: Course; parts: Part[]; storage?: Storage; initial: Progress }) {
   const progressRef = useRef(initial)
   // ขั้นเช็กพื้นฐานมีเฉพาะบทที่มี precheck
   const steps = lesson.precheck && lesson.precheck.length > 0 ? [CHECK_STEP, ...BASE_STEPS] : BASE_STEPS
@@ -106,8 +107,8 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   useEffect(() => {
     const p = { ...progressRef.current, lastLesson: lesson.id, lastStep: step }
     progressRef.current = p
-    saveProgress(p, storage)
-  }, [lesson.id, step, storage])
+    saveProgress(p, storage, course.storageKey)
+  }, [lesson.id, step, storage, course.storageKey])
 
   // ขั้นที่บทไม่มีเนื้อหา ถือว่าผ่านเอง
   const missing: Partial<Record<StepKey, boolean>> = { scenes: !lesson.scenes, lab: !lesson.lab }
@@ -121,10 +122,10 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
   const onQuizPass = useCallback(() => {
     const p = markCompleted(lesson.id, progressRef.current)
     progressRef.current = p
-    saveProgress(p, storage)
+    saveProgress(p, storage, course.storageKey)
     markDone('quiz')
     setPassed(true)
-  }, [lesson.id, storage, markDone])
+  }, [lesson.id, storage, markDone, course.storageKey])
 
   // ข้อภาษาอังกฤษใช้โจทย์ไทยถ้ามี เพราะผู้เรียนคุยกับครูเป็นภาษาไทย
   const onQuizWrong = useCallback((q: QuizQuestion) => setWrongPrompt((q.layer === 'en' && q.promptTh) || q.prompt), [])
@@ -135,7 +136,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
 
   return (
     <main className="lesson-page" style={partVars(lesson.part)}>
-      <p className="lesson-back rise"><a href="#/">← กลับแผนที่</a></p>
+      <p className="lesson-back rise"><a href={`#/c/${course.id}`}>← กลับแผนที่</a></p>
       <header className="lesson-head rise d1">
         <h1>{lesson.titleTh}</h1>
         {lesson.analogyTh && <p className="analogy"><RichText text={lesson.analogyTh} termIds={termIds} /></p>}
@@ -214,7 +215,7 @@ function LessonBody({ lesson, parts, storage, initial }: { lesson: Lesson; parts
           เก่งมาก ผ่านบทนี้แล้ว{' '}
           {nextOpen
             ? <a className="btn primary" href={`#/lesson/${nextOpen.id}`}>ไปบทถัดไป</a>
-            : <a className="btn primary" href="#/">กลับไปแผนที่</a>}
+            : <a className="btn primary" href={`#/c/${course.id}`}>กลับไปแผนที่</a>}
         </p>
       )}
       {/* key: ข้อความเปลี่ยน (เปลี่ยนขั้น/ตอบผิด) ป้าย "คัดลอกแล้ว" จึงเริ่มใหม่ */}

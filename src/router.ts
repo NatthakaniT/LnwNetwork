@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
+import type { CourseId } from './content/types'
+import { courseById } from './content/courses'
 
 export type Route =
-  | { name: 'map' }
+  | { name: 'picker' }
+  | { name: 'map'; course: CourseId }
   | { name: 'lesson'; id: string }
-  | { name: 'glossary' }
+  | { name: 'glossary'; course: CourseId }
 
 export function parseHash(hash: string): Route {
   const path = hash.replace(/^#/, '').replace(/\/+$/, '')
@@ -12,11 +15,14 @@ export function parseHash(hash: string): Route {
     try {
       return { name: 'lesson', id: decodeURIComponent(m[1]) }
     } catch {
-      return { name: 'map' } // hash เสียรูปแบบ เช่น %E0%A4%A
+      return { name: 'picker' } // hash เสียรูปแบบ เช่น %E0%A4%A
     }
   }
-  if (path === '/glossary') return { name: 'glossary' }
-  return { name: 'map' }
+  if (path === '/glossary') return { name: 'glossary', course: 'ccna' } // ลิงก์เดิมก่อนมีหลายวิชา
+  const c = /^\/c\/([^/]+)(\/glossary)?$/.exec(path)
+  const course = c && courseById(c[1])
+  if (course) return { name: c[2] ? 'glossary' : 'map', course: course.id }
+  return { name: 'picker' }
 }
 
 export function navigate(hash: string): void {

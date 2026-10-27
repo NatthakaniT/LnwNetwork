@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { course, glossary } from '../content'
-import type { GlossaryTerm } from '../content/types'
+import { ccna } from '../content/courses'
+import type { Course, GlossaryTerm } from '../content/types'
 import { OSI_LAYERS, OSI_OTHER_IDS, OSI_SECTION_IDS, TCPIP_LAYERS } from '../content/osi'
 import type { OsiLayer } from '../content/osi'
 import { useReveal } from '../ui/reveal'
@@ -45,7 +45,7 @@ function TermCard({ t, color, badge, level = 3 }: { t: GlossaryTerm; color: stri
 
 type Pick = { termId: string; from: 'osi' | 'tcp' }
 
-export function GlossaryPage({ terms = glossary }: { terms?: GlossaryTerm[] }) {
+export function GlossaryPage({ course = ccna, terms = course.glossary }: { course?: Course; terms?: GlossaryTerm[] }) {
   const [q, setQ] = useState('')
   const [picked, setPicked] = useState<Pick>({ termId: 'network-layer', from: 'osi' })
   const s = norm(q)
@@ -82,21 +82,21 @@ export function GlossaryPage({ terms = glossary }: { terms?: GlossaryTerm[] }) {
   const groups = useMemo(() => {
     // ภาคแรกที่มีบทอ้างศัพท์นี้ (เรียงตามภาค แล้วตามลำดับบท)
     const firstPart = new Map<string, number>()
-    for (const p of [...course].sort((a, b) => a.part - b.part)) {
+    for (const p of [...course.parts].sort((a, b) => a.part - b.part)) {
       for (const l of [...p.lessons].sort((a, b) => a.order - b.order)) {
         for (const id of l.terms ?? []) if (!firstPart.has(id)) firstPart.set(id, p.part)
       }
     }
     const found = terms.filter((t) => !SECTION_IDS.has(t.id) && matches(t, s))
     const out: { key: string; title: string; color: string; items: GlossaryTerm[] }[] = []
-    for (const p of [...course].sort((a, b) => a.part - b.part)) {
+    for (const p of [...course.parts].sort((a, b) => a.part - b.part)) {
       const items = found.filter((t) => firstPart.get(t.id) === p.part)
       if (items.length) out.push({ key: `p${p.part}`, title: p.titleTh, color: `var(--p${p.part})`, items })
     }
     const rest = found.filter((t) => !firstPart.has(t.id))
     if (rest.length) out.push({ key: 'other', title: OTHER, color: 'var(--text-muted)', items: rest })
     return out
-  }, [terms, s])
+  }, [terms, s, course])
 
   const osiVisible = osi.shown.length > 0 || osi.cards.length > 0
   const nothing = !osiVisible && otherCards.length === 0 && groups.length === 0

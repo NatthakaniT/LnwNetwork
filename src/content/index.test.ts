@@ -124,6 +124,12 @@ describe('validateCourse', () => {
     expect(onlyEn.length).toBe(1)
   })
 
+  it('requireEnglishQuiz: false ยอมให้บท ready ไม่มีชั้น en แต่ค่าเริ่มต้นยังบังคับ', () => {
+    const onlyTh = parts(readyOk({ quiz: [q()] }))
+    expect(validateCourse(onlyTh, gl, { requireEnglishQuiz: false })).toEqual([])
+    expect(has(validateCourse(onlyTh, gl), '(en)')).toBe(true)
+  })
+
   it('reports en question without promptTh', () => {
     const errs = validateCourse(parts(readyOk({ quiz: [q(), q({ id: 'q2', layer: 'en' })] })), gl)
     expect(errs.length).toBe(1)

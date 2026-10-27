@@ -56,7 +56,7 @@ function learnerTexts(l: Lesson): string[] {
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): void {
+function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[], requireEnglishQuiz: boolean): void {
   const id = l.id
   if (l.videos.length === 0) errs.push(`บท ${id}: ยังไม่มีคลิปวิดีโอ`)
   if (!l.scenes || l.scenes.scenes.length === 0) errs.push(`บท ${id}: ยังไม่มีภาพเคลื่อนไหว (scenes)`)
@@ -71,7 +71,7 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
     errs.push(`บท ${id}: ยังไม่มีคำถาม (quiz)`)
   } else {
     if (!l.quiz.some((q) => q.layer === 'th')) errs.push(`บท ${id}: quiz ไม่มีคำถามชั้นภาษาไทย (th)`)
-    if (!l.quiz.some((q) => q.layer === 'en')) errs.push(`บท ${id}: quiz ไม่มีคำถามชั้นภาษาอังกฤษ (en)`)
+    if (requireEnglishQuiz && !l.quiz.some((q) => q.layer === 'en')) errs.push(`บท ${id}: quiz ไม่มีคำถามชั้นภาษาอังกฤษ (en)`)
     for (const q of l.quiz) {
       if (q.layer === 'en' && !q.promptTh) errs.push(`บท ${id}: คำถาม ${q.id} (en) ไม่มีคำแปลไทย promptTh`)
     }
@@ -120,7 +120,7 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
 }
 
 /** คืนรายการปัญหาเป็นภาษาไทย; ว่าง = ผ่าน */
-export function validateCourse(parts: Part[], glossary: GlossaryTerm[]): string[] {
+export function validateCourse(parts: Part[], glossary: GlossaryTerm[], { requireEnglishQuiz = true }: { requireEnglishQuiz?: boolean } = {}): string[] {
   const errs: string[] = []
   const glossaryIds = new Set(glossary.map((g) => g.id))
   const seen = new Set<string>()
@@ -128,7 +128,7 @@ export function validateCourse(parts: Part[], glossary: GlossaryTerm[]): string[
     for (const l of p.lessons) {
       if (seen.has(l.id)) errs.push(`บท ${l.id}: รหัสบทซ้ำกัน`)
       seen.add(l.id)
-      if (l.status === 'ready') validateReady(l, glossaryIds, errs)
+      if (l.status === 'ready') validateReady(l, glossaryIds, errs, requireEnglishQuiz)
     }
   }
   validateOrder(parts, glossary, errs)

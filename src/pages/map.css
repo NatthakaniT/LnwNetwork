@@ -179,3 +179,9 @@ a.l:hover { transform: translateX(3px); box-shadow: 0 0 0 2px var(--bg); }
   .part-card.rise { opacity: 1; translate: none; }
   .map .part-card:hover, .map .part-card:focus-within, a.l:hover { transform: none; }
 }
+
+/* ---------- หน้าเลือกวิชา: การ์ดทั้งใบเป็นลิงก์ ---------- */
+.course-card { display: block; text-decoration: none; }
+.course-card .course-count { margin: 0; font-weight: 700; }
+.course-card .bar { background: color-mix(in srgb, var(--bg) 25%, transparent); margin-bottom: 0; }
+.course-card:focus-visible { outline: 3px solid var(--p5); outline-offset: 3px; }

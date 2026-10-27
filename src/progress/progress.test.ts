@@ -118,3 +118,18 @@ describe('loadProgress / saveProgress', () => {
     expect(() => saveProgress(empty, fakeStorage({}, { setThrows: true }))).not.toThrow()
   })
 })
+
+describe('ความคืบหน้าแยกวิชา', () => {
+  it('progress เดิมของ CCNA โหลดด้วย key ของ CCNA ได้ และไม่ปนกับวิชา Git', () => {
+    const s = fakeStorage({ 'lnw-ccna-progress-v1': JSON.stringify({ version: 1, completed: ['p0-l1'] }) })
+    expect(loadProgress(s, 'lnw-ccna-progress-v1').completed).toEqual(['p0-l1'])
+    expect(loadProgress(s).completed).toEqual(['p0-l1'])
+    expect(loadProgress(s, 'lnw-git-progress-v1').completed).toEqual([])
+  })
+  it('บันทึกด้วย key ของวิชา Git ไม่ทับของ CCNA', () => {
+    const s = fakeStorage({ 'lnw-ccna-progress-v1': JSON.stringify({ version: 1, completed: ['p0-l1'] }) })
+    saveProgress({ version: 1, completed: ['g0-l1'] }, s, 'lnw-git-progress-v1')
+    expect(loadProgress(s, 'lnw-git-progress-v1').completed).toEqual(['g0-l1'])
+    expect(loadProgress(s, 'lnw-ccna-progress-v1').completed).toEqual(['p0-l1'])
+  })
+})

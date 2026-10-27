@@ -12,9 +12,9 @@ function defaultStorage(): Storage | undefined {
   try { return globalThis.localStorage } catch { return undefined }
 }
 
-export function loadProgress(storage: Storage | undefined = defaultStorage()): Progress {
+export function loadProgress(storage: Storage | undefined = defaultStorage(), key: string = STORAGE_KEY): Progress {
   try {
-    const raw = storage?.getItem(STORAGE_KEY)
+    const raw = storage?.getItem(key)
     if (!raw) return emptyProgress()
     const d = JSON.parse(raw)
     if (!d || typeof d !== 'object' || d.version !== 1) return emptyProgress()
@@ -28,8 +28,8 @@ export function loadProgress(storage: Storage | undefined = defaultStorage()): P
   }
 }
 
-export function saveProgress(p: Progress, storage: Storage | undefined = defaultStorage()): void {
-  try { storage?.setItem(STORAGE_KEY, JSON.stringify(p)) } catch { /* storage full/blocked: ignore */ }
+export function saveProgress(p: Progress, storage: Storage | undefined = defaultStorage(), key: string = STORAGE_KEY): void {
+  try { storage?.setItem(key, JSON.stringify(p)) } catch { /* storage full/blocked: ignore */ }
 }
 
 function readyLessonIds(parts: Part[]): LessonId[] {
