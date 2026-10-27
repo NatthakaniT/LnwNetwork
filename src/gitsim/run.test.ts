@@ -285,3 +285,23 @@ describe('fix round 1', () => {
     expect(run(w0, 'git merge --abort', ALL).ok).toBe(false)
   })
 })
+
+describe('fix round 2', () => {
+  const conflicted = () => {
+    let w = seq(W0, 'git init').world
+    w = seq(editFile(w, 'a', 'base'), 'git add .', 'git commit -m "m"', 'git switch -c feat').world
+    w = seq(editFile(w, 'a', 'theirs'), 'git add .', 'git commit -m "f"', 'git switch main').world
+    w = seq(editFile(w, 'a', 'mine'), 'git add .', 'git commit -m "m2"').world
+    return run(w, 'git merge feat', ALL).world
+  }
+  for (const [label, keep, cmd] of [['keep mine', 'mine', 'git add a'], ['keep theirs', 'theirs', 'git add a'], ['keep mine via add .', 'mine', 'git add .'], ['keep mine via add -A', 'mine', 'git add -A']] as const) {
+    it(`แก้ conflict เป็นเนื้อหาเดิมของฝั่งใดฝั่งหนึ่ง (${label}) แล้ว add ได้ commit ได้`, () => {
+      const r = seq(editFile(conflicted(), 'a', keep), cmd, 'git commit -m "resolve"')
+      expect(r.ok).toBe(true)
+      expect(r.world.conflict).toBeUndefined()
+      const t = r.world.me.repo!.commits[r.world.me.repo!.branches.main!]
+      expect(t.parent2).toBeDefined()
+      expect(t.files.a).toBe(keep)
+    })
+  }
+})

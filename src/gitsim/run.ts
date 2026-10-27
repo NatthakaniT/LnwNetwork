@@ -167,7 +167,7 @@ const handlers: Record<GitCommand, Handler> = {
     const pick = args.includes('.') || args.includes('-A') ? Object.keys(files) : args
     const missing = pick.find(f => !has(files, f))
     if (missing) return fail(w, `fatal: pathspec '${missing}' did not match any files`, `ไม่เจอไฟล์ชื่อ ${missing} ในโฟลเดอร์นี้ ลองเช็กชื่อไฟล์ว่าสะกดถูกไหม แล้วพิมพ์ใหม่`)
-    for (const f of pick) if (g(files, f) !== g(head, f) || has(staged, f)) staged[f] = files[f]
+    for (const f of pick) if (g(files, f) !== g(head, f) || has(staged, f) || w.conflict?.files.includes(f)) staged[f] = files[f]
     return done(setMe(w, { staged: Object.keys(staged).length ? staged : null }), '',
       'เอาการเปลี่ยนแปลงไปวางในที่พักก่อน commit (staging) เหมือนหยิบของใส่ตะกร้า ถ้าไม่ add ไฟล์นั้นจะไม่ถูกเก็บลง commit')
   },
