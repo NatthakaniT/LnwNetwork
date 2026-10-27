@@ -5,9 +5,13 @@ import { lesson as g0l2 } from './lessons/g0-l2'
 import { lesson as g0l3 } from './lessons/g0-l3'
 import { lesson as g0l4 } from './lessons/g0-l4'
 import { lesson as g0l5 } from './lessons/g0-l5'
+import { lesson as g1l1 } from './lessons/g1-l1'
+import { lesson as g1l2 } from './lessons/g1-l2'
+import { lesson as g1l3 } from './lessons/g1-l3'
+import { lesson as g1l4 } from './lessons/g1-l4'
 
 /** บทที่เขียนเสร็จแล้ว แทนที่โครงบทที่ยังไม่เสร็จ (รหัสเดียวกัน) */
-const readyLessons: Lesson[] = [g0l1, g0l2, g0l3, g0l4, g0l5]
+const readyLessons: Lesson[] = [g0l1, g0l2, g0l3, g0l4, g0l5, g1l1, g1l2, g1l3, g1l4]
 const withReady = (ls: Lesson[]): Lesson[] => ls.map((l) => readyLessons.find((r) => r.id === l.id) ?? l)
 
 export const gitParts: Part[] = [
@@ -23,12 +27,12 @@ export const gitParts: Part[] = [
   },
   {
     part: 1, titleTh: 'ทำงานคู่กับเพื่อน', examDomain: '',
-    lessons: build(1, [
+    lessons: withReady(build(1, [
       ['g1-l1', 'branch'],
       ['g1-l2', 'Pull Request'],
       ['g1-l3', 'merge กับ conflict'],
       ['g1-l4', 'วิธีที่คนนิยมใช้'],
-    ]),
+    ])),
   },
   {
     part: 2, titleTh: 'ใช้จริง', examDomain: '',

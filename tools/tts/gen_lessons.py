@@ -98,6 +98,21 @@ PRONOUNCE = {
     "version control": "เวอร์ชันคอนโทรล",
     "command line": "คอมมานด์ไลน์",
     "Windows": "วินโดวส์",
+    "Pull Request": "พูลรีเควสต์",
+    "GitHub Flow": "กิตฮับโฟลว์",
+    "Merge commit": "เมิร์จคอมมิต",
+    ".gitignore": "จุดกิตอิกนอร์",
+    "--abort": "แอบอร์ต",
+    "branch": "เบรนช์",
+    "merge": "เมิร์จ",
+    "conflict": "คอนฟลิกต์",
+    "review": "รีวิว",
+    "HEAD": "เฮด",
+    "main": "เมน",
+    "login": "ล็อกอิน",
+    "checkout": "เช็กเอาต์",
+    "-u": "ยู",
+    "-c": "ซี",
 }
 
 
