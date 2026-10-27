@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-export function AskTutor({ text }: { text: string }) {
+// label/ariaLabel/doneText ใช้ซ้ำกับปุ่มคัดลอกคำสั่ง (RealTry)
+export function AskTutor({ text, label = '📋 คัดลอกไปถามครู', ariaLabel, doneText = 'คัดลอกแล้ว ไปวางใน Claude.ai ได้เลย' }: { text: string; label?: string; ariaLabel?: string; doneText?: string }) {
   const [state, setState] = useState<'idle' | 'copied' | 'manual'>('idle')
   const taRef = useRef<HTMLTextAreaElement>(null)
 
@@ -16,9 +17,9 @@ export function AskTutor({ text }: { text: string }) {
 
   return (
     <div className="ask-tutor">
-      <button type="button" className="btn" onClick={copy}>📋 คัดลอกไปถามครู</button>
+      <button type="button" className="btn" onClick={copy} aria-label={ariaLabel}>{label}</button>
       <div role="status">
-        {state === 'copied' && <p>คัดลอกแล้ว ไปวางใน Claude.ai ได้เลย</p>}
+        {state === 'copied' && <p>{doneText}</p>}
         {state === 'manual' && (
           <>
             <p>คัดลอกอัตโนมัติไม่ได้ กด Ctrl+C เพื่อคัดลอก</p>

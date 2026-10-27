@@ -40,7 +40,8 @@ const quizTexts = (qs: QuizQuestion[]): string[] =>
 /** ข้อความที่ผู้เรียนเห็นในบท ready */
 function learnerTexts(l: Lesson): string[] {
   const out = [l.analogyTh, ...quizTexts(l.quiz ?? []), ...quizTexts(l.precheck ?? []), ...l.videos.map((v) => v.noteTh ?? '')]
-  out.push(...(l.requires ?? []).map((r) => r.useTh), l.tryIt?.introTh ?? '', ...(l.deepDives ?? []).flatMap((d) => [d.titleTh, d.bodyTh]))
+  // realTry: สแกนเฉพาะ introTh/expectTh ไม่สแกน cmd เพราะเป็นคำสั่งจริง
+  out.push(...(l.requires ?? []).map((r) => r.useTh), l.tryIt?.introTh ?? '', l.realTry?.introTh ?? '', ...(l.realTry?.steps ?? []).map((s) => s.expectTh), ...(l.deepDives ?? []).flatMap((d) => [d.titleTh, d.bodyTh]))
   for (const a of l.scenes?.actors ?? []) {
     out.push(a.label ?? '', ...(a.lines ?? []), a.titleTh ?? '', ...(a.columns ?? []), ...(a.rows ?? []).flat())
   }

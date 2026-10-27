@@ -280,6 +280,8 @@ describe('validateCourse', () => {
         l1({ tryIt: { kind: 'bits8', introTh: 'กดหา MAC', goals: [1] } }),
         l1({ deepDives: [{ titleTh: 'MAC ลึก', bodyTh: 'x' }] }),
         l1({ deepDives: [{ titleTh: 'ลึก', bodyTh: 'เรื่อง MAC' }] }),
+        l1({ realTry: { introTh: 'ลอง MAC', steps: [{ cmd: 'x', expectTh: 'y' }] } }),
+        l1({ realTry: { introTh: 'i', steps: [{ cmd: 'x', expectTh: 'เห็น MAC' }] } }),
       ]
       for (const e of early) expect(has(validateCourse(parts(e, later), gl), 'ใช้ศัพท์ "MAC" ก่อนบทที่สอน')).toBe(true)
     })

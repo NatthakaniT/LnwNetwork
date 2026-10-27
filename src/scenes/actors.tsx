@@ -109,6 +109,15 @@ function Icon({ kind }: { kind: ActorKind }) {
           <path d="M-5,-17 q5,4 10,0" fill="none" stroke={STROKE} strokeWidth="2" strokeLinecap="round" />
         </g>
       )
+    case 'commit':
+      return <circle r="18" fill="#8fb0ff" stroke={STROKE} strokeWidth="3" />
+    case 'file':
+      return (
+        <g>
+          <polygon points="-18,-22 8,-22 18,-12 18,22 -18,22" fill="#f6f1e3" stroke={STROKE} strokeWidth="3" strokeLinejoin="round" />
+          <polyline points="8,-22 8,-12 18,-12" fill="none" stroke={STROKE} strokeWidth="2" strokeLinejoin="round" />
+        </g>
+      )
     case 'label':
     case 'cable':
     case 'card':

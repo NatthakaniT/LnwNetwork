@@ -209,3 +209,8 @@
 .precheck .quiz { margin-bottom: 1.2rem; }
 .ask-tutor { margin: 2rem 0 0; }
 .ask-tutor textarea { width: 100%; box-sizing: border-box; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--text); border-radius: 8px; padding: 0.5rem; }
+
+.real-try { margin: 2rem 0 0; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.real-try ol { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 1rem; }
+.real-try code { font-family: ui-monospace, Consolas, monospace; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.5rem; }
+.real-try .ask-tutor { margin: 0.5rem 0 0; }

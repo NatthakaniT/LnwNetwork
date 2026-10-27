@@ -8,6 +8,7 @@ import { Bits8 } from '../tryit/Bits8'
 import { LabView } from '../lab/LabView'
 import { ActivityView } from '../lab/ActivityView'
 import { GitLabView } from '../lab/GitLabView'
+import { RealTry } from './RealTry'
 import { isUnlocked, loadProgress, markCompleted, saveProgress } from '../progress/progress'
 import type { Progress, StepKey } from '../progress/progress'
 import { navigate } from '../router'
@@ -191,6 +192,7 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
               ? <GitLabView lab={lesson.lab} onDone={onLabDone} />
               : <ActivityView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />)
           : <p>บทนี้ไม่มีให้ลองเล่น ไปขั้นต่อไปได้เลย</p>)}
+        {step === 'lab' && lesson.realTry && <RealTry realTry={lesson.realTry} />}
         {step === 'quiz' && <QuizView key={lesson.id} questions={lesson.quiz!} termIds={termIds} onPass={onQuizPass} onWrong={onQuizWrong} />}
       </section>
 

@@ -12,6 +12,7 @@ export const BUBBLE = { font: 20, h: 44, gap: 32 }
 export const HALF: Record<ActorKind, [number, number]> = {
   pc: [48, 48], laptop: [55, 45], switch: [61, 26], router: [58, 51], server: [45, 48], cloud: [64, 48],
   house: [55, 55], person: [32, 54], envelope: [38, 26], box: [38, 35], truck: [61, 38],
+  commit: [29, 29], file: [29, 35],
   label: [0, 0], cable: [0, 0], card: [0, 0], table: [0, 0],
 }
 

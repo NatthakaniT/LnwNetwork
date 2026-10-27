@@ -57,4 +57,12 @@ describe('layout', () => {
     expect(side.x + side.w).toBeGreaterThan(below.x + below.w)
     expect(side.y + side.h).toBeLessThan(below.y + below.h)
   })
+
+  it('commit กับ file มีกรอบ และ commit สองจุดห่างกัน 40 px ทับกัน', () => {
+    const c = (id: string, x: number): Actor => ({ id, kind: 'commit', x, y: 200, label: 'a1' })
+    expect(boxOf(c('a', 100)).w).toBeGreaterThan(0)
+    expect(boxOf({ id: 'f', kind: 'file', x: 100, y: 100, label: 'index.html' }).h).toBeGreaterThan(0)
+    expect(overlaps(stage([c('a', 100), c('b', 140)]))).toEqual([['a', 'b']])
+    expect(overlaps(stage([c('a', 100), c('b', 300)]))).toEqual([])
+  })
 })

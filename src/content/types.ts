@@ -7,6 +7,7 @@ export interface VideoRef { youtubeId: string; titleTh: string; channel: string;
 
 export type ActorKind = 'house' | 'pc' | 'laptop' | 'switch' | 'router' | 'server' | 'cloud'
   | 'envelope' | 'box' | 'truck' | 'person' | 'label' | 'cable' | 'card' | 'table'
+  | 'commit' | 'file'
 /** สีบอกชนิดการส่ง: bcast = ถามทุกเครื่อง (ส้ม), reply = ตอบเครื่องเดียว (ฟ้า), deliver = ส่งของจริง (สีภาค) */
 export type Tone = 'bcast' | 'reply' | 'deliver'
 // label ขึ้นบรรทัดใหม่ด้วย \n (บรรทัดที่สองตัวเล็กและจาง) / labelSide 'right' = ป้ายอยู่ข้างไอคอน ใช้กับเครื่องที่เรียงแนวตั้ง
@@ -65,12 +66,15 @@ export interface PrecheckQuestion extends QuizQuestion { layer: 'th'; reviewLess
 export interface DeepDive { titleTh: string; bodyTh: string }
 export type TryIt = { kind: 'bits8'; introTh: string; goals: number[] }
 
+// realTry = คำสั่งจริงให้ลองใน Git Bash ของผู้เรียนเอง (ไม่บังคับ ไม่นับเป็นเงื่อนไขผ่านขั้น)
+export interface RealTry { introTh: string; steps: { cmd: string; expectTh: string }[] }
+
 export interface Lesson {
   id: LessonId; part: number; order: number; status: LessonStatus
   titleTh: string; analogyTh: string; ciscoModules: string[]
   videos: VideoRef[] // ตัวแรก = คลิปหลัก
   scenes?: SceneSet; lab?: Lab; quiz?: QuizQuestion[]; terms?: string[]
-  requires?: Requirement[]; precheck?: PrecheckQuestion[]; tryIt?: TryIt; deepDives?: DeepDive[]
+  requires?: Requirement[]; precheck?: PrecheckQuestion[]; tryIt?: TryIt; realTry?: RealTry; deepDives?: DeepDive[]
 }
 export interface Part { part: number; titleTh: string; examDomain: string; lessons: Lesson[] }
 export interface GlossaryTerm { id: string; en: string; th: string; explainTh: string }
