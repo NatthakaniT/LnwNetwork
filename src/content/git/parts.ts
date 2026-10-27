@@ -1,16 +1,22 @@
-import type { Part } from '../types'
+import type { Lesson, Part } from '../types'
 import { build } from '../parts'
+import { lesson as g0l1 } from './lessons/g0-l1'
+import { lesson as g0l2 } from './lessons/g0-l2'
+
+/** บทที่เขียนเสร็จแล้ว แทนที่โครงบทที่ยังไม่เสร็จ (รหัสเดียวกัน) */
+const readyLessons: Lesson[] = [g0l1, g0l2]
+const withReady = (ls: Lesson[]): Lesson[] => ls.map((l) => readyLessons.find((r) => r.id === l.id) ?? l)
 
 export const gitParts: Part[] = [
   {
     part: 0, titleTh: 'เริ่มจากศูนย์', examDomain: '',
-    lessons: build(0, [
+    lessons: withReady(build(0, [
       ['g0-l1', 'ทำไมต้องมี Git'],
       ['g0-l2', 'ตระกูล Git ต่างกันยังไง'],
       ['g0-l3', 'repository กับ commit'],
       ['g0-l4', 'git add'],
       ['g0-l5', 'ในเครื่องกับบนเน็ต'],
-    ]),
+    ])),
   },
   {
     part: 1, titleTh: 'ทำงานคู่กับเพื่อน', examDomain: '',

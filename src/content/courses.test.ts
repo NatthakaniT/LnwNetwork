@@ -28,7 +28,8 @@ describe('courses', () => {
   })
   it('ทุกวิชาผ่าน validateCourse', () => {
     for (const c of courses) {
-      expect(validateCourse(c.parts, c.glossary)).toEqual([])
+      // วิชาที่ไม่บังคับชั้นอังกฤษ (git) ตรวจด้วยค่าเริ่มต้นไม่ได้
+      if (c.requireEnglishQuiz) expect(validateCourse(c.parts, c.glossary)).toEqual([])
       expect(validateCourse(c.parts, c.glossary, { requireEnglishQuiz: c.requireEnglishQuiz })).toEqual([])
     }
   })

@@ -15,6 +15,7 @@ import { navigate } from '../router'
 import { VideoStep } from './VideoStep'
 import { PrecheckStep } from './PrecheckStep'
 import { RichText } from '../glossary/RichText'
+import { GlossaryContext } from '../glossary/context'
 import { AskTutor } from '../tutor/AskTutor'
 import { tutorPrompt } from '../tutor/tutorPrompt'
 import { PART_COLORS } from '../ui/contrast'
@@ -76,7 +77,11 @@ export function LessonPage({ id, course = ccna, parts = course.parts, storage, o
   }, [blocked, onBlocked, lesson, course.id])
 
   if (blocked || !lesson) return null
-  return <LessonBody lesson={lesson} course={course} parts={parts} storage={storage} initial={progress0} />
+  return (
+    <GlossaryContext.Provider value={course.glossary}>
+      <LessonBody lesson={lesson} course={course} parts={parts} storage={storage} initial={progress0} />
+    </GlossaryContext.Provider>
+  )
 }
 
 function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesson; course: Course; parts: Part[]; storage?: Storage; initial: Progress }) {

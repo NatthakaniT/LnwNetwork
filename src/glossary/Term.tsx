@@ -1,11 +1,13 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { glossary } from '../content/glossary'
+import { useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { GlossaryContext } from './context'
 import type { GlossaryTerm } from '../content/types'
 import './glossary.css'
 
 interface Props { id: string; children?: ReactNode; terms?: GlossaryTerm[] }
 
-export function Term({ id, children, terms = glossary }: Props) {
+export function Term({ id, children, terms: given }: Props) {
+  const fromCtx = useContext(GlossaryContext)
+  const terms = given ?? fromCtx
   const term = terms.find((t) => t.id === id)
   const [open, setOpen] = useState(false)
   const wrap = useRef<HTMLSpanElement>(null)

@@ -78,6 +78,14 @@ PRONOUNCE = {
     "Subnet": "ซับเน็ต",
     "CCNA": "ซีซีเอ็นเอ",
     "Cisco": "ซิสโก้",
+    "GitHub Desktop": "กิตฮับเดสก์ท็อป",
+    "GitHub": "กิตฮับ",
+    "GitLab": "กิตแล็บ",
+    "Git Bash": "กิตบาช",
+    "Git": "กิต",
+    "version control": "เวอร์ชันคอนโทรล",
+    "command line": "คอมมานด์ไลน์",
+    "Windows": "วินโดวส์",
 }
 
 

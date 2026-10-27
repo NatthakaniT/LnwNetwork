@@ -26,8 +26,8 @@ export function collectNarration(parts: Part[]): NarrationItem[] {
 
 const isCli = !process.env.VITEST // vite-node ไม่ใส่ชื่อสคริปต์ใน argv จึงเช็คว่าไม่ได้รันใต้ vitest
 if (isCli) {
-  const { course } = await import('../src/content')
-  const items = collectNarration(course)
+  const { courses } = await import('../src/content/courses')
+  const items = courses.flatMap((c) => collectNarration(c.parts))
   const target = resolve(dirname(fileURLToPath(import.meta.url)), '../tools/tts/narration.json')
   mkdirSync(dirname(target), { recursive: true })
   writeFileSync(target, JSON.stringify(items, null, 2) + '\n', 'utf8')

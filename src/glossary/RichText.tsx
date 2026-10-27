@@ -1,5 +1,5 @@
-import { Fragment } from 'react'
-import { glossary } from '../content/glossary'
+import { Fragment, useContext } from 'react'
+import { GlossaryContext } from './context'
 import type { GlossaryTerm } from '../content/types'
 import { Term } from './Term'
 
@@ -8,7 +8,9 @@ interface Props { text: string; termIds: string[]; terms?: GlossaryTerm[] }
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** ห่อคำศัพท์ (ทั้งคำ ไม่สนตัวพิมพ์ คำยาวก่อน) ด้วย <Term> ให้กดดูความหมายได้ */
-export function RichText({ text, termIds, terms = glossary }: Props) {
+export function RichText({ text, termIds, terms: given }: Props) {
+  const fromCtx = useContext(GlossaryContext)
+  const terms = given ?? fromCtx
   const used = terms.filter((t) => termIds.includes(t.id)).sort((a, b) => b.en.length - a.en.length)
   if (used.length === 0) return <>{text}</>
   const alt = used.map((t) => escapeRe(t.en)).join('|')
