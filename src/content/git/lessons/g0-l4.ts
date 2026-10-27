@@ -186,7 +186,7 @@ export const lesson: Lesson = {
       { type: 'state', taskTh: 'ให้ Git ดูแลโฟลเดอร์นี้', hintTh: 'พิมพ์ git init', check: 'onBranch', arg: 'main' },
       { type: 'state', taskTh: 'ใส่ index.html ลงกล่อง เฉพาะไฟล์นี้ไฟล์เดียว', hintTh: 'พิมพ์ git add index.html แล้วพิมพ์ git status ดูว่า notes.txt ยังอยู่นอกกล่อง', check: 'staged', arg: 'index.html' },
       { type: 'state', taskTh: 'ปิดผนึกกล่องเป็นจุดเซฟแรก', hintTh: 'พิมพ์ git commit -m "หน้าแรก"', check: 'committed' },
-      { type: 'state', taskTh: 'เอา notes.txt ตามเข้ากล่องบ้าง', hintTh: 'พิมพ์ git add notes.txt แล้วพิมพ์ git status ดู', check: 'staged', arg: 'notes.txt' },
+      { type: 'state', taskTh: 'เอา notes.txt ตามเข้ากล่องบ้าง ถ้า notes.txt ถูกเซฟไปแล้ว (เช่นเผลอพิมพ์ git add .) ให้กดชื่อไฟล์ notes.txt ทางขวา แก้ข้อความ กดบันทึกไฟล์ ก่อน เพราะ git add เก็บได้เฉพาะไฟล์ที่เปลี่ยน', hintTh: 'พิมพ์ git add notes.txt แล้วพิมพ์ git status ดู ถ้าไม่ขึ้นว่าอยู่ในกล่อง ให้แก้ไฟล์ notes.txt แล้วกดบันทึกไฟล์ก่อน แล้วพิมพ์ git add notes.txt ใหม่', check: 'staged', arg: 'notes.txt' },
     ],
   },
 

@@ -99,6 +99,11 @@ describe('lesson g1-l3', () => {
     expect(r.world.me.files['login.html']).toBeTruthy() // ไฟล์ที่ไม่ชนรวมให้เอง
   })
 
+  it('อยากรู้ลึกเรื่องหน้าจอแก้ข้อความตอน merge บอกทางออกและทางเลี่ยง', () => {
+    const d = lesson.deepDives!.find((x) => x.titleTh === 'ถ้าหน้าจอแปลกๆ เปิดขึ้นมาตอน merge')!
+    for (const t of ['Esc', ':wq', 'Enter', '--no-edit', '-m']) expect(d.bodyTh).toContain(t)
+  })
+
   describe('เล่นทั้งบท (ไม่ mock อะไร)', () => {
     let errSpy: ReturnType<typeof vi.spyOn>
     beforeEach(() => { window.location.hash = ''; errSpy = vi.spyOn(console, 'error') })

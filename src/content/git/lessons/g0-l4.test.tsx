@@ -10,6 +10,7 @@ import { gitGlossary } from '../glossary'
 import { LessonPage } from '../../../pages/LessonPage'
 import { memoryStorage } from '../../../pages/fixture'
 import { saveProgress } from '../../../progress/progress'
+import { editFile, run } from '../../../gitsim/run'
 import { lesson } from './g0-l4'
 
 const git = courseById('git')!
@@ -90,6 +91,16 @@ describe('lesson g0-l4', () => {
     expect(lab.goals.map((g) => g.check)).toEqual(['onBranch', 'staged', 'committed', 'staged'])
     expect(lab.goals[1].arg).toBe('index.html')
     expect(lab.goals[3].arg).toBe('notes.txt')
+  })
+
+  it('ไม่ตันถ้าเผลอ git add . แล้ว commit: โจทย์ข้อ 4 บอกให้แก้ notes.txt ก่อน และแก้แล้วผ่านได้', () => {
+    let w = lab.start
+    for (const l of ['git init', 'git add .', 'git commit -m x', 'git add notes.txt']) w = run(w, l, lab.allowed).world
+    expect(checkGitGoal(w, lab.goals[3])).toBe(false) // notes.txt ไม่เปลี่ยน เลยเข้ากล่องไม่ได้
+    expect(lab.goals[3].taskTh).toContain('แก้ข้อความ')
+    expect(lab.goals[3].hintTh).toContain('แก้ไฟล์ notes.txt')
+    w = run(editFile(w, 'notes.txt', 'แก้แล้ว'), 'git add notes.txt', lab.allowed).world
+    expect(checkGitGoal(w, lab.goals[3])).toBe(true)
   })
 
   describe('เล่นทั้งบท (ไม่ mock อะไร)', () => {

@@ -150,6 +150,17 @@ describe('พื้นฐาน', () => {
     expect(t.parent && t.parent2).toBeTruthy()
     expect(r.world.me.files).toMatchObject({ a: '1', b: '2', c: '3' })
   })
+  it('merge -m ใช้ข้อความที่ให้ และ --no-edit ใช้ข้อความมาตรฐาน', () => {
+    let w = seq(W0, 'git init').world
+    w = seq(editFile(w, 'a', '1'), 'git add .', 'git commit -m "m"', 'git switch -c feat').world
+    w = seq(editFile(w, 'b', '2'), 'git add .', 'git commit -m "f"', 'git switch main').world
+    w = seq(editFile(w, 'c', '3'), 'git add .', 'git commit -m "m2"').world
+    expect(tip(run(w, 'git merge feat -m "รวมงานแล้ว"', ALL).world.me.repo!).message).toBe('รวมงานแล้ว')
+    expect(tip(run(w, 'git merge -m "รวมก่อน" feat', ALL).world.me.repo!).message).toBe('รวมก่อน')
+    const n = run(w, 'git merge --no-edit feat', ALL)
+    expect(n.ok).toBe(true)
+    expect(tip(n.world.me.repo!).message).toBe("Merge branch 'feat'")
+  })
   it('merge ชนกัน → conflict + เครื่องหมายในไฟล์', () => {
     let w = seq(W0, 'git init').world
     w = seq(editFile(w, 'a', 'base'), 'git add .', 'git commit -m "m"', 'git switch -c feat').world

@@ -272,12 +272,15 @@ const handlers: Record<GitCommand, Handler> = {
       if (!c) return fail(w, 'fatal: There is no merge to abort (MERGE_HEAD missing).', 'ตอนนี้ไม่ได้รวมงานค้างอยู่ เลยไม่มีอะไรให้ยกเลิก')
       return done(setMe(w, { files: c.pre?.files ?? w.me.files, staged: c.pre?.staged ?? null }, undefined), '', 'ยกเลิกการรวมงานที่ติด conflict แล้ว ไฟล์กลับไปเป็นสภาพก่อนสั่ง merge หรือ pull ลองใหม่เมื่อพร้อมได้')
     }
-    const name = args[0]
+    const mi = args.indexOf('-m')
+    const msg = mi >= 0 ? args[mi + 1]?.trim() : undefined
+    if (mi >= 0 && !msg) return fail(w, "error: switch `m' requires a value", 'ตัวเลือก -m ต้องตามด้วยข้อความ เช่น git merge feature -m "รวมงาน"')
+    const name = args.find((a, i) => !a.startsWith('-') && (mi < 0 || i !== mi + 1))
     if (!name) return fail(w, 'fatal: No commit specified and merge.defaultToUpstream not set.', 'ต้องบอกชื่อ branch ที่จะเอามารวม เช่น git merge feature')
     if (w.conflict) return midMerge(w)
     const t = repo.branches[name]
     if (!has(repo.branches, name) || !t) return fail(w, `merge: ${name} - not something we can merge`, `ไม่มี branch ชื่อ ${name} (หรือยังไม่มี commit) ลอง git branch ดูรายชื่อก่อน`)
-    return integrate(w, t, name, `Merge branch '${name}'`)
+    return integrate(w, t, name, msg ?? `Merge branch '${name}'`)
   },
 
   clone(w) {

@@ -116,6 +116,13 @@ describe('lesson g2-l1', () => {
     expect(th.length).toBeLessThanOrEqual(4)
   })
 
+  it('push ถูกปฏิเสธเพราะติ๊ก README: ใช้ --allow-unrelated-histories ไม่ใช่ pull เปล่า ๆ', () => {
+    const t = lesson.realTry!.steps.find((s) => s.cmd === 'git push -u origin main')!.expectTh
+    expect(t).toContain('git pull origin main --allow-unrelated-histories')
+    expect(t).toContain('ห้ามพิมพ์แค่ git pull origin main')
+    expect(lesson.realTry!.introTh).toContain('ห้ามติ๊ก Add a README')
+  })
+
   describe('เล่นทั้งบท (ไม่ mock อะไร)', () => {
     let errSpy: ReturnType<typeof vi.spyOn>
     beforeEach(() => { window.location.hash = ''; errSpy = vi.spyOn(console, 'error') })

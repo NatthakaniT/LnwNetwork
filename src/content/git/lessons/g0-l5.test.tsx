@@ -86,11 +86,20 @@ describe('lesson g0-l5', () => {
     expect(lesson.scenes!.scenes.some((s) => s.chipTh === 'push ถูกปฏิเสธ')).toBe(true)
   })
 
+  it('มีขั้นตั้ง pull.rebase false กับอยากรู้ลึกเรื่อง divergent', () => {
+    const step = lesson.realTry!.steps.find((s) => s.cmd === 'git config --global pull.rebase false')!
+    expect(step.expectTh).toContain('ไม่มีข้อความตอบกลับ')
+    const d = lesson.deepDives!.find((x) => x.bodyTh.includes('reconcile divergent branches'))!
+    expect(d.bodyTh).toContain('git config --global pull.rebase false')
+    expect(d.bodyTh).toContain('ไม่ต้องรู้')
+  })
+
   it('realTry ชุดแรกครบตามที่กำหนด ไม่มีรหัสผ่านหรือ token', () => {
     expect(lesson.realTry!.steps.map((s) => s.cmd)).toEqual([
       'git --version',
       'git config --global user.name "ชื่อคุณ"',
       'git config --global user.email "อีเมลของคุณ"',
+      'git config --global pull.rebase false',
       'git init',
       'git add hello.txt',
       'git commit -m "จุดเซฟแรกของฉัน"',
