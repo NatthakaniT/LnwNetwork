@@ -9,7 +9,8 @@
     "build:pages": "tsc --noEmit && vite build --mode pages",
     "preview": "vite preview --port 4173",
     "test": "vitest run",
-    "narration:export": "vite-node scripts/export-narration.ts"
+    "narration:export": "vite-node scripts/export-narration.ts",
+    "roadmap:export": "vite-node scripts/export-roadmap.ts"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.2",
