@@ -99,6 +99,16 @@ describe('validateCourse', () => {
     expect(validateCourse(parts(readyOk()), gl)).toEqual([])
   })
 
+  it('checks git lab: allowed, goals, friendScript range', () => {
+    const w = { me: { name: 'me', files: {}, staged: null, repo: null }, friend: { name: 'f', files: {}, staged: null, repo: null }, github: null }
+    const g = { type: 'state' as const, taskTh: 't', hintTh: 'h', check: 'committed' as const }
+    const git = (o: object) => readyOk({ lab: { kind: 'git', introTh: 'i', start: w, allowed: ['init'], goals: [g], ...o } as Lesson['lab'] })
+    expect(validateCourse(parts(git({})), gl)).toEqual([])
+    expect(has(validateCourse(parts(git({ allowed: [] })), gl), 'allowed')).toBe(true)
+    expect(has(validateCourse(parts(git({ goals: [] })), gl), 'goals')).toBe(true)
+    expect(has(validateCourse(parts(git({ friendScript: [{ afterGoal: 1, action: { type: 'push' } }] })), gl), 'afterGoal')).toBe(true)
+  })
+
   it('reports duplicate lesson ids (even for building lessons)', () => {
     const errs = validateCourse(parts(lesson(), lesson()), gl)
     expect(errs.length).toBeGreaterThan(0)

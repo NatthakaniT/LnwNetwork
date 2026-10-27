@@ -50,6 +50,7 @@ function learnerTexts(l: Lesson): string[] {
   }
   if (l.lab) out.push(l.lab.introTh)
   if (l.lab?.kind === 'network') for (const g of l.lab.goals) out.push(g.taskTh, g.hintTh)
+  else if (l.lab?.kind === 'git') for (const g of l.lab.goals) out.push(g.taskTh, g.hintTh)
   else if (l.lab) out.push(...l.lab.items.map((i) => i.textTh), l.lab.explainTh, l.lab.rightTh ?? '')
   return out
 }
@@ -65,6 +66,15 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[], requ
     l.lab.goals.forEach((g, i) => {
       if (!g.taskTh?.trim()) errs.push(`บท ${id}: เป้าหมายที่ ${i + 1} ของห้องทดลอง ไม่มีคำบอกงาน (taskTh)`)
     })
+  }
+
+  if (l.lab?.kind === 'git') {
+    const { allowed, goals, friendScript } = l.lab
+    if (allowed.length === 0) errs.push(`บท ${id}: ห้องทดลอง git ไม่มีคำสั่งที่อนุญาต (allowed)`)
+    if (goals.length === 0) errs.push(`บท ${id}: ห้องทดลอง git ไม่มีเป้าหมาย (goals)`)
+    for (const f of friendScript ?? []) {
+      if (!Number.isInteger(f.afterGoal) || f.afterGoal < 0 || f.afterGoal >= goals.length) errs.push(`บท ${id}: friendScript.afterGoal ${f.afterGoal} อยู่นอกช่วงเป้าหมาย`)
+    }
   }
 
   if (!l.quiz || l.quiz.length === 0) {

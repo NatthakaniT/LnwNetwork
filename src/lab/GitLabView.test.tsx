@@ -1,0 +1,63 @@
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { GitLabView } from './GitLabView'
+import type { GitLab } from '../gitsim/goals'
+import type { Machine, World } from '../gitsim/types'
+
+const mk = (name: string): Machine => ({ name, files: {}, staged: null, repo: null })
+const start: World = { me: mk('me'), friend: { ...mk('friend'), repo: { commits: {}, branches: { main: null }, head: 'main' }, remote: 'origin' }, github: null }
+const lab: GitLab = {
+  kind: 'git', introTh: 'เริ่มเลย', start, allowed: ['init', 'status'],
+  goals: [
+    { type: 'state', taskTh: 'สร้าง repo', hintTh: 'พิมพ์ git init', check: 'onBranch', arg: 'main' },
+    { type: 'state', taskTh: 'ดูสถานะ', hintTh: 'พิมพ์ git status', check: 'onBranch', arg: 'main' },
+  ],
+  friendScript: [{ afterGoal: 0, action: { type: 'push' } }],
+}
+const type = async (u: ReturnType<typeof userEvent.setup>, line: string) => {
+  await u.type(screen.getByLabelText('พิมพ์คำสั่ง git'), line + '{Enter}')
+}
+
+describe('GitLabView', () => {
+  it('git init แสดง output และประวัติว่าง', async () => {
+    const u = userEvent.setup()
+    render(<GitLabView lab={lab} onDone={() => {}} />)
+    await type(u, 'git init')
+    expect(screen.getByText(/Initialized empty Git repository/)).toBeInTheDocument()
+    expect(screen.getAllByText('ยังไม่มี commit').length).toBeGreaterThan(0)
+  })
+  it('คำสั่งที่ยังไม่อนุญาต เห็นคำอธิบายไทย', async () => {
+    const u = userEvent.setup()
+    render(<GitLabView lab={lab} onDone={() => {}} />)
+    await type(u, 'git push')
+    expect(screen.getByText(/ยังไม่ได้เรียน/)).toBeInTheDocument()
+  })
+  it('ทำเป้าหมายครบ onDone ครั้งเดียว และ friendScript ทำงาน', async () => {
+    const onDone = vi.fn()
+    const u = userEvent.setup()
+    render(<GitLabView lab={lab} onDone={onDone} />)
+    expect(screen.getByText('สร้าง repo')).toBeInTheDocument()
+    await type(u, 'git init')
+    expect(screen.getByText('ดูสถานะ')).toBeInTheDocument()
+    expect(screen.getByText(/เพื่อนเพิ่ง push งานขึ้น GitHub/)).toBeInTheDocument()
+    expect(onDone).not.toHaveBeenCalled()
+    await type(u, 'git status')
+    expect(onDone).toHaveBeenCalledTimes(1)
+    await type(u, 'git status')
+    expect(onDone).toHaveBeenCalledTimes(1)
+  })
+  it('ขอตัวช่วยและแก้ไฟล์ในโฟลเดอร์งานได้', async () => {
+    const u = userEvent.setup()
+    render(<GitLabView lab={{ ...lab, start: { ...start, me: { ...start.me, files: { 'a.txt': 'hi' } } } }} onDone={() => {}} />)
+    await u.click(screen.getByText('ขอตัวช่วย'))
+    expect(screen.getByText('พิมพ์ git init')).toBeInTheDocument()
+    await u.click(screen.getByRole('button', { name: 'a.txt' }))
+    const box = screen.getByLabelText('แก้ไฟล์ a.txt')
+    await u.clear(box)
+    await u.type(box, 'new')
+    await u.click(screen.getByText('บันทึกไฟล์'))
+    await u.click(screen.getByRole('button', { name: 'a.txt' }))
+    expect(screen.getByLabelText('แก้ไฟล์ a.txt')).toHaveValue('new')
+  })
+})

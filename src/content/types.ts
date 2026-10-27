@@ -1,3 +1,4 @@
+import type { GitLab } from '../gitsim/goals'
 export type LessonId = string // 'p0-l1' … 'p6-l4'
 export type LessonStatus = 'ready' | 'building'
 
@@ -56,7 +57,7 @@ export type LabGoal =
   | { type: 'fix'; from: string; toIp: string; taskTh: string; hintTh: string } // เริ่มพัง ต้องซ่อม
 export interface NetworkLab { kind: 'network'; introTh: string; start: Topology; palette: DeviceKind[]; goals: LabGoal[] }
 export interface ActivityLab { kind: 'order' | 'match'; introTh: string; items: { id: string; textTh: string }[]; answer: string[] | Record<string, string>; explainTh: string; rightTh?: string } // explainTh = ตอบผิดแล้วโค้ช, rightTh = ตอบถูกแล้วสรุปสั้น ๆ
-export type Lab = NetworkLab | ActivityLab
+export type Lab = NetworkLab | ActivityLab | GitLab
 
 // requires = บทนี้ใช้อะไรจากบทก่อน (useTh) / precheck = เช็กพื้นฐานก่อนเรียน ชั้นไทยเท่านั้น / goals = เลข 0–255 ที่ต้องทำให้ได้ตามลำดับ
 export interface Requirement { lesson: LessonId; useTh: string }

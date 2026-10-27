@@ -7,6 +7,7 @@ import { ScenePlayer } from '../scenes/ScenePlayer'
 import { Bits8 } from '../tryit/Bits8'
 import { LabView } from '../lab/LabView'
 import { ActivityView } from '../lab/ActivityView'
+import { GitLabView } from '../lab/GitLabView'
 import { isUnlocked, loadProgress, markCompleted, saveProgress } from '../progress/progress'
 import type { Progress, StepKey } from '../progress/progress'
 import { navigate } from '../router'
@@ -186,7 +187,9 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
         {step === 'lab' && (lesson.lab
           ? (lesson.lab.kind === 'network'
             ? <LabView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />
-            : <ActivityView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />)
+            : lesson.lab.kind === 'git'
+              ? <GitLabView lab={lesson.lab} onDone={onLabDone} />
+              : <ActivityView lab={lesson.lab} termIds={termIds} onDone={onLabDone} />)
           : <p>บทนี้ไม่มีให้ลองเล่น ไปขั้นต่อไปได้เลย</p>)}
         {step === 'quiz' && <QuizView key={lesson.id} questions={lesson.quiz!} termIds={termIds} onPass={onQuizPass} onWrong={onQuizWrong} />}
       </section>
