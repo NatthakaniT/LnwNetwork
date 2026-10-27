@@ -2,13 +2,14 @@ import type { Lesson, Part } from './types'
 import { lesson as p0l1 } from './lessons/p0-l1'
 import { lesson as p0l2 } from './lessons/p0-l2'
 import { lesson as p0l3 } from './lessons/p0-l3'
+import { lesson as p0bits } from './lessons/p0-bits'
 import { lesson as p0l4 } from './lessons/p0-l4'
 import { lesson as p0l5 } from './lessons/p0-l5'
 
 type Row = [id: string, title: string, analogy?: string, modules?: string[]]
 
 /** บทที่เขียนเสร็จแล้ว แทนที่โครงบทที่ยังไม่เสร็จ (รหัสเดียวกัน) */
-const readyLessons: Lesson[] = [p0l1, p0l2, p0l3, p0l4, p0l5]
+const readyLessons: Lesson[] = [p0l1, p0l2, p0l3, p0bits, p0l4, p0l5]
 const withReady = (l: Lesson): Lesson => readyLessons.find((r) => r.id === l.id) ?? l
 
 export const build = (part: number, rows: Row[]): Lesson[] =>
@@ -30,6 +31,7 @@ export const parts: Part[] = [
       ['p0-l1', 'Network คืออะไร', 'ถนนกับรถส่งของ', ['ITN 1']],
       ['p0-l2', 'อุปกรณ์มีอะไรบ้าง', 'คอม สาย Switch Router', ['ITN 1', 'ITN 11']],
       ['p0-l3', 'ข้อมูลเดินทางยังไง', 'กล่องพัสดุ', ['ITN 3']],
+      ['p0-bits', 'คอมพูดภาษา 0 กับ 1', 'สวิตช์ไฟกับทอนเงินด้วยแบงก์', ['ITN 5']],
       ['p0-l4', 'ที่อยู่ 2 แบบ: MAC กับ IP', 'เลขบัตรประชาชน กับบ้านเลขที่', ['ITN 7', 'ITN 9']],
       ['p0-l5', 'การห่อของเป็นชั้น ๆ', 'ห่อพัสดุทีละชั้น', ['ITN 3']],
     ]),
@@ -37,7 +39,7 @@ export const parts: Part[] = [
   {
     part: 1, titleTh: 'พื้นฐาน Network', examDomain: 'Network Fundamentals 20%',
     lessons: build(1, [
-      ['p1-l1', 'เลขฐานสอง'], ['p1-l2', 'IPv4'], ['p1-l3', 'Subnet'], ['p1-l4', 'ฝึก Subnetting'], ['p1-l5', 'IPv6'],
+      ['p1-l1', 'ฝึกแปลงเลขฐานสอง'], ['p1-l2', 'IPv4'], ['p1-l3', 'Subnet'], ['p1-l4', 'ฝึก Subnetting'], ['p1-l5', 'IPv6'],
       ['p1-l6', 'TCP กับ UDP'], ['p1-l7', 'สายและรูปแบบการต่อ'], ['p1-l8', 'Wi-Fi เบื้องต้น'], ['p1-l9', 'Cloud และ Virtualization'],
     ]),
   },

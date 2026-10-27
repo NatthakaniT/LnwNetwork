@@ -27,13 +27,21 @@ const actors: Actor[] = [
   h({ id: 'mPc', kind: 'pc', x: 480, y: 170, label: 'คอม' }),
   h({ id: 'mLbl1', kind: 'label', x: 480, y: 370, label: '🪪 MAC address = เลขบัตรประชาชนของเครื่อง' }),
   h({ id: 'mLbl2', kind: 'label', x: 480, y: 430, label: 'โรงงานฝังมากับการ์ดแลน (NIC) ติดเครื่องตลอด' }),
-  h({ id: 'mLbl3', kind: 'label', x: 480, y: 490, label: 'เช่น AA:BB:CC:11:22:33 · มีเลข 0-9 กับตัว A-F รวม 12 ตัว' }),
+  h({ id: 'mLbl3', kind: 'label', x: 480, y: 490, label: 'เช่น AA:BB:CC:11:22:33' }),
+
+  // ฉาก 2b: ทำไม MAC มี A-F และ 12 ตัว (48 bit)
+  h({ id: 'mxLbl1', kind: 'label', x: 480, y: 70, label: '🪪 MAC ยาว 48 bit = 6 byte' }),
+  h({ id: 'mxLbl2', kind: 'label', x: 480, y: 160, label: 'เขียน 0 กับ 1 ยาว 48 ตัวไม่ไหว · ทีละ 4 bit = 1 ตัว' }),
+  h({ id: 'mxLbl3', kind: 'label', x: 480, y: 250, label: '4 bit ได้ 16 แบบ · แต่เลข 0-9 มีแค่ 10 ตัว' }),
+  h({ id: 'mxLbl4', kind: 'label', x: 480, y: 340, label: 'เลยเพิ่มตัว A-F แทน 10 ถึง 15 (เลขฐานสิบหก)' }),
+  h({ id: 'mxLbl5', kind: 'label', x: 480, y: 430, label: '48 ÷ 4 = 12 ตัว เช่น AA:BB:CC:11:22:33' }),
 
   // ฉาก 3: IP address = บ้านเลขที่ / IPv4
   h({ id: 'iPc', kind: 'pc', x: 480, y: 170, label: 'คอม' }),
-  h({ id: 'iLbl1', kind: 'label', x: 480, y: 370, label: '🏠 IP address = บ้านเลขที่ของเครื่อง' }),
-  h({ id: 'iLbl2', kind: 'label', x: 480, y: 430, label: 'IPv4 เช่น 192.168.1.10 = เลข 4 ชุด คั่นด้วยจุด' }),
-  h({ id: 'iLbl3', kind: 'label', x: 480, y: 490, label: 'แต่ละชุด เป็นเลข 0 ถึง 255 · หมู่บ้านเดียวกัน ห้ามซ้ำ' }),
+  h({ id: 'iLbl1', kind: 'label', x: 480, y: 330, label: '🏠 IP address = บ้านเลขที่ของเครื่อง' }),
+  h({ id: 'iLbl2', kind: 'label', x: 480, y: 385, label: 'IPv4 เช่น 192.168.1.10 = 4 ก้อน คั่นด้วยจุด' }),
+  h({ id: 'iLbl3', kind: 'label', x: 480, y: 440, label: 'ก้อนละ 1 byte จึงเป็น 0 ถึง 255 · รวม 32 bit' }),
+  h({ id: 'iLbl4', kind: 'label', x: 480, y: 495, label: 'หมู่บ้านเดียวกัน ห้ามซ้ำ' }),
 
   // ฉาก 4: หิ้วโน้ตบุ๊กไปร้านกาแฟ = ย้ายหมู่บ้าน
   h({ id: 'vHome', kind: 'label', x: 220, y: 60, label: '🏠 หมู่บ้าน: เน็ตบ้าน' }),
@@ -121,7 +129,7 @@ const actors: Actor[] = [
 
   // ฉากสรุป
   h({ id: 'sum1', kind: 'label', x: 480, y: 70, label: 'MAC address = เลขบัตรประชาชน ฝังในการ์ดแลน ติดเครื่องตลอด' }),
-  h({ id: 'sum2', kind: 'label', x: 480, y: 160, label: 'IP address = บ้านเลขที่ ย้ายหมู่บ้านก็เปลี่ยน · IPv4 = เลข 4 ชุด' }),
+  h({ id: 'sum2', kind: 'label', x: 480, y: 160, label: 'IP address = บ้านเลขที่ ย้ายหมู่บ้านก็เปลี่ยน · IPv4 = 32 bit' }),
   h({ id: 'sum3', kind: 'label', x: 480, y: 250, label: 'ข้ามหมู่บ้าน ใช้ IP · ยื่นของในหมู่บ้าน ใช้ MAC' }),
   h({ id: 'sum4', kind: 'label', x: 480, y: 340, label: 'ARP = ตะโกนถามในหมู่บ้าน ใครใช้ IP นี้ ขอ MAC หน่อย' }),
   h({ id: 'sum5', kind: 'label', x: 480, y: 430, label: 'ใน network เดียวกัน IP ห้ามซ้ำ' }),
@@ -144,18 +152,19 @@ const labDevices: Device[] = [
 export const lesson: Lesson = {
   id: 'p0-l4',
   part: 0,
-  order: 4,
+  order: 5,
   status: 'ready',
   titleTh: 'ที่อยู่ 2 แบบ: MAC กับ IP',
   analogyTh: 'เลขบัตรประชาชน กับบ้านเลขที่',
   ciscoModules: ['ITN 7', 'ITN 9', 'ITN 11'],
+  requires: [{ lesson: 'p0-bits', useTh: 'เลข 0 ถึง 255 ของแต่ละก้อนมาจาก 1 byte' }],
   videos: [
     { youtubeId: 'u6W4u0R5P0w', titleTh: 'Basic Network ตอนที่ 2 : ทำความรู้จักกับ IP Address Version 4', channel: '9hua Training',
-      noteTh: 'ตอนนี้จับแค่ว่า IPv4 เป็นเลข 4 ชุด คั่นด้วยจุด แต่ละชุด 0 ถึง 255 ช่วงที่คลิปพูดเรื่องเลข 0 กับ 1 (เลขฐานสอง) เรื่อง Class A B C หรือ Subnet ดูผ่าน ๆ ได้เลย ภาค 1 เล่าให้ฟังทีละขั้น' },
+      noteTh: 'ตอนนี้จับแค่ว่า IPv4 เป็นเลข 4 ชุด คั่นด้วยจุด แต่ละชุดคือ 1 byte เลยเป็น 0 ถึง 255 ช่วงที่คลิปแปลงเลข 0 กับ 1 ดูตามได้ เหมือนแผงสวิตช์ที่เพิ่งลองกด ส่วนเรื่อง Class A B C หรือ Subnet ดูผ่าน ๆ ได้เลย ภาค 1 เล่าให้ฟังทีละขั้น' },
     { youtubeId: 'iAecBW8rflc', titleTh: 'ARP (Address Resolution Protocol)', channel: '9hua Training',
       noteTh: 'ถ้าคลิปพูดเรื่องการแบ่งเป็นชั้น หรือเปิดโปรแกรมดูข้อมูล ดูผ่าน ๆ ได้ บทหน้าเล่าเรื่องชั้น จับแค่ว่า ARP = ตะโกนถามหา MAC ในหมู่บ้าน' },
   ],
-  terms: ['mac-address', 'ip-address', 'ipv4', 'arp', 'nic', 'network', 'switch', 'router', 'gateway', 'packet'],
+  terms: ['mac-address', 'ip-address', 'ipv4', 'arp', 'nic', 'network', 'switch', 'router', 'gateway', 'packet', 'bit', 'byte'],
 
   scenes: {
     style: 'v2',
@@ -177,11 +186,18 @@ export const lesson: Lesson = {
         actions: show('mLbl1', 'mLbl2', 'mLbl3'),
       },
       {
+        id: 's2b', chipTh: 'MAC 48 bit', lifeIcon: '💵',
+        lifeTh: 'เงินเยอะ ๆ นับทีละใบไม่ไหว เลยนับเป็นปึก ปึกละร้อยใบ ตัวเลขก็สั้นลง',
+        narrationTh: 'MAC ยาวสี่สิบแปด bit หรือหก byte เขียนเป็นศูนย์กับหนึ่งยาวไป เลยเขียนทีละสี่ bit เป็นตัวเดียว สี่ bit ได้สิบหกแบบ แต่เลขมีแค่ศูนย์ถึงเก้า เลยเพิ่มตัวเอถึงเอฟ รวมสิบสองตัว',
+        setup: [],
+        actions: show('mxLbl1', 'mxLbl2', 'mxLbl3', 'mxLbl4', 'mxLbl5'),
+      },
+      {
         id: 's3', chipTh: 'IP', lifeIcon: '🏠',
         lifeTh: 'บ้านเลขที่บอกว่าบ้านอยู่ตรงไหน ในหมู่บ้านเดียวกันจะมีสองบ้านเลขซ้ำกันไม่ได้',
-        narrationTh: 'แบบที่สอง คือ IP address เหมือนบ้านเลขที่ เป็นเลขสี่ชุด คั่นด้วยจุด แต่ละชุด ศูนย์ ถึงสองร้อยห้าสิบห้า เรียกว่า IPv4 และในหมู่บ้านเดียวกัน เลขนี้ห้ามซ้ำกันนะ',
+        narrationTh: 'แบบที่สอง คือ IP address เหมือนบ้านเลขที่ แบบ IPv4 คือสามสิบสอง bit ตัดเป็นสี่ก้อน ก้อนละหนึ่ง byte เลยเป็นศูนย์ถึงสองร้อยห้าสิบห้า ในหมู่บ้านเดียวกัน เลขนี้ห้ามซ้ำกันนะ',
         setup: show('iPc'),
-        actions: show('iLbl1', 'iLbl2', 'iLbl3'),
+        actions: show('iLbl1', 'iLbl2', 'iLbl3', 'iLbl4'),
       },
       {
         id: 's4', chipTh: 'ย้ายบ้าน', lifeIcon: '☕',

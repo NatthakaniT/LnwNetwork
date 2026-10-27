@@ -23,8 +23,8 @@ const dupTopo = setIp(lab.start, 'pc2', '192.168.1.10')
 const fixedTopo = setIp(dupTopo, 'pc2', '192.168.1.20')
 
 describe('lesson p0-l4', () => {
-  it('อยู่ใน course เป็นบทที่สี่ และ validateCourse ผ่าน', () => {
-    const l = course[0].lessons[3]
+  it('อยู่ใน course ต่อจากบท p0-bits และ validateCourse ผ่าน', () => {
+    const l = course[0].lessons[4]
     expect(l).toBe(lesson)
     expect(l.status).toBe('ready')
     expect(l.titleTh).toBe('ที่อยู่ 2 แบบ: MAC กับ IP')
@@ -33,6 +33,8 @@ describe('lesson p0-l4', () => {
     for (const v of l.videos) expect(v.channel).toBe('9hua Training')
     expect(l.videos[0].noteTh).toContain('ภาค 1')
     expect(l.videos[0].noteTh).not.toContain('ถ้าคลิป') // บอกชัด ไม่ใช่ถ้า
+    expect(l.videos[0].noteTh).toContain('byte') // 0 ถึง 255 มีเหตุผล (กฎ 4.3)
+    expect(l.requires).toEqual([{ lesson: 'p0-bits', useTh: 'เลข 0 ถึง 255 ของแต่ละก้อนมาจาก 1 byte' }])
     expect(l.videos[1].noteTh).toContain('ARP = ตะโกนถามหา MAC ในหมู่บ้าน')
     expect(validateCourse(course, glossary)).toEqual([])
   })
@@ -51,7 +53,7 @@ describe('lesson p0-l4', () => {
   it('บทพูด: ไม่เกิน 170 ตัวอักษร ไม่มีวงเล็บและตัวเลข (TTS อ่านเพี้ยน)', () => {
     const scenes = lesson.scenes!.scenes
     expect(scenes.length).toBeGreaterThanOrEqual(6)
-    expect(scenes.length).toBeLessThanOrEqual(18)
+    expect(scenes.length).toBeLessThanOrEqual(20)
     for (const s of scenes) {
       expect([...s.narrationTh].length, s.id).toBeLessThanOrEqual(170)
       // IPv4 คือชื่อศัพท์ อ่านด้วยตาราง PRONOUNCE ของ gen_lessons.py
@@ -159,6 +161,21 @@ describe('lesson p0-l4', () => {
     for (const from of ['d1', 'd2']) expect(along.some((a) => a.path[0] === from && a.path[a.path.length - 1] === 'dSend')).toBe(true)
     expect(two.actions).toContainEqual({ type: 'say', actor: 'dSend', text: 'MAC ไหนดี?', mood: 'no' })
     expect(lesson.scenes!.actors.find((a) => a.id === 'dLbl1')!.label).toBe('❓ IP ซ้ำ: สองเครื่องตอบ ARP · คอมไม่รู้จะส่งให้ใคร')
+  })
+
+  it('ทุกตัวเลขมีเหตุผล (กฎ 4.3): IP 4 ก้อน = 32 bit ก้อนละ 1 byte / MAC 48 bit เขียนเป็น 0-9 A-F 12 ตัว', () => {
+    const set = lesson.scenes!
+    const label = (id: string) => set.actors.find((a) => a.id === id)!.label!
+    const n = (id: string) => set.scenes.find((s) => s.id === id)!.narrationTh
+    expect(n('s3')).toMatch(/สามสิบสอง[\s\S]*byte/)
+    expect(set.actors.filter((a) => a.id.startsWith('iLbl')).map((a) => a.label).join(' ')).toMatch(/1 byte[\s\S]*32 bit/)
+    const ids = set.scenes.map((s) => s.id)
+    expect(ids.indexOf('s2b')).toBe(ids.indexOf('s2') + 1)
+    expect(n('s2b')).toMatch(/สี่สิบแปด bit[\s\S]*สิบหก[\s\S]*สิบสองตัว/)
+    expect(label('mxLbl1')).toContain('48 bit')
+    expect(set.actors.filter((a) => a.id.startsWith('mxLbl')).map((a) => a.label).join(' ')).toMatch(/A-F[\s\S]*12 ตัว/)
+    expect(glossary.find((g) => g.id === 'mac-address')!.explainTh).toContain('48 bit')
+    expect(glossary.find((g) => g.id === 'ipv4')!.explainTh).toContain('32 bit')
   })
 
   it('ฉาก 6 บอกว่าทำไมต้องรู้ MAC / ฉาก ARP เริ่มจากคนส่งต้องเขียน MAC ผู้รับ / ไม่มีศัพท์อังกฤษสองคำติดกัน', () => {
@@ -283,7 +300,7 @@ describe('lesson p0-l4', () => {
     it('เล่นได้ครบ: คลิป → ภาพทบทวน → ห้องทดลอง → คำถาม', async () => {
       const u = userEvent.setup()
       const storage = memoryStorage()
-      saveProgress({ version: 1, completed: ['p0-l1', 'p0-l2', 'p0-l3'] }, storage)
+      saveProgress({ version: 1, completed: ['p0-l1', 'p0-l2', 'p0-l3', 'p0-bits'] }, storage)
       const { container } = render(<LessonPage id="p0-l4" storage={storage} />)
 
       // 1. คลิป + โน้ตเหนือคลิป

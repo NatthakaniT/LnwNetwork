@@ -87,13 +87,13 @@ describe('GlossaryPage: ส่วน OSI', () => {
 })
 
 describe('GlossaryPage: ทุกคำมีการ์ดพร้อมคำอธิบาย', () => {
-  it('ทุกคำ (39) มีการ์ดครั้งเดียว และการ์ดแสดง th กับ explainTh ให้เห็นโดยไม่ต้องกด', () => {
+  it('ทุกคำ (42) มีการ์ดครั้งเดียว และการ์ดแสดง th กับ explainTh ให้เห็นโดยไม่ต้องกด', () => {
     const { container } = render(<GlossaryPage />)
     const cards = [...container.querySelectorAll<HTMLElement>('.g-card')]
-    expect(glossary).toHaveLength(39)
-    expect(cards).toHaveLength(39)
+    expect(glossary).toHaveLength(42)
+    expect(cards).toHaveLength(42)
     const ids = cards.map((c) => c.dataset.term)
-    expect(new Set(ids).size).toBe(39)
+    expect(new Set(ids).size).toBe(42)
     expect([...ids].sort()).toEqual(glossary.map((g) => g.id).sort())
     for (const c of cards) {
       const t = byId(c.dataset.term!)
@@ -112,7 +112,7 @@ describe('GlossaryPage: ทุกคำมีการ์ดพร้อมค�
     expect(idsIn(osi)).toEqual([...OSI_SECTION_IDS].sort())
     expect(idsIn(other)).toEqual([...OSI_OTHER_IDS].sort())
     const rest = [...container.querySelectorAll<HTMLElement>('.g-group .g-card')].map((c) => c.dataset.term!)
-    expect(rest).toHaveLength(39 - 20)
+    expect(rest).toHaveLength(42 - 20)
     for (const id of [...OSI_SECTION_IDS, ...OSI_OTHER_IDS]) expect(rest).not.toContain(id)
   })
 })

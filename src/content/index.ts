@@ -40,6 +40,7 @@ const quizTexts = (qs: QuizQuestion[]): string[] =>
 /** ข้อความที่ผู้เรียนเห็นในบท ready */
 function learnerTexts(l: Lesson): string[] {
   const out = [l.analogyTh, ...quizTexts(l.quiz ?? []), ...quizTexts(l.precheck ?? []), ...l.videos.map((v) => v.noteTh ?? '')]
+  out.push(...(l.requires ?? []).map((r) => r.useTh), l.tryIt?.introTh ?? '', ...(l.deepDives ?? []).flatMap((d) => [d.titleTh, d.bodyTh]))
   for (const a of l.scenes?.actors ?? []) {
     out.push(a.label ?? '', ...(a.lines ?? []), a.titleTh ?? '', ...(a.columns ?? []), ...(a.rows ?? []).flat())
   }
@@ -107,7 +108,8 @@ function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[]): voi
         }
       }
     }
-    if (l.scenes.style === 'v2') {
+    if (l.scenes.style !== 'v2') errs.push(`บท ${id}: ต้องใช้ภาพเคลื่อนไหวแบบใหม่ (v2)`)
+    else {
       l.scenes.scenes.forEach((s, i) => {
         if (!s.chipTh?.trim()) errs.push(`บท ${id}: ฉาก ${s.id} ไม่มีชื่อฉาก (chipTh)`)
         if (!s.lifeTh?.trim()) errs.push(`บท ${id}: ฉาก ${s.id} ไม่มีแถบชีวิตจริง (lifeTh)`)

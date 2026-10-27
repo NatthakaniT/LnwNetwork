@@ -66,7 +66,7 @@ describe('lesson p0-l3', () => {
   })
 
   it('บอกก่อนดูคลิปว่าช่วง Subnet mask ดูผ่าน ๆ ได้ (โน้ตเหนือคลิป ไม่ใช่บนเวทีฉาก 1)', () => {
-    expect(lesson.videos[0].noteTh).toBe('คลิปนี้มีเรื่องเลข IP กับ Subnet mask แบบละเอียดด้วย ช่วงนั้นดูผ่าน ๆ ได้เลย ไม่ต้องเข้าใจตอนนี้ เดี๋ยวบทที่ 4 เล่าให้ฟังทีละขั้น')
+    expect(lesson.videos[0].noteTh).toBe('คลิปนี้มีเรื่องเลข IP กับ Subnet mask แบบละเอียดด้วย ช่วงนั้นดูผ่าน ๆ ได้เลย ไม่ต้องเข้าใจตอนนี้ เดี๋ยวบท ที่อยู่ 2 แบบ กับภาค 1 เล่าให้ฟังทีละขั้น')
     const labels = lesson.scenes!.actors.map((a) => a.label ?? '').join(' ')
     expect(labels).not.toMatch(/Subnet mask/)
   })

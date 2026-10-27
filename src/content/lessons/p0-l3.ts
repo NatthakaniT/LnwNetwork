@@ -142,7 +142,7 @@ export const lesson: Lesson = {
   ciscoModules: ['ITN 3'],
   videos: [
     { youtubeId: 'jjs02wLiXmQ', titleTh: 'IPv4, Subnet mask, Gateway, DNS คืออะไร ทำงานอย่างไร', channel: '9hua Training',
-      noteTh: 'คลิปนี้มีเรื่องเลข IP กับ Subnet mask แบบละเอียดด้วย ช่วงนั้นดูผ่าน ๆ ได้เลย ไม่ต้องเข้าใจตอนนี้ เดี๋ยวบทที่ 4 เล่าให้ฟังทีละขั้น' },
+      noteTh: 'คลิปนี้มีเรื่องเลข IP กับ Subnet mask แบบละเอียดด้วย ช่วงนั้นดูผ่าน ๆ ได้เลย ไม่ต้องเข้าใจตอนนี้ เดี๋ยวบท ที่อยู่ 2 แบบ กับภาค 1 เล่าให้ฟังทีละขั้น' },
   ],
   terms: ['packet', 'source', 'destination', 'dns', 'domain-name', 'gateway', 'router', 'switch', 'internet', 'ip-address', 'network', 'lan', 'end-device'],
 

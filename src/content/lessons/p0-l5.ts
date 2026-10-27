@@ -102,7 +102,7 @@ const actors: Actor[] = [
 export const lesson: Lesson = {
   id: 'p0-l5',
   part: 0,
-  order: 5,
+  order: 6,
   status: 'ready',
   titleTh: 'การห่อของเป็นชั้น ๆ',
   analogyTh: 'ห่อพัสดุทีละชั้น',
@@ -163,7 +163,7 @@ export const lesson: Lesson = {
       {
         id: 's5', chipTh: 'bits', lifeIcon: '🛣️',
         lifeTh: 'รถวิ่งออกไปบนถนน ถนนอาจเป็นทางลาดยางหรือทางน้ำ',
-        narrationTh: 'ชั้นนอกสุด คือถนน ทั้งหมดถูกส่งออกไป เป็นสัญญาณไฟฟ้าบนสายแลน หรือคลื่นไวไฟ ทีละนิด เรียกว่า bits การห่อทับทีละชั้นแบบนี้ เรียกว่า encapsulation',
+        narrationTh: 'ชั้นนอกสุด คือถนน ทั้งหมดถูกส่งออกไป เป็นสัญญาณไฟฟ้าบนสายแลน หรือคลื่นไวไฟ ทีละ bit เรียกว่า bits การห่อทับทีละชั้นแบบนี้ เรียกว่า encapsulation',
         setup: show(...wrap3),
         actions: [
           ...show('wRoad', 'wDst', 'wTop', 'wL5'),

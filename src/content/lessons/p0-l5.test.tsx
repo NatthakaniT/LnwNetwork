@@ -29,8 +29,8 @@ async function solveWithButtons(u: ReturnType<typeof userEvent.setup>, root: HTM
 }
 
 describe('lesson p0-l5', () => {
-  it('อยู่ใน course เป็นบทที่ห้า และ validateCourse ผ่าน', () => {
-    const l = course[0].lessons[4]
+  it('อยู่ใน course เป็นบทสุดท้ายของภาค 0 และ validateCourse ผ่าน', () => {
+    const l = course[0].lessons[5]
     expect(l).toBe(lesson)
     expect(l.status).toBe('ready')
     expect(l.titleTh).toBe('การห่อของเป็นชั้น ๆ')
@@ -85,6 +85,7 @@ describe('lesson p0-l5', () => {
     expect(narration('s4')).toContain('frame')
     expect(narration('s4')).toContain('Switch ดูแค่')
     expect(narration('s5')).toContain('bits')
+    expect(narration('s5')).toContain('ทีละ bit') // เชื่อมกับบท p0-bits
     expect(narration('s5')).toContain('encapsulation')
     expect(narration('s6')).toContain('แกะย้อนกลับ')
     expect(narration('s6b')).toContain('de-encapsulation')
@@ -208,7 +209,7 @@ describe('lesson p0-l5', () => {
     it('เล่นได้ครบ: คลิป → ภาพทบทวน → กิจกรรม → คำถาม', async () => {
       const u = userEvent.setup()
       const storage = memoryStorage()
-      saveProgress({ version: 1, completed: ['p0-l1', 'p0-l2', 'p0-l3', 'p0-l4'] }, storage)
+      saveProgress({ version: 1, completed: ['p0-l1', 'p0-l2', 'p0-l3', 'p0-bits', 'p0-l4'] }, storage)
       const { container } = render(<LessonPage id="p0-l5" storage={storage} />)
 
       // 1. คลิป + โน้ตเหนือคลิป
