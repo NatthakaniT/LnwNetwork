@@ -74,10 +74,10 @@ describe('lesson g0-l2', () => {
     expect(lesson.scenes!.scenes[lesson.scenes!.scenes.length - 1].narrationTh).toContain('Git Bash เป็นหลัก')
   })
 
-  it('GitHub Desktop: บอกว่าปุ่มตรงกับคำสั่งไหน อยู่ในกล่องอยากรู้ลึก ไม่ใช่ในบทพูด', () => {
+  it('GitHub Desktop: ปุ่มคือคำสั่งที่ห่อไว้ อยู่ในกล่องอยากรู้ลึก ตารางปุ่มกับคำสั่งอยู่บทท้ายภาค ไม่ใช่ในบทพูด', () => {
     const d = lesson.deepDives!.find((x) => x.titleTh.includes('GitHub Desktop'))!
-    expect(d.bodyTh).toContain('git commit')
-    expect(d.bodyTh).toContain('git push')
+    expect(d.bodyTh).toContain('คำสั่ง Git ที่ห่อไว้ให้กด')
+    expect(d.bodyTh).toContain('บทสุดท้ายของภาคนี้')
     expect(d.bodyTh).toContain('ไม่ต้องรู้')
   })
 

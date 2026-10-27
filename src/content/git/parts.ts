@@ -2,9 +2,12 @@ import type { Lesson, Part } from '../types'
 import { build } from '../parts'
 import { lesson as g0l1 } from './lessons/g0-l1'
 import { lesson as g0l2 } from './lessons/g0-l2'
+import { lesson as g0l3 } from './lessons/g0-l3'
+import { lesson as g0l4 } from './lessons/g0-l4'
+import { lesson as g0l5 } from './lessons/g0-l5'
 
 /** บทที่เขียนเสร็จแล้ว แทนที่โครงบทที่ยังไม่เสร็จ (รหัสเดียวกัน) */
-const readyLessons: Lesson[] = [g0l1, g0l2]
+const readyLessons: Lesson[] = [g0l1, g0l2, g0l3, g0l4, g0l5]
 const withReady = (ls: Lesson[]): Lesson[] => ls.map((l) => readyLessons.find((r) => r.id === l.id) ?? l)
 
 export const gitParts: Part[] = [
