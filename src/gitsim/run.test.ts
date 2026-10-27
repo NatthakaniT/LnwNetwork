@@ -183,3 +183,105 @@ describe('พื้นฐาน', () => {
     expect(JSON.stringify(w)).toBe(before)
   })
 })
+
+describe('fix round 1', () => {
+  const twoFileConflict = () => {
+    let w = seq(W0, 'git init').world
+    w = seq(editFile(editFile(w, 'a', 'base'), 'b', 'base'), 'git add .', 'git commit -m "m"', 'git switch -c feat').world
+    w = seq(editFile(editFile(w, 'a', 'fa'), 'b', 'fb'), 'git add .', 'git commit -m "f"', 'git switch main').world
+    w = seq(editFile(editFile(w, 'a', 'ma'), 'b', 'mb'), 'git add .', 'git commit -m "m2"').world
+    return run(w, 'git merge feat', ALL)
+  }
+  it('conflict หลายไฟล์: ต้อง stage ครบก่อน commit และ status แสดงครบ', () => {
+    const r = twoFileConflict()
+    expect(r.world.conflict?.files).toEqual(['a', 'b'])
+    const st = run(r.world, 'git status', ALL).output
+    expect(st).toContain('both modified:   a')
+    expect(st).toContain('both modified:   b')
+    let w = run(editFile(r.world, 'a', 'ok'), 'git add a', ALL).world
+    const c = run(w, 'git commit -m "x"', ALL)
+    expect(c.ok).toBe(false)
+    expect(c.output).toContain('unmerged files')
+    expect(c.explainTh).toContain('b')
+    expect(run(w, 'git status', ALL).output).not.toContain('both modified:   a')
+    w = seq(editFile(w, 'b', 'ok'), 'git add b', 'git commit -m "x"').world
+    expect(w.conflict).toBeUndefined()
+    expect(w.me.repo!.commits[w.me.repo!.branches.main!].files).toEqual({ a: 'ok', b: 'ok' })
+  })
+  it('ชื่อที่ตรงกับ property ของ Object ไม่ทำให้พัง', () => {
+    let w = seq(W0, 'git init').world
+    w = seq(editFile(w, 'a', '1'), 'git add .', 'git commit -m "m"').world
+    for (const n of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
+      for (const l of [`git switch ${n}`, `git merge ${n}`, `git add ${n}`, `git checkout ${n}`]) {
+        const r = run(w, l, ALL)
+        expect(r.ok, l).toBe(false)
+        expect(r.explainTh).toMatch(/[ก-๙]/)
+      }
+    }
+    const f = seq(editFile(w, 'constructor', 'x'), 'git add constructor', 'git commit -m "c"')
+    expect(f.ok).toBe(true)
+    expect(run(f.world, 'git status', ALL).output).toContain('working tree clean')
+    expect(run(editFile(w, 'toString', 'x'), 'git status', ALL).output).toContain('Untracked')
+  })
+  it('git branch: -M เปลี่ยนชื่อ, flag อื่นไม่สร้าง branch', () => {
+    let w = seq(W0, 'git init').world
+    w = seq(editFile(w, 'a', '1'), 'git add .', 'git commit -m "m"').world
+    const m = run(w, 'git branch -M trunk', ALL)
+    expect(m.ok).toBe(true)
+    expect(m.world.me.repo!.head).toBe('trunk')
+    expect(Object.keys(m.world.me.repo!.branches)).toEqual(['trunk'])
+    const e = seq(W0, 'git init', 'git branch -M main')
+    expect(e.ok).toBe(true)
+    expect(e.world.me.repo!.head).toBe('main')
+    for (const l of ['git branch -d x', 'git branch -D x', 'git branch -a']) {
+      const r = run(w, l, ALL)
+      expect(r.ok).toBe(false)
+      expect(r.explainTh).toContain('ยังไม่ได้สอน')
+      expect(Object.keys(r.world.me.repo!.branches).some(b => b.startsWith('-'))).toBe(false)
+    }
+  })
+  it('commit -m ตอนไม่มีอะไร staged ให้ข้อความตรง git จริง', () => {
+    let w = seq(W0, 'git init').world
+    w = seq(editFile(w, 'a', '1'), 'git add .', 'git commit -m "m"').world
+    const clean = run(w, 'git commit -m "x"', ALL)
+    expect(clean.output).toContain('nothing to commit, working tree clean')
+    const mod = run(editFile(w, 'a', '2'), 'git commit -m "x"', ALL)
+    expect(mod.output).toContain('no changes added to commit')
+    expect(mod.explainTh).toContain('git add')
+    const unt = run(editFile(w, 'b', '2'), 'git commit -m "x"', ALL)
+    expect(unt.output).toContain('nothing added to commit but untracked files present')
+    expect(unt.explainTh).toContain('git add')
+  })
+  it('commit -am อธิบายว่ายังไม่ได้สอน', () => {
+    const w = editFile(seq(W0, 'git init').world, 'a', '1')
+    const r = run(w, 'git commit -am "x"', ALL)
+    expect(r.ok).toBe(false)
+    expect(r.explainTh).toContain('ยังไม่ได้สอน')
+    expect(r.explainTh).toContain('git add')
+  })
+  it('คำสั่ง git จริงที่ยังไม่ได้สอน → ยังไม่ได้สอน; พิมพ์ผิด → ไม่รู้จัก', () => {
+    for (const c of ['remote -v', 'config user.name x', 'fetch', 'stash', 'rebase main', 'reset --hard'])
+      { const e = run(W0, `git ${c}`, ALL).explainTh; expect(e).toContain('ยังไม่ได้สอน'); expect(e).not.toContain('ไม่รู้จัก') }
+    expect(run(W0, 'git comit', ALL).explainTh).toContain('ไม่รู้จัก')
+  })
+  it('push/pull ไม่มี remote บอกว่าได้ลิงก์จาก git clone', () => {
+    const w = seq(W0, 'git init').world
+    expect(run(w, 'git push', ALL).explainTh).toContain('git clone')
+    expect(run(w, 'git pull', ALL).explainTh).toContain('git clone')
+  })
+  it('merge --abort คืนสภาพก่อน merge และล้าง conflict', () => {
+    const before = twoFileConflict()
+    expect(before.world.conflict).toBeDefined()
+    const w0 = (() => {
+      let w = seq(W0, 'git init').world
+      w = seq(editFile(editFile(w, 'a', 'base'), 'b', 'base'), 'git add .', 'git commit -m "m"', 'git switch -c feat').world
+      w = seq(editFile(editFile(w, 'a', 'fa'), 'b', 'fb'), 'git add .', 'git commit -m "f"', 'git switch main').world
+      return seq(editFile(editFile(w, 'a', 'ma'), 'b', 'mb'), 'git add .', 'git commit -m "m2"').world
+    })()
+    const r = run(before.world, 'git merge --abort', ALL)
+    expect(r.ok).toBe(true)
+    expect(r.world.conflict).toBeUndefined()
+    expect(r.world.me).toEqual(w0.me)
+    expect(run(w0, 'git merge --abort', ALL).ok).toBe(false)
+  })
+})

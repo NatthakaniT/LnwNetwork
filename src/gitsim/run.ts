@@ -16,6 +16,8 @@ const setMe = (w: World, patch: Partial<Machine>, ...c: [World['conflict']] | []
 const withBranch = (r: Repo, name: string, id: string | null): Repo => ({ ...r, branches: { ...r.branches, [name]: id } })
 const snap = (r: Repo, id: string | null): Files => (id ? r.commits[id].files : {})
 const tipOf = (r: Repo) => r.branches[r.head] ?? null
+const has = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k) // ไม่ใช้ `in` เพราะชื่อ constructor/toString จะหลอกว่ามี
+const g = <T>(o: Record<string, T>, k: string): T | undefined => (has(o, k) ? o[k] : undefined)
 const nl = (s: string) => (s.endsWith('\n') ? s : s + '\n')
 
 function ancestors(r: Repo, id: string | null): Set<string> {
@@ -41,15 +43,15 @@ function nextId(w: World): string {
 function checkoutFiles(m: Machine, from: Files, to: Files): Files {
   const next = { ...to }
   for (const [f, c] of Object.entries(m.files)) {
-    if (!(f in from)) next[f] ??= c
-    else if (c !== from[f] && from[f] === to[f]) next[f] = c
+    if (!has(from, f)) { if (!has(next, f)) next[f] = c }
+    else if (c !== g(from, f) && g(from, f) === g(to, f)) next[f] = c
   }
   return next
 }
 /** มีไฟล์ที่แก้ค้าง/stage ไว้ และการย้ายครั้งนี้จะทับมัน */
 function blocked(m: Machine, from: Files, to: Files): boolean {
-  const dirty = new Set([...Object.keys(m.staged ?? {}), ...Object.keys(m.files).filter(f => f in from && m.files[f] !== from[f])])
-  return [...dirty].some(f => from[f] !== to[f])
+  const dirty = new Set([...Object.keys(m.staged ?? {}), ...Object.keys(m.files).filter(f => has(from, f) && g(m.files, f) !== g(from, f))])
+  return [...dirty].some(f => g(from, f) !== g(to, f))
 }
 const blockedMsg = (w: World) =>
   fail(w, 'error: Your local changes would be overwritten.\nPlease commit your changes or stash them before you continue.',
@@ -92,7 +94,7 @@ function integrate(w: World, theirs: string, label: string, message: string): Ru
   const merged: Files = {}
   const conflicts: string[] = []
   for (const f of new Set([...Object.keys(oSnap), ...Object.keys(tSnap), ...Object.keys(bSnap)])) {
-    const o = oSnap[f], t = tSnap[f], b = bSnap[f]
+    const o = g(oSnap, f), t = g(tSnap, f), b = g(bSnap, f)
     let r: string | undefined
     if (o === t) r = o
     else if (o === b) r = t
@@ -104,8 +106,8 @@ function integrate(w: World, theirs: string, label: string, message: string): Ru
   const files = checkoutFiles(me, oSnap, merged)
 
   if (conflicts.length) {
-    const clean = Object.fromEntries(Object.entries(merged).filter(([f, c]) => !conflicts.includes(f) && c !== oSnap[f]))
-    const world = setMe(w, { files, staged: Object.keys(clean).length ? clean : null }, { file: conflicts[0], mergeHead: theirs, mergeMessage: message })
+    const clean = Object.fromEntries(Object.entries(merged).filter(([f, c]) => !conflicts.includes(f) && c !== g(oSnap, f)))
+    const world = setMe(w, { files, staged: Object.keys(clean).length ? clean : null }, { file: conflicts[0], files: conflicts, mergeHead: theirs, mergeMessage: message, pre: { files: me.files, staged: me.staged } })
     return fail(world,
       conflicts.map(f => `Auto-merging ${f}\nCONFLICT (content): Merge conflict in ${f}`).join('\n') + '\nAutomatic merge failed; fix conflicts and then commit the result.',
       `สองฝั่งแก้ไฟล์ ${conflicts.join(', ')} ในที่เดียวกันคนละแบบ git เลือกเองไม่ได้เลยใส่เครื่องหมาย <<<<<<< ======= >>>>>>> ไว้ในไฟล์ ให้เปิดไฟล์แก้เองให้เหลือแบบที่ต้องการ ลบเครื่องหมายออก แล้ว git add กับ git commit`)
@@ -136,12 +138,12 @@ const handlers: Record<GitCommand, Handler> = {
     const st = staged ?? {}
     const stagedL: string[] = [], unstagedL: string[] = [], untracked: string[] = [], unmerged: string[] = []
     for (const f of Object.keys({ ...st, ...files }).sort()) {
-      if (w.conflict?.file === f && !(f in st)) { unmerged.push(`\tboth modified:   ${f}`); continue }
-      if (f in st && st[f] !== head[f]) stagedL.push(`\t${f in head ? 'modified:  ' : 'new file:  '} ${f}`)
-      if (!(f in files)) continue
-      if (f in st) { if (files[f] !== st[f]) unstagedL.push(`\tmodified:   ${f}`) }
-      else if (!(f in head)) untracked.push(`\t${f}`)
-      else if (files[f] !== head[f]) unstagedL.push(`\tmodified:   ${f}`)
+      if (w.conflict?.files.includes(f) && !has(st, f)) { unmerged.push(`\tboth modified:   ${f}`); continue }
+      if (has(st, f) && g(st, f) !== g(head, f)) stagedL.push(`\t${has(head, f) ? 'modified:  ' : 'new file:  '} ${f}`)
+      if (!has(files, f)) continue
+      if (has(st, f)) { if (g(files, f) !== g(st, f)) unstagedL.push(`\tmodified:   ${f}`) }
+      else if (!has(head, f)) untracked.push(`\t${f}`)
+      else if (g(files, f) !== g(head, f)) unstagedL.push(`\tmodified:   ${f}`)
     }
     const out = [`On branch ${repo!.head}`]
     if (!tipOf(repo!)) out.push('\nNo commits yet')
@@ -163,14 +165,16 @@ const handlers: Record<GitCommand, Handler> = {
     const head = snap(repo!, tipOf(repo!))
     const staged = { ...(w.me.staged ?? {}) }
     const pick = args.includes('.') || args.includes('-A') ? Object.keys(files) : args
-    const missing = pick.find(f => !(f in files))
+    const missing = pick.find(f => !has(files, f))
     if (missing) return fail(w, `fatal: pathspec '${missing}' did not match any files`, `ไม่เจอไฟล์ชื่อ ${missing} ในโฟลเดอร์นี้ ลองเช็กชื่อไฟล์ว่าสะกดถูกไหม แล้วพิมพ์ใหม่`)
-    for (const f of pick) if (files[f] !== head[f] || f in staged) staged[f] = files[f]
+    for (const f of pick) if (g(files, f) !== g(head, f) || has(staged, f)) staged[f] = files[f]
     return done(setMe(w, { staged: Object.keys(staged).length ? staged : null }), '',
       'เอาการเปลี่ยนแปลงไปวางในที่พักก่อน commit (staging) เหมือนหยิบของใส่ตะกร้า ถ้าไม่ add ไฟล์นั้นจะไม่ถูกเก็บลง commit')
   },
 
   commit(w, args) {
+    if (args.some(a => a === '-a' || a === '-am'))
+      return fail(w, 'error: option -a is not available yet', 'ตัวเลือก -a (เก็บทุกไฟล์ที่แก้แล้ว commit เลย) ยังไม่ได้สอนในคอร์สนี้ ให้ใช้ git add ก่อน แล้วค่อย git commit -m "ข้อความ" แยกเป็นสองขั้นนะ')
     const i = args.indexOf('-m')
     if (i < 0 || args[i + 1] === undefined || args[i + 1].trim() === '')
       return fail(w, 'error: switch `m\' requires a value', 'commit ต้องมีข้อความบอกว่าแก้อะไร ให้พิมพ์แบบ git commit -m "ข้อความ" นะ ในแอปนี้ไม่เปิดโปรแกรมแก้ข้อความให้')
@@ -179,13 +183,20 @@ const handlers: Record<GitCommand, Handler> = {
     const parent = tipOf(repo!)
     const head = snap(repo!, parent)
     const staged = w.me.staged ?? {}
-    const changed = Object.keys(staged).filter(f => staged[f] !== head[f])
+    const changed = Object.keys(staged).filter(f => g(staged, f) !== g(head, f))
     const c = w.conflict
-    if (c && !(c.file in staged))
-      return fail(w, `error: Committing is not possible because you have unmerged files.\n\tboth modified:   ${c.file}`,
-        `ไฟล์ ${c.file} ยัง conflict อยู่ ให้เปิดไฟล์แก้ให้เสร็จ แล้ว git add ${c.file} ก่อน ถึงจะ commit ได้`)
-    if (!c && !changed.length)
-      return fail(w, 'nothing to commit, working tree clean', 'ยังไม่มีอะไรอยู่ในที่พักให้ commit ให้แก้ไฟล์แล้ว git add ก่อน ถึงจะ commit ได้')
+    const left = c ? c.files.filter(f => !has(staged, f)) : []
+    if (left.length)
+      return fail(w, `error: Committing is not possible because you have unmerged files.\n${left.map(f => `\tboth modified:   ${f}`).join('\n')}`,
+        `ไฟล์ ${left.join(', ')} ยัง conflict อยู่ ให้เปิดแก้ให้เสร็จทีละไฟล์ แล้ว git add ไฟล์นั้น ครบทุกไฟล์แล้วค่อย commit ได้`)
+    if (!c && !changed.length) {
+      const wf = w.me.files
+      if (Object.keys(wf).some(f => has(head, f) && wf[f] !== head[f]))
+        return fail(w, 'no changes added to commit (use "git add" and/or "git commit -a")', 'มีไฟล์ที่แก้แล้ว แต่ยังไม่ได้ git add เข้าที่พัก เลยไม่มีอะไรให้ commit ให้ git add ไฟล์นั้นก่อน แล้วค่อย commit')
+      if (Object.keys(wf).some(f => !has(head, f)))
+        return fail(w, 'nothing added to commit but untracked files present (use "git add" to track)', 'มีไฟล์ใหม่ที่ git ยังไม่ได้ติดตาม ต้อง git add ไฟล์นั้นก่อน ถึงจะ commit ได้')
+      return fail(w, 'nothing to commit, working tree clean', 'ไม่มีอะไรเปลี่ยนจาก commit ล่าสุด เลยไม่มีอะไรให้ commit ให้แก้ไฟล์แล้ว git add ก่อน')
+    }
     const id = nextId(w)
     const commit: Commit = { id, message: c?.mergeMessage ?? message, parent, ...(c?.mergeHead ? { parent2: c.mergeHead } : {}), files: { ...head, ...staged } }
     const next = withBranch({ ...repo!, commits: { ...repo!.commits, [id]: commit } }, repo!.head, id)
@@ -212,8 +223,19 @@ const handlers: Record<GitCommand, Handler> = {
     const repo = w.me.repo!
     if (!args.length)
       return done(w, Object.keys(repo.branches).sort().map(b => `${b === repo.head ? '*' : ' '} ${b}`).join('\n'), 'รายการ branch ทั้งหมด ดาวคืออันที่เราอยู่ตอนนี้')
-    const name = args[0]
-    if (name in repo.branches) return fail(w, `fatal: a branch named '${name}' already exists`, `มี branch ชื่อ ${name} อยู่แล้ว ลองตั้งชื่อใหม่`)
+    const flag = args.find(a => a.startsWith('-'))
+    const names = args.filter(a => !a.startsWith('-'))
+    if (flag === '-M' || flag === '-m') {
+      const [from, to] = names.length > 1 ? names : [repo.head, names[0]]
+      if (!to) return fail(w, 'fatal: branch name required', 'ต้องบอกชื่อใหม่ เช่น git branch -M main')
+      if (!has(repo.branches, from)) return fail(w, `error: refname refs/heads/${from} not found`, `ไม่มี branch ชื่อ ${from} ให้เปลี่ยนชื่อ`)
+      if (to !== from && has(repo.branches, to)) return fail(w, `fatal: a branch named '${to}' already exists`, `มี branch ชื่อ ${to} อยู่แล้ว ลองตั้งชื่ออื่น`)
+      const { [from]: tipId, ...rest } = repo.branches
+      return done(setMe(w, { repo: { ...repo, branches: { ...rest, [to]: tipId }, head: repo.head === from ? to : repo.head } }), '', `เปลี่ยนชื่อ branch ${from} เป็น ${to} แล้ว มักใช้หลัง git init เพื่อให้ชื่อ branch เป็น main`)
+    }
+    if (flag) return fail(w, `error: unknown option '${flag}'`, `ตัวเลือก ${flag} ของ git branch ยังไม่ได้สอนในคอร์สนี้ ตอนนี้ใช้แค่ git branch ชื่อ เพื่อสร้าง กับ git branch เฉย ๆ เพื่อดูรายชื่อ`)
+    const name = names[0]
+    if (has(repo.branches, name)) return fail(w, `fatal: a branch named '${name}' already exists`, `มี branch ชื่อ ${name} อยู่แล้ว ลองตั้งชื่อใหม่`)
     const t = tipOf(repo)
     if (!t) return fail(w, `fatal: not a valid object name: '${repo.head}'`, 'ยังไม่มี commit เลย สร้าง branch ไม่ได้ ให้ commit อย่างน้อยหนึ่งครั้งก่อน')
     return done(setMe(w, { repo: withBranch(repo, name, t) }), '', `สร้าง branch ชื่อ ${name} แยกออกมาจากจุดนี้ แต่ยังไม่ได้ย้ายไปอยู่ ต้อง git switch ${name} ถึงจะไปทำงานที่นั่น`)
@@ -226,11 +248,11 @@ const handlers: Record<GitCommand, Handler> = {
     if (!name) return fail(w, 'fatal: missing branch name', 'ต้องบอกชื่อ branch ที่จะไป เช่น git switch main')
     if (w.conflict) return midMerge(w)
     if (create) {
-      if (name in repo.branches) return fail(w, `fatal: a branch named '${name}' already exists`, `มี branch ชื่อ ${name} อยู่แล้ว ใช้ git switch ${name} เพื่อไปที่นั่น`)
+      if (has(repo.branches, name)) return fail(w, `fatal: a branch named '${name}' already exists`, `มี branch ชื่อ ${name} อยู่แล้ว ใช้ git switch ${name} เพื่อไปที่นั่น`)
       return done(setMe(w, { repo: { ...withBranch(repo, name, tipOf(repo)), head: name } }), `Switched to a new branch '${name}'`,
         `สร้าง branch ${name} แล้วย้ายไปอยู่ทันที งานที่ทำต่อจากนี้จะเก็บใน branch นี้ ไม่กระทบ ${repo.head}`)
     }
-    if (!(name in repo.branches)) return fail(w, `fatal: invalid reference: ${name}`, `ไม่มี branch ชื่อ ${name} พิมพ์ git branch ดูรายชื่อ branch ที่มีได้`)
+    if (!has(repo.branches, name)) return fail(w, `fatal: invalid reference: ${name}`, `ไม่มี branch ชื่อ ${name} พิมพ์ git branch ดูรายชื่อ branch ที่มีได้`)
     if (name === repo.head) return done(w, `Already on '${name}'`, `อยู่ที่ branch ${name} อยู่แล้ว ไม่ต้องย้าย`)
     const from = snap(repo, tipOf(repo)), to = snap(repo, repo.branches[name])
     if (blocked(w.me, from, to)) return blockedMsg(w)
@@ -245,11 +267,16 @@ const handlers: Record<GitCommand, Handler> = {
 
   merge(w, args) {
     const repo = w.me.repo!
+    if (args.includes('--abort')) {
+      const c = w.conflict
+      if (!c) return fail(w, 'fatal: There is no merge to abort (MERGE_HEAD missing).', 'ตอนนี้ไม่ได้รวมงานค้างอยู่ เลยไม่มีอะไรให้ยกเลิก')
+      return done(setMe(w, { files: c.pre?.files ?? w.me.files, staged: c.pre?.staged ?? null }, undefined), '', 'ยกเลิกการรวมงานที่ติด conflict แล้ว ไฟล์กลับไปเป็นสภาพก่อนสั่ง merge หรือ pull ลองใหม่เมื่อพร้อมได้')
+    }
     const name = args[0]
     if (!name) return fail(w, 'fatal: No commit specified and merge.defaultToUpstream not set.', 'ต้องบอกชื่อ branch ที่จะเอามารวม เช่น git merge feature')
     if (w.conflict) return midMerge(w)
     const t = repo.branches[name]
-    if (!(name in repo.branches) || !t) return fail(w, `merge: ${name} - not something we can merge`, `ไม่มี branch ชื่อ ${name} (หรือยังไม่มี commit) ลอง git branch ดูรายชื่อก่อน`)
+    if (!has(repo.branches, name) || !t) return fail(w, `merge: ${name} - not something we can merge`, `ไม่มี branch ชื่อ ${name} (หรือยังไม่มี commit) ลอง git branch ดูรายชื่อก่อน`)
     return integrate(w, t, name, `Merge branch '${name}'`)
   },
 
@@ -265,7 +292,7 @@ const handlers: Record<GitCommand, Handler> = {
   push(w) {
     const { repo } = w.me
     if (w.me.remote !== 'origin')
-      return fail(w, 'fatal: No configured push destination.', 'เครื่องนี้ยังไม่ได้ผูกกับ GitHub เลย จึงไม่รู้ว่าจะส่งงานไปที่ไหน ให้ clone repo จาก GitHub มา ถึงจะ push ได้')
+      return fail(w, 'fatal: No configured push destination.', 'เครื่องนี้ยังไม่ได้ผูกกับ GitHub ในแอปนี้เครื่องจะได้ลิงก์ GitHub จากการ git clone repo มา พอมีลิงก์แล้วถึงจะ push ได้')
     const r = pushRepo(repo!, w.github)
     const b = repo!.head
     if (r.status === 'empty') return fail(w, `error: src refspec ${b} does not match any`, 'ยังไม่มี commit ให้ส่ง ให้ commit อย่างน้อยหนึ่งครั้งก่อน แล้วค่อย push')
@@ -279,7 +306,7 @@ const handlers: Record<GitCommand, Handler> = {
   pull(w) {
     const repo = w.me.repo!
     if (w.me.remote !== 'origin' || !w.github)
-      return fail(w, 'fatal: No remote repository specified.', 'เครื่องนี้ยังไม่ได้ผูกกับ GitHub จึงไม่มีที่ให้ดึงงานมา ให้ clone repo จาก GitHub มาก่อน')
+      return fail(w, 'fatal: No remote repository specified.', 'เครื่องนี้ยังไม่ได้ผูกกับ GitHub ในแอปนี้เครื่องจะได้ลิงก์ GitHub จากการ git clone repo มา พอมีลิงก์แล้วถึงจะ pull ได้')
     if (w.conflict) return midMerge(w)
     const theirs = w.github.branches[repo.head] ?? null
     if (!theirs) return done(w, 'Already up to date.', 'GitHub ยังไม่มีงานใน branch นี้ เลยไม่มีอะไรให้ดึงมา')
@@ -290,6 +317,7 @@ const handlers: Record<GitCommand, Handler> = {
 }
 
 // ---------- API ----------
+const UNTAUGHT = ['remote', 'config', 'fetch', 'stash', 'rebase', 'reset', 'restore', 'rm', 'mv', 'diff', 'show', 'tag', 'cherry-pick', 'revert', 'reflog', 'blame', 'bisect', 'clean', 'submodule', 'help']
 export function run(world: World, line: string, allowed: GitCommand[]): RunResult {
   const t = tokenize(line.trim())
   if (!t.length) return fail(world, '', 'ยังไม่ได้พิมพ์อะไรเลย ลองพิมพ์คำสั่งที่ขึ้นต้นด้วย git ดูนะ')
@@ -297,8 +325,10 @@ export function run(world: World, line: string, allowed: GitCommand[]): RunResul
     return fail(world, `bash: ${t[0]}: command not found`, 'ช่องนี้จำลอง Git Bash ที่รับเฉพาะคำสั่งที่ขึ้นต้นด้วย git เท่านั้น ลองพิมพ์ git แล้วตามด้วยคำสั่งที่เรียนอยู่')
   const cmd = t[1]
   if (!cmd) return fail(world, 'usage: git <command> [<args>]', 'git ต้องตามด้วยคำสั่ง เช่น git status ลองพิมพ์ต่อท้ายดู')
+  if (UNTAUGHT.includes(cmd))
+    return fail(world, `git ${cmd}: not available yet`, `คำสั่ง ${cmd} เป็นคำสั่งจริงของ git แต่ยังไม่ได้สอนในคอร์สนี้ เก็บไว้ก่อนนะ ตอนนี้ใช้เฉพาะคำสั่งที่เรียนแล้วไปก่อน`)
   if (!(KNOWN as string[]).includes(cmd))
-    return fail(world, `git: '${cmd}' is not a git command.`, `git ไม่รู้จักคำสั่ง ${cmd} อาจพิมพ์ผิด หรือเป็นคำสั่งที่บทนี้ยังไม่ได้สอน ลองเช็กตัวสะกดอีกที`)
+    return fail(world, `git: '${cmd}' is not a git command.`, `git ไม่รู้จักคำสั่ง ${cmd} น่าจะพิมพ์ผิด ลองเช็กตัวสะกดอีกที`)
   if (!allowed.includes(cmd as GitCommand)) return fail(world, `git ${cmd}: not available yet`, `คำสั่ง ${cmd} นี้ยังไม่ได้เรียน เก็บไว้ก่อน เดี๋ยวบทต่อ ๆ ไปจะสอน`)
   if (cmd !== 'init' && cmd !== 'clone' && !world.me.repo)
     return fail(world, 'fatal: not a git repository (or any of the parent directories): .git', 'โฟลเดอร์นี้ยังไม่ใช่ repo ให้พิมพ์ git init เพื่อเริ่ม หรือ git clone เพื่อดึงมาจาก GitHub')
