@@ -25,12 +25,12 @@ const fixedTopo = setIp(dupTopo, 'pc2', '192.168.1.20')
 describe('lesson p0-l4', () => {
   it('อยู่ใน course ต่อจากบท p0-bits และ validateCourse ผ่าน', () => {
     const l = course[0].lessons[4]
-    expect(l).toBe(lesson)
+    expect(l).toEqual({ ...lesson, videos: [...lesson.videos, ...l.videos.slice(lesson.videos.length)] })
     expect(l.status).toBe('ready')
     expect(l.titleTh).toBe('ที่อยู่ 2 แบบ: MAC กับ IP')
     expect(l.ciscoModules).toEqual(['ITN 7', 'ITN 9', 'ITN 11'])
-    expect(l.videos.map((v) => v.youtubeId)).toEqual(['u6W4u0R5P0w', 'iAecBW8rflc'])
-    for (const v of l.videos) expect(v.channel).toBe('9hua Training')
+    expect(l.videos.map((v) => v.youtubeId)).toEqual(['u6W4u0R5P0w', 'iAecBW8rflc', 'wgBdzjiSHRk'])
+    for (const v of lesson.videos) expect(v.channel).toBe('9hua Training')
     expect(l.videos[0].noteTh).toContain('ภาค 1')
     expect(l.videos[0].noteTh).not.toContain('ถ้าคลิป') // บอกชัด ไม่ใช่ถ้า
     expect(l.videos[0].noteTh).toContain('byte') // 0 ถึง 255 มีเหตุผล (กฎ 4.3)

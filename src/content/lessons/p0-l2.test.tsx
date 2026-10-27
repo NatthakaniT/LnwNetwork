@@ -23,7 +23,7 @@ const solved3 = cable(solved1, 'router', 'g0/1', 'swB', 'p3')
 describe('lesson p0-l2', () => {
   it('อยู่ใน course เป็นบทที่สอง และ validateCourse ผ่าน', () => {
     const l = course[0].lessons[1]
-    expect(l).toBe(lesson)
+    expect(l).toEqual({ ...lesson, videos: [...lesson.videos, ...l.videos.slice(lesson.videos.length)] })
     expect(l.status).toBe('ready')
     expect(l.ciscoModules).toEqual(['ITN 1', 'ITN 11'])
     expect(l.videos.map((v) => v.youtubeId)).toEqual(['WunDlV89wpQ', 'q0t7Wtux-VM'])

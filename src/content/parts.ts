@@ -5,6 +5,7 @@ import { lesson as p0l3 } from './lessons/p0-l3'
 import { lesson as p0bits } from './lessons/p0-bits'
 import { lesson as p0l4 } from './lessons/p0-l4'
 import { lesson as p0l5 } from './lessons/p0-l5'
+import { withExtraVideos } from './extraVideos'
 
 type Row = [id: string, title: string, analogy?: string, modules?: string[]]
 
@@ -22,7 +23,7 @@ export const build = (part: number, rows: Row[]): Lesson[] =>
     analogyTh,
     ciscoModules,
     videos: [],
-  })).map(withReady)
+  })).map(withReady).map((l) => ({ ...l, videos: withExtraVideos(l) }))
 
 export const parts: Part[] = [
   {

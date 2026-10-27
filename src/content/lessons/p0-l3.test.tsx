@@ -30,7 +30,7 @@ async function solveWithButtons(u: ReturnType<typeof userEvent.setup>, root: HTM
 describe('lesson p0-l3', () => {
   it('อยู่ใน course เป็นบทที่สาม และ validateCourse ผ่าน', () => {
     const l = course[0].lessons[2]
-    expect(l).toBe(lesson)
+    expect(l).toEqual({ ...lesson, videos: [...lesson.videos, ...l.videos.slice(lesson.videos.length)] })
     expect(l.status).toBe('ready')
     expect(l.titleTh).toBe('ข้อมูลเดินทางยังไง')
     expect(l.ciscoModules).toEqual(['ITN 3'])

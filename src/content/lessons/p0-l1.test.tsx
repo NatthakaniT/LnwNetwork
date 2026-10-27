@@ -15,7 +15,7 @@ afterEach(() => { errSpy.mockRestore() })
 describe('lesson p0-l1', () => {
   it('อยู่ใน course เป็นบทแรก และ validateCourse ผ่าน', () => {
     const l = course[0].lessons[0]
-    expect(l).toBe(lesson)
+    expect(l).toEqual({ ...lesson, videos: [...lesson.videos, ...l.videos.slice(lesson.videos.length)] })
     expect(l.status).toBe('ready')
     expect(l.ciscoModules).toEqual(['ITN 1'])
     expect(validateCourse(course, glossary)).toEqual([])

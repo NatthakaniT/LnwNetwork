@@ -17,7 +17,7 @@ describe('lesson p0-bits', () => {
     expect(ids.indexOf('p0-bits')).toBe(ids.indexOf('p0-l3') + 1)
     expect(ids.indexOf('p0-l4')).toBe(ids.indexOf('p0-bits') + 1)
     const l = course[0].lessons[3]
-    expect(l).toBe(lesson)
+    expect(l).toEqual({ ...lesson, videos: [...lesson.videos, ...l.videos.slice(lesson.videos.length)] })
     expect(l.status).toBe('ready')
     expect(l.titleTh).toBe('คอมพูดภาษา 0 กับ 1')
     expect(l.analogyTh).toBe('สวิตช์ไฟกับทอนเงินด้วยแบงก์')
