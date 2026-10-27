@@ -1,8 +1,8 @@
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { firstTaughtIn } from '../src/content'
-import type { GlossaryTerm, Part } from '../src/content/types'
+import type { Course, GlossaryTerm, Part } from '../src/content/types'
 
 /** แผนที่คอร์สเป็น Markdown ให้ครูใน Claude.ai รู้ว่าผู้เรียนเรียนอะไรมาแล้ว */
 export function renderRoadmap(parts: Part[], glossary: GlossaryTerm[]): string {
@@ -23,14 +23,26 @@ export function renderRoadmap(parts: Part[], glossary: GlossaryTerm[]): string {
   return out.join('\n')
 }
 
-const isCli = !process.env.VITEST // vite-node ไม่ใส่ชื่อสคริปต์ใน argv จึงเช็คว่าไม่ได้รันใต้ vitest
-if (isCli) {
-  const { course, glossary } = await import('../src/content')
-  const target = resolve(dirname(fileURLToPath(import.meta.url)), '../docs/tutor/roadmap.md')
-  mkdirSync(dirname(target), { recursive: true })
-  const header = '# แผนที่คอร์ส LnwNetwork (สร้างจากสคริปต์ ห้ามแก้มือ)\n\n'
+/** ชื่อไฟล์แผนที่ของแต่ละวิชา ใต้ docs/tutor */
+export const roadmapFileName = (courseId: string): string => `roadmap-${courseId}.md`
+
+/** ไฟล์แผนที่เต็มของหนึ่งวิชา: หัวเรื่อง + คำอธิบายการอ่าน + แผนที่ */
+export function renderCourseRoadmap(course: Pick<Course, 'titleTh' | 'parts' | 'glossary'>): string {
+  return `# แผนที่วิชา ${course.titleTh} ของ LnwNetwork (สร้างจากสคริปต์ ห้ามแก้มือ)\n\n`
     + 'เรียงตามลำดับที่ผู้เรียนเรียน ผู้เรียนรู้เรื่องในบทก่อนหน้าทั้งหมด รวมบทที่เรียนอยู่ตอนนี้ แต่ยังไม่รู้เรื่องในบทที่อยู่หลังบทนั้น\n\n'
     + '"สอน:" คือศัพท์ที่บทนั้นสอนเป็นครั้งแรก / "ต่อจาก:" คือบทก่อนหน้าที่บทนั้นต้องใช้ความรู้\n\n'
-  writeFileSync(target, header + renderRoadmap(course, glossary), 'utf8')
-  console.log(`wrote roadmap -> ${target}`)
+    + renderRoadmap(course.parts, course.glossary)
+}
+
+const isCli = !process.env.VITEST // vite-node ไม่ใส่ชื่อสคริปต์ใน argv จึงเช็คว่าไม่ได้รันใต้ vitest
+if (isCli) {
+  const { courses } = await import('../src/content/courses')
+  const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../docs/tutor')
+  mkdirSync(dir, { recursive: true })
+  rmSync(resolve(dir, 'roadmap.md'), { force: true }) // ไฟล์เดิมก่อนแยกตามวิชา
+  for (const c of courses) {
+    const target = resolve(dir, roadmapFileName(c.id))
+    writeFileSync(target, renderCourseRoadmap(c), 'utf8')
+    console.log(`wrote roadmap -> ${target}`)
+  }
 }

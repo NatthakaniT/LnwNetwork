@@ -113,6 +113,16 @@ PRONOUNCE = {
     "checkout": "เช็กเอาต์",
     "-u": "ยู",
     "-c": "ซี",
+    "-M": "เอ็ม",
+    "Git Credential Manager": "กิตเครเดนเชียลแมเนเจอร์",
+    "collaborator": "คอลแล็บบอเรเตอร์",
+    "Collaborators": "คอลแล็บบอเรเตอร์ส",
+    "Settings": "เซ็ตติงส์",
+    "Add people": "แอดพีเพิล",
+    "README": "รีดมี",
+    "master": "มาสเตอร์",
+    "New": "นิว",
+    "up to date": "อัปทูเดต",
 }
 
 

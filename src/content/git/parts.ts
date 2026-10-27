@@ -9,9 +9,10 @@ import { lesson as g1l1 } from './lessons/g1-l1'
 import { lesson as g1l2 } from './lessons/g1-l2'
 import { lesson as g1l3 } from './lessons/g1-l3'
 import { lesson as g1l4 } from './lessons/g1-l4'
+import { lesson as g2l1 } from './lessons/g2-l1'
 
 /** บทที่เขียนเสร็จแล้ว แทนที่โครงบทที่ยังไม่เสร็จ (รหัสเดียวกัน) */
-const readyLessons: Lesson[] = [g0l1, g0l2, g0l3, g0l4, g0l5, g1l1, g1l2, g1l3, g1l4]
+const readyLessons: Lesson[] = [g0l1, g0l2, g0l3, g0l4, g0l5, g1l1, g1l2, g1l3, g1l4, g2l1]
 const withReady = (ls: Lesson[]): Lesson[] => ls.map((l) => readyLessons.find((r) => r.id === l.id) ?? l)
 
 export const gitParts: Part[] = [
@@ -36,8 +37,8 @@ export const gitParts: Part[] = [
   },
   {
     part: 2, titleTh: 'ใช้จริง', examDomain: '',
-    lessons: build(2, [
+    lessons: withReady(build(2, [
       ['g2-l1', 'push งานจริงครั้งแรก'],
-    ]),
+    ])),
   },
 ]
