@@ -5,3 +5,5 @@ tools/tts/.venv/
 .superpowers/
 tools/tts/narration.json
 .vite/
+tools/tts/.venv-omnivoice/
+tools/tts/ref/my_voice.*

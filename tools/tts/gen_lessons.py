@@ -1,4 +1,4 @@
-"""Generate lesson narration mp3 files offline with the local F5-TTS-THAI model.
+"""Generate lesson narration mp3 files offline with the local OmniVoice model.
 
 Usage:
   python -I tools/tts/gen_lessons.py tools/tts/narration.json public/audio [--force] [--only <lessonId>]
@@ -19,9 +19,9 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 HERE = Path(__file__).resolve().parent
-MODELS = HERE / "models"
-REF_AUDIO = HERE / "ref" / "ref_gen_4.wav"
-REF_TEXT = "เราอยากจะตื่นขึ้นมามั้ยคะ."
+MODEL = HERE / "models" / "omnivoice"
+REF_AUDIO = HERE / "ref" / "my_voice.wav"
+REF_TEXT = HERE / "ref" / "my_voice.txt"
 
 # English terms -> Thai reading, applied before synthesis (longest keys first, case-insensitive).
 PRONOUNCE = {
@@ -158,34 +158,30 @@ def main() -> int:
         return 0
 
     import soundfile as sf
-    from f5_tts_th.utils_infer import (infer_process, load_model, load_vocoder,
-                                       preprocess_ref_audio_text)
+    import torch
+    from omnivoice import OmniVoice
 
-    # Same config as f5_tts_th.tts.TTS(model="v1"), but loading local files (huggingface is blocked).
-    model_cfg = dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512,
-                     text_mask_padding=False, conv_layers=4, pe_attn_head=1)
-    model = load_model(model_cfg, str(MODELS / "model_1000000.pt"), mel_spec_type="vocos",
-                       vocab_file=str(MODELS / "vocab.txt"))
-    vocoder = load_vocoder("vocos", is_local=True, local_path=str(MODELS))
-    ref_audio, ref_text = preprocess_ref_audio_text(str(REF_AUDIO), REF_TEXT)
+    model = OmniVoice.from_pretrained(str(MODEL), device_map="cuda:0", dtype=torch.float16)
+    prompt = model.create_voice_clone_prompt(ref_audio=str(REF_AUDIO),
+                                             ref_text=REF_TEXT.read_text(encoding="utf-8").strip())
 
     failures = 0
     for it, target in todo:
         label = f"{it['lessonId']}/{it['sceneId']}"
         try:
             text = apply_pronounce(it["text"])
-            wav, _, _ = infer_process(ref_audio, ref_text, text, model, vocoder,
-                                      mel_spec_type="vocos", nfe_step=32, speed=0.9,
-                                      cfg_strength=2.0, set_max_chars=100, use_ipa=False)
+            audio = model.generate(text=text, language="Thai", voice_clone_prompt=prompt,
+                                   speed=0.85, num_step=48, guidance_scale=2.0)
             target.parent.mkdir(parents=True, exist_ok=True)
             with tempfile.TemporaryDirectory() as tmp:
                 wav_path = Path(tmp) / "tmp.wav"
-                sf.write(str(wav_path), wav, 24000)
+                sf.write(str(wav_path), audio[0], model.sampling_rate)
                 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wav_path),
                                 "-b:a", "96k", str(target)], check=True)
             print(f"done   {label} -> {target}", flush=True)
         except Exception as e:  # keep going so one bad scene doesn't lose the batch
             failures += 1
+            torch.cuda.empty_cache()
             print(f"FAILED {label}: {e}", flush=True)
     return 1 if failures else 0
 
