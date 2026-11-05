@@ -39,7 +39,8 @@ function order(questions: QuizQuestion[], shuffle?: Shuffle): QuizQuestion[] {
 
 export interface QuizViewProps {
   questions: QuizQuestion[]
-  onPass: () => void
+  /** ส่งคะแนนเป็นเปอร์เซ็นต์ (0–100) */
+  onPass: (scorePct: number) => void
   shuffle?: Shuffle
   termIds?: string[]
   onWrong?: (q: QuizQuestion) => void
@@ -60,9 +61,9 @@ export function QuizView({ questions, onPass, shuffle = fisherYates, termIds = [
   useEffect(() => {
     if (done && result.passed && !passedRef.current) {
       passedRef.current = true
-      onPass()
+      onPass(Math.round((result.correct / result.total) * 100))
     }
-  }, [done, result.passed, onPass])
+  }, [done, result.passed, result.correct, result.total, onPass])
 
   if (list.length === 0) return null
 

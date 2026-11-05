@@ -19,7 +19,7 @@ function AppRoutes() {
   const course = courseById(route.course) ?? ccna
   if (route.name === 'glossary') {
     return (
-      <main className="glossary-wrap">
+      <main className="glossary-wrap tech-bg">
         <p><a href={`#/c/${course.id}`}>← กลับแผนที่</a></p>
         <GlossaryPage key={course.id} course={course} />
       </main>

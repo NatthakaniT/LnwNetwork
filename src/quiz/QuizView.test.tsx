@@ -84,6 +84,7 @@ describe('QuizView', () => {
     }
     expect(screen.getByText('ได้ 4 จาก 5 ข้อ')).toBeInTheDocument()
     expect(onPass).toHaveBeenCalledTimes(1)
+    expect(onPass).toHaveBeenCalledWith(80) // ส่งคะแนนเป็นเปอร์เซ็นต์
     expect(screen.queryByRole('button', { name: 'ลองใหม่' })).not.toBeInTheDocument()
   })
 

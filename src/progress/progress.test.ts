@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { Lesson, Part } from '../content/types'
 import { course } from '../content'
 import {
-  STORAGE_KEY, loadProgress, saveProgress, isUnlocked, markCompleted, percentComplete, countCompleted, totalLessons, firstOpenLesson, type Progress,
+  STORAGE_KEY, loadProgress, saveProgress, isUnlocked, markCompleted, markStudied, dayKey, percentComplete, countCompleted, totalLessons, firstOpenLesson, type Progress,
 } from './progress'
 
 const lesson = (id: string, part: number, order: number, status: 'ready' | 'building'): Lesson => ({
@@ -139,5 +139,32 @@ describe('ความคืบหน้าแยกวิชา', () => {
     saveProgress({ version: 1, completed: ['g0-l1'] }, s, 'lnw-git-progress-v1')
     expect(loadProgress(s, 'lnw-git-progress-v1').completed).toEqual(['g0-l1'])
     expect(loadProgress(s, 'lnw-ccna-progress-v1').completed).toEqual(['p0-l1'])
+  })
+})
+
+describe('คะแนนและวันเรียน (ใช้กับระบบเกม)', () => {
+  it('markCompleted เก็บคะแนนดีที่สุด ทำใหม่ได้น้อยกว่าก็ไม่ลด', () => {
+    let p: Progress = { version: 1, completed: [] }
+    p = markCompleted('a', p, 90)
+    p = markCompleted('a', p, 80)
+    expect(p.completed).toEqual(['a'])
+    expect(p.scores).toEqual({ a: 90 })
+  })
+  it('save/load เก็บคะแนนและวันเรียน และรวมกับของอีกแท็บ', () => {
+    const s = fakeStorage()
+    saveProgress({ version: 1, completed: ['a'], scores: { a: 100 }, days: ['2026-11-01'] }, s)
+    const out = saveProgress({ version: 1, completed: ['b'], scores: { a: 80, b: 90 }, days: ['2026-11-03', '2026-11-01'] }, s)
+    expect(out.scores).toEqual({ a: 100, b: 90 })
+    expect(out.days).toEqual(['2026-11-01', '2026-11-03'])
+    expect(loadProgress(s)).toEqual(out)
+  })
+  it('ข้อมูลคะแนน/วันที่เสียรูปถูกทิ้ง แต่ความคืบหน้าส่วนอื่นยังอยู่', () => {
+    const s = fakeStorage({ [STORAGE_KEY]: JSON.stringify({ version: 1, completed: ['a'], scores: { a: 'x', b: 120, c: 70 }, days: ['bad', 5, '2026-11-02'] }) })
+    expect(loadProgress(s)).toEqual({ version: 1, completed: ['a'], scores: { c: 70 }, days: ['2026-11-02'] })
+  })
+  it('markStudied ไม่ซ้ำวัน และ dayKey ใช้เวลาเครื่อง', () => {
+    const p = markStudied(markStudied({ version: 1, completed: [] }, '2026-11-05'), '2026-11-05')
+    expect(p.days).toEqual(['2026-11-05'])
+    expect(dayKey(new Date(2026, 0, 2, 0, 30))).toBe('2026-01-02')
   })
 })

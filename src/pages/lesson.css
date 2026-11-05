@@ -19,22 +19,33 @@
 .lesson-page .lesson-back a:hover { color: var(--text); transform: translateX(-3px); }
 .lesson-page .lesson-back a:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
 
-/* ---------- หัวบท: Kanit 900 + เส้นสีภาค ---------- */
+/* ---------- หัวบท: ป้าย HUD สีภาค + หัวข้อไล่สี + เส้นเรืองแสง (ไม่มี animation วน) ---------- */
+.lesson-page .lesson-tag {
+  margin: 16px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--part, var(--p2));
+}
 .lesson-page .lesson-head h1 {
   font-size: 2.4rem;
+  font-weight: 800;
   line-height: 1.12;
   letter-spacing: -0.01em;
-  padding: 0.5rem 0 0;
+  padding: 4px 0 0;
   overflow-wrap: anywhere;
 }
 .lesson-page .lesson-head h1::after {
   content: '';
   display: block;
   width: 4.5rem;
-  height: 6px;
-  margin: 0.7rem 0 0.6rem;
+  height: 3px;
+  margin: 12px 0 10px;
   border-radius: 99px;
   background: var(--part, var(--p2));
+  box-shadow: 0 0 16px var(--part, var(--p2));
 }
 .lesson-page .lesson-head .analogy { color: var(--text-muted); margin: 0; }
 
@@ -43,11 +54,12 @@
   display: inline-block;
   margin-top: 0.6rem;
   padding: 0.15rem 0.8rem;
-  border-radius: 99px;
+  border-radius: 6px;
   border: 1px solid var(--part, var(--p2));
-  background: color-mix(in srgb, var(--part, var(--p2)) 14%, transparent);
+  background: color-mix(in srgb, var(--part, var(--p2)) 12%, transparent);
   color: var(--text);
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -58,9 +70,9 @@
   grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
   padding: 5px;
   margin: 1.3rem 0 1.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 99px;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--part, var(--p2)) 35%, var(--border));
+  border-radius: 14px;
 }
 /* กว้างเท่าแท็บหนึ่งช่องพอดี (ไม่มี gap) จึงเลื่อนทีละ 100% ของตัวเอง */
 .steps-indicator {
@@ -69,9 +81,9 @@
   bottom: 5px;
   left: 5px;
   width: calc((100% - 10px) / var(--n, 4));
-  border-radius: 99px;
+  border-radius: 10px;
   background: var(--part, var(--p2));
-  box-shadow: 0 8px 22px -12px var(--part, var(--p2));
+  box-shadow: 0 0 24px -6px var(--part, var(--p2));
   transform: translateX(calc(var(--i) * 100%));
   transition: transform .45s var(--ease-out);
   pointer-events: none;
@@ -88,7 +100,7 @@
   color: var(--text-muted);
   background: transparent;
   border: 0;
-  border-radius: 99px;
+  border-radius: 10px;
   padding: 0.5rem 0.6rem;
   cursor: pointer;
   transition: color .25s var(--ease-out), transform .2s var(--ease-bounce);
@@ -109,18 +121,34 @@
 
 /* ---------- ปุ่ม ---------- */
 .lesson-page .step-nav { margin: 1.2rem 0 0; }
-.lesson-page .btn { padding: 0.45rem 1.2rem; border-radius: 99px; transition: transform .25s var(--ease-bounce), box-shadow .25s var(--ease-out), border-color .2s; }
+.lesson-page .btn { padding: 0.45rem 1.2rem; border-radius: 10px; transition: transform .25s var(--ease-bounce), box-shadow .25s var(--ease-out), border-color .2s; }
 .lesson-page .btn.primary:not(:disabled) { color: var(--part-fg, var(--bg)); }
-.lesson-page .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 24px -14px var(--part, var(--p2)); }
+.lesson-page .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 24px -6px var(--part, var(--p2)); }
 .lesson-page .btn:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 
 .lesson-page .pass-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 6px solid var(--ok);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  background: color-mix(in srgb, var(--ok) 8%, var(--surface));
+  border: 1px solid var(--ok);
   border-radius: 14px;
-  padding: 0.8rem 1rem;
+  padding: 14px 16px;
+  box-shadow: 0 0 40px -16px var(--ok);
 }
+.lesson-page .pass-box .btn { margin-left: auto; }
+.pass-label {
+  flex-basis: 100%;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ok);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--ok) 70%, transparent);
+}
+.pass-reward { font-family: var(--font-mono); font-weight: 700; color: var(--p4); }
 
 /* ---------- ขั้นคลิป ---------- */
 .video-frame {
@@ -128,9 +156,9 @@
   padding-top: 56.25%;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--part, var(--p2)) 45%, var(--border));
   background: var(--surface);
-  box-shadow: 0 24px 50px -22px var(--shadow);
+  box-shadow: 0 0 48px -20px var(--part, var(--p2));
 }
 .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
@@ -143,22 +171,21 @@
   max-width: 100%;
   margin: 0.3rem 0 1.2rem;
   padding: 0.7rem 1.1rem;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--p4) 70%, var(--text));
-  color: var(--bg);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--p4) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--p4) 60%, transparent);
+  color: var(--text);
   font-weight: 600;
-  transform: rotate(-1deg);
-  box-shadow: 0 12px 26px -16px var(--p4);
+  box-shadow: 0 0 28px -14px var(--p4);
 }
-.sticker-note .term-btn { color: var(--bg); border-bottom-color: var(--bg); font-weight: 700; }
-.sticker-note .term-btn:focus-visible { outline: 3px solid var(--bg); outline-offset: 2px; }
+.sticker-note .term-btn { color: var(--p4); border-bottom-color: var(--p4); font-weight: 700; }
+.sticker-note .term-btn:focus-visible { outline: 3px solid var(--p4); outline-offset: 2px; }
 
 .video-notice {
   margin: 1rem 0 0;
   padding: 0.7rem 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 6px solid var(--warn);
+  background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+  border: 1px solid var(--warn);
   border-radius: 14px;
 }
 
@@ -170,7 +197,7 @@
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 99px;
+  border-radius: 10px;
   padding: 0.3rem 0.9rem;
   cursor: pointer;
   transition: transform .25s var(--ease-bounce), border-color .2s;
@@ -182,9 +209,9 @@
 @media (max-width: 40rem) {
   .lesson-page { padding: 0 1rem 3rem; }
   .lesson-page .lesson-head h1 { font-size: 1.9rem; }
-  .lesson-page .steps { border-radius: 18px; }
-  .lesson-page .step { font-size: 0.8rem; padding: 0.45rem 0.25rem; border-radius: 14px; }
-  .steps-indicator { border-radius: 14px; } /* แท็บยังอยู่แถวเดียวเสมอ (grid --n ช่อง) ข้อความยาวขึ้นบรรทัดใหม่ในช่อง แถบสีจึงตรงช่อง */
+  .lesson-page .steps { border-radius: 14px; }
+  .lesson-page .step { font-size: 0.8rem; padding: 0.45rem 0.25rem; border-radius: 10px; }
+  .steps-indicator { border-radius: 10px; } /* แท็บยังอยู่แถวเดียวเสมอ (grid --n ช่อง) ข้อความยาวขึ้นบรรทัดใหม่ในช่อง แถบสีจึงตรงช่อง */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -196,9 +223,8 @@
 .requires-box, .deep-dive {
   margin: 1rem 0 0;
   padding: 0.7rem 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 6px solid var(--part, var(--p2));
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--part, var(--p2)) 40%, var(--border));
   border-radius: 14px;
 }
 .requires-box h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
@@ -210,7 +236,7 @@
 .ask-tutor { margin: 2rem 0 0; }
 .ask-tutor textarea { width: 100%; box-sizing: border-box; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--text); border-radius: 8px; padding: 0.5rem; }
 
-.real-try { margin: 2rem 0 0; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.real-try { margin: 2rem 0 0; padding: 1rem; background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid color-mix(in srgb, var(--part, var(--p2)) 35%, var(--border)); border-radius: 12px; }
 .real-try ol { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 1rem; }
-.real-try code { font-family: ui-monospace, Consolas, monospace; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.5rem; }
+.real-try code { font-family: var(--font-mono); color: var(--p0); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.5rem; }
 .real-try .ask-tutor { margin: 0.5rem 0 0; }

@@ -119,50 +119,29 @@ describe('CourseMap', () => {
     expect(screen.getByText('เริ่มกันเลย 💪')).toHaveClass('sticker')
   })
 
-  it('map.css: locked cards are muted by a background token, not filter/opacity; text stays readable', async () => {
+  it('map.css: locked cards dim their glow with a token, not filter/opacity; no raw colours', async () => {
     const css = await readCss('./map.css')
     const locked = rulesFor(css, '.part-card.locked')
-    expect(locked).toMatch(/background:\s*var\(--part-bg-muted\)/)
+    expect(locked).toMatch(/--glow:\s*var\(--text-muted\)/)
     expect(locked).not.toMatch(/filter|opacity/)
-    // ไม่มี hex/rgba ใน map.css
+    // ไม่มี hex/rgba ใน map.css สีมาจาก token เท่านั้น
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b|rgba?\(/)
-    // สีพื้นที่จางลงยังอ่านตัวหนังสือดำออก (≥ 4.5) ทุกภาค
-    const m = css.match(/--part-bg-muted:\s*color-mix\(in srgb,\s*var\(--part\)\s*(\d+)%,\s*var\(--text-muted\)\)/)
-    expect(m).not.toBeNull()
-    const w = Number(m![1]) / 100
-    const muted = [0xa3, 0xa6, 0xb0]
-    for (const [i, c] of Object.entries(PART_COLORS)) {
-      const rgb = [1, 3, 5].map((k) => parseInt(c.bg.slice(k, k + 2), 16))
-      const mix = '#' + rgb.map((v, j) => Math.round(v * w + muted[j] * (1 - w)).toString(16).padStart(2, '0')).join('')
-      expect(contrastRatio(c.fg, mix), `part ${i}`).toBeGreaterThanOrEqual(4.5)
-    }
   })
 
-  it('map.css: lesson rows keep dark text ≥ 4.5 at rest and on hover, on normal and locked cards', async () => {
+  it('map.css: dark cards keep text readable ≥ 4.5 (body text, muted text and every neon part colour)', async () => {
     const css = await readCss('./map.css')
-    const hex = (h: string) => [1, 3, 5].map((k) => parseInt(h.slice(k, k + 2), 16))
-    const toHex = (c: number[]) => '#' + c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
-    const TOKENS: Record<string, number[]> = { text: hex('#f1f1ee'), bg: hex('#0e0f13'), 'text-muted': hex('#a3a6b0') }
-    // พื้นแถว = color-mix(in srgb, var(--token) N%, transparent) วางทับสีการ์ด
-    const overlay = (decl: string) => {
-      const m = decl.match(/background:\s*color-mix\(in srgb,\s*var\(--([\w-]+)\)\s*(\d+)%,\s*transparent\)/)
-      return m ? { c: TOKENS[m[1]], a: Number(m[2]) / 100 } : null
+    const root = (await readCss('../styles.css')).match(/:root\s*\{([^}]*)\}/)![1]
+    const token = (n: string) => root.match(new RegExp(`--${n}:\\s*(#[0-9a-fA-F]{6})`))![1]
+    // การ์ดเป็นพื้น --surface ตัวหนังสือหลัก --text ป้ายภาคและแถวที่เปิดอยู่ใช้สีภาค (--glow)
+    expect(rulesFor(css, '.part-card')).toMatch(/background:\s*color-mix\(in srgb,\s*var\(--surface\)/)
+    expect(rulesFor(css, '.l')).toMatch(/color:\s*var\(--text\)/)
+    expect(rulesFor(css, '.part-no')).toMatch(/color:\s*var\(--glow\)/)
+    const surface = token('surface')
+    for (const fg of [token('text'), token('text-muted'), token('p4')]) {
+      expect(contrastRatio(fg, surface), fg).toBeGreaterThanOrEqual(4.5)
     }
-    const rest = overlay(rulesFor(css, '.l'))
-    expect(rest, '.l ต้องมีพื้นแบบ color-mix ทับสีการ์ด').not.toBeNull()
-    const hoverDecl = rulesFor(css, 'a.l:hover')
-    expect(hoverDecl).not.toMatch(/background:(?!\s*color-mix)/)
-    const hover = overlay(hoverDecl) ?? rest!
-    const w = Number(css.match(/--part-bg-muted:\s*color-mix\(in srgb,\s*var\(--part\)\s*(\d+)%/)![1]) / 100
     for (const [i, c] of Object.entries(PART_COLORS)) {
-      const base = hex(c.bg)
-      const muted = base.map((v, j) => v * w + TOKENS['text-muted'][j] * (1 - w))
-      for (const [card, b] of [['normal', base], ['locked', muted]] as const) {
-        for (const [state, o] of [['rest', rest!], ['hover', hover]] as const) {
-          const bg = toHex(b.map((v, j) => v * (1 - o.a) + o.c[j] * o.a))
-          expect(contrastRatio(c.fg, bg), `part ${i} ${card} ${state}`).toBeGreaterThanOrEqual(4.5)
-        }
-      }
+      expect(contrastRatio(c.bg, surface), `part ${i}`).toBeGreaterThanOrEqual(4.5)
     }
   })
 

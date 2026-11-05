@@ -9,7 +9,7 @@ import { LabView } from '../lab/LabView'
 import { ActivityView } from '../lab/ActivityView'
 import { GitLabView } from '../lab/GitLabView'
 import { RealTry } from './RealTry'
-import { isUnlocked, loadProgress, markCompleted, saveProgress } from '../progress/progress'
+import { isUnlocked, loadProgress, markCompleted, markStudied, saveProgress } from '../progress/progress'
 import type { Progress, StepKey } from '../progress/progress'
 import { navigate } from '../router'
 import { VideoStep } from './VideoStep'
@@ -19,6 +19,7 @@ import { GlossaryContext } from '../glossary/context'
 import { AskTutor } from '../tutor/AskTutor'
 import { tutorPrompt } from '../tutor/tutorPrompt'
 import { PART_COLORS } from '../ui/contrast'
+import { lessonXp, stars } from '../game/game'
 import './lesson.css'
 
 export const MSG_LOCKED = 'ต้องเรียนบทก่อนหน้าก่อนนะ'
@@ -112,7 +113,8 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
   const step = steps[stepIdx].key
 
   useEffect(() => {
-    progressRef.current = saveProgress({ ...progressRef.current, lastLesson: lesson.id, lastStep: step }, storage, course.storageKey)
+    // เปิดบทเรียน/เปลี่ยนขั้น = วันนี้เข้ามาเรียน (นับ streak)
+    progressRef.current = saveProgress(markStudied({ ...progressRef.current, lastLesson: lesson.id, lastStep: step }), storage, course.storageKey)
   }, [lesson.id, step, storage, course.storageKey])
 
   // ขั้นที่บทไม่มีเนื้อหา ถือว่าผ่านเอง
@@ -124,8 +126,9 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
   const onScenesFinished = useCallback(() => setFin((f) => ({ ...f, scenes: true })), [])
   const onTryItDone = useCallback(() => setFin((f) => ({ ...f, tryIt: true })), [])
   const onLabDone = useCallback(() => markDone('lab'), [markDone])
-  const onQuizPass = useCallback(() => {
-    progressRef.current = saveProgress(markCompleted(lesson.id, progressRef.current), storage, course.storageKey)
+  const onQuizPass = useCallback((scorePct?: number) => {
+    const score = typeof scorePct === 'number' ? scorePct : undefined
+    progressRef.current = saveProgress(markCompleted(lesson.id, progressRef.current, score), storage, course.storageKey)
     markDone('quiz')
     setPassed(true)
   }, [lesson.id, storage, markDone, course.storageKey])
@@ -136,11 +139,13 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
   const tutorText = tutorPrompt({ lessonTitle: lesson.titleTh, stepLabel: steps[stepIdx].label, wrongPrompt })
   const next = passed ? nextReadyLesson(parts, lesson.id) : undefined
   const nextOpen = next && isUnlocked(next.id, parts, progressRef.current) ? next : undefined
+  const best = progressRef.current.scores?.[lesson.id] // คะแนนดีที่สุดของบทนี้ (ดาวและ XP ในกล่องผ่านบท)
 
   return (
-    <main className="lesson-page" style={partVars(lesson.part)}>
+    <main className="lesson-page tech-bg" style={partVars(lesson.part)}>
       <p className="lesson-back rise"><a href={`#/c/${course.id}`}>← กลับแผนที่</a></p>
       <header className="lesson-head rise d1">
+        <p className="lesson-tag">Stage {String(lesson.part).padStart(2, '0')} // {course.titleTh}</p>
         <h1>{lesson.titleTh}</h1>
         {lesson.analogyTh && <p className="analogy"><RichText text={lesson.analogyTh} termIds={termIds} /></p>}
         {lesson.requires && lesson.requires.length > 0 && (
@@ -218,6 +223,10 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
 
       {passed && step === 'quiz' && (
         <p className="pass-box">
+          <span className="pass-label">Stage clear</span>
+          <span className="pass-reward" aria-label={`${stars(best)} ดาว ได้ ${lessonXp(best)} XP`}>
+            {'★'.repeat(stars(best))} +{lessonXp(best)} XP
+          </span>
           เก่งมาก ผ่านบทนี้แล้ว{' '}
           {nextOpen
             ? <a className="btn primary" href={`#/lesson/${nextOpen.id}`}>ไปบทถัดไป</a>

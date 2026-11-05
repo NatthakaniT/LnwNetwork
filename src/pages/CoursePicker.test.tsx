@@ -22,4 +22,16 @@ describe('CoursePicker', () => {
     render(<CoursePicker storage={memoryStorage()} notice="ต้องเรียนบทก่อนหน้าก่อนนะ" />)
     expect(screen.getByRole('status')).toHaveTextContent('ต้องเรียนบทก่อนหน้าก่อนนะ')
   })
+  it('HUD ผู้เล่น: XP เลเวล streak และเหรียญ คิดจากความคืบหน้าที่เก็บไว้', () => {
+    const storage = memoryStorage()
+    saveProgress({ version: 1, completed: ['p0-l1'], scores: { 'p0-l1': 100 }, days: ['2026-11-05', '2026-11-06'] }, storage, 'lnw-ccna-progress-v1')
+    render(<CoursePicker storage={storage} today="2026-11-06" />)
+    const hud = screen.getByRole('region', { name: 'สถานะผู้เล่น' })
+    expect(hud).toHaveTextContent('LV 1')
+    expect(hud).toHaveTextContent('150 / 500 XP') // ผ่าน 100 + 3 ดาว 50
+    expect(hud).toHaveTextContent('🔥 2')
+    expect(hud).toHaveTextContent('2/8') // ด่านแรก + ไร้ที่ติ
+    const unlocked = [...document.querySelectorAll('.badge-item.on')].map((b) => b.querySelector('.badge-title')?.textContent)
+    expect(unlocked).toEqual(['ด่านแรก', 'ไร้ที่ติ'])
+  })
 })

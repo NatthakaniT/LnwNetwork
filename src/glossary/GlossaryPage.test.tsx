@@ -199,3 +199,41 @@ describe('glossary.css', () => {
     expect(css).toMatch(/\.osi-grid\s*\{[^}]*display:\s*grid/)
   })
 })
+
+describe('GlossaryPage: เก็บศัพท์ กรอง และโหมดทายศัพท์', () => {
+  const storageWith = (completed: string[]) => {
+    const m = new Map<string, string>()
+    m.set('lnw-ccna-progress-v1', JSON.stringify({ version: 1, completed }))
+    return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v) } } as unknown as Storage
+  }
+
+  it('ผ่านบท p0-l1 แล้ว ศัพท์ของบทนั้นขึ้นว่าเก็บแล้ว และมีลิงก์ไปบทที่สอน', () => {
+    const { container } = render(<GlossaryPage storage={storageWith(['p0-l1'])} />)
+    const card = container.querySelector<HTMLElement>('.g-card[data-term="lan"]')!
+    expect(card).toHaveClass('got')
+    expect(within(card).getByText('✓ เก็บแล้ว')).toBeInTheDocument()
+    expect(within(card).getByRole('link', { name: /สอนในบท: Network คืออะไร/ })).toHaveAttribute('href', '#/lesson/p0-l1')
+    expect(screen.getByRole('progressbar', { name: 'ศัพท์ที่เก็บแล้ว' })).toHaveAttribute('aria-valuenow', '5')
+  })
+
+  it('กรอง "เก็บแล้ว" เหลือเฉพาะคำที่เก็บแล้ว', async () => {
+    const u = userEvent.setup()
+    const { container } = render(<GlossaryPage storage={storageWith(['p0-l1'])} />)
+    await u.click(screen.getByRole('button', { name: '✓ เก็บแล้ว' }))
+    const ids = [...container.querySelectorAll<HTMLElement>('.g-card')].map((c) => c.dataset.term).sort()
+    expect(ids).toEqual(['data', 'internet', 'lan', 'network', 'wan'])
+  })
+
+  it('โหมดทายศัพท์ซ่อนคำแปลไว้ กดแล้วเฉลยทีละใบ', async () => {
+    const u = userEvent.setup()
+    const { container } = render(<GlossaryPage storage={storageWith([])} />)
+    const lan = byId('lan')
+    await u.click(screen.getByRole('button', { name: '🃏 โหมดทายศัพท์' }))
+    const card = container.querySelector<HTMLElement>('.g-card[data-term="lan"]')!
+    expect(within(card).queryByText(lan.explainTh)).toBeNull()
+    await u.click(within(card).getByRole('button', { name: `เฉลยความหมายของ ${lan.en}` }))
+    expect(within(card).getByText(lan.explainTh)).toBeInTheDocument()
+    // ใบอื่นยังปิดอยู่
+    expect(container.querySelector('.g-card[data-term="wan"] .g-flip')).not.toBeNull()
+  })
+})

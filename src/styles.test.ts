@@ -132,7 +132,7 @@ describe('pages/lesson.css', () => {
     const r = rule('.video-frame')
     expect(r).toMatch(/border-radius:\s*16px/)
     expect(r).toMatch(/box-shadow:/)
-    expect(r).toMatch(/border:\s*\d+px solid var\(--border\)/)
+    expect(r).toMatch(/border:\s*\d+px solid [^;]*var\(--border\)/) // ขอบเทา หรือผสมสีภาคกับเทา
   })
   it('มี :focus-visible บนแท็บและปุ่ม', () => {
     expect(css).toMatch(/\.step:focus-visible/)

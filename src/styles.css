@@ -37,6 +37,8 @@
   --ease-out: cubic-bezier(.2,.9,.2,1);
   --ease-bounce: cubic-bezier(.3,1.6,.5,1);
   --font-head: 'Kanit', 'Noto Sans Thai', system-ui, sans-serif;
+  /* ป้ายแบบเครื่อง (HUD) ใช้ฟอนต์ monospace ที่มีในเครื่องอยู่แล้ว ไม่ต้องโหลดเพิ่ม ตัวไทยตกไปใช้ฟอนต์ไทย */
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'Noto Sans Thai', monospace;
   color-scheme: dark;
 }
 
@@ -151,3 +153,43 @@ a { color: var(--link); }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .rise, .reveal, .reveal.is-in, .reveal[data-revealed], .pop-in { opacity: 1; transform: none; }
 }
+
+/* ---------- ธีมเทค: พื้นกริดเรืองแสง (ใส่คลาส .tech-bg ที่ main ของหน้า) ----------
+   ผู้ใช้ขอโทนเทค จึงยอมใช้ gradient ที่พื้นหลัง (ทับกฎ skill ที่ห้าม) */
+.tech-bg { position: relative; }
+.tech-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 28rem at 12% -8%, color-mix(in srgb, var(--p6) 18%, transparent), transparent 70%),
+    radial-gradient(48rem 26rem at 100% 0%, color-mix(in srgb, var(--p5) 12%, transparent), transparent 70%),
+    linear-gradient(color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px) 0 0 / 48px 48px;
+  mask-image: linear-gradient(to bottom, var(--black) 40%, transparent 100%);
+}
+
+/* ป้ายหัวหน้าแบบ HUD: ตัวอักษรเครื่อง + จุดไฟกะพริบ */
+.hud-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--part, var(--p0));
+}
+.hud-tag .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+  animation: blink 2.4s cubic-bezier(.22, 1, .36, 1) infinite;
+}
+@keyframes blink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .hud-tag .dot { animation: none; } }

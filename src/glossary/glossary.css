@@ -33,27 +33,96 @@
 .term-en { font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; }
 .term-th { color: var(--text-muted); font-weight: 700; }
 
-/* ---------- หน้าคลังศัพท์ (สีมาจาก token ใน styles.css เท่านั้น) ----------
+/* ---------- หน้าคลังศัพท์: ธีมเทค การ์ดมืดเรืองแสงตามสีกลุ่ม (สีมาจาก token ใน styles.css เท่านั้น) ----------
    main.glossary-wrap ชนะ .glossary-wrap ใน styles.css (ความจำเพาะสูงกว่า) จึงกว้างได้ 64rem เฉพาะหน้านี้ */
 main.glossary-wrap { max-width: 64rem; }
-.glossary { margin: 0 0 1rem; }
-.glossary h1 { font-size: 2.3rem; padding: 0.6rem 0 0.8rem; }
-.glossary h2 { font-size: 1.5rem; margin: 2.2rem 0 0.9rem; }
+.glossary { margin: 0 0 1rem; --ease: cubic-bezier(.22, 1, .36, 1); }
+.glossary h1 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  padding: 8px 0 8px;
+  margin: 0;
+  background: linear-gradient(90deg, var(--white), var(--text-muted));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.glossary h2 { font-size: 1.5rem; margin: 40px 0 16px; }
+
+/* ---------- แถบเก็บศัพท์ ---------- */
+.g-collect {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+.g-collect p { margin: 0; }
+.g-collect-text strong { font-family: var(--font-mono); font-size: 1.3rem; color: var(--p0); text-shadow: 0 0 16px color-mix(in srgb, var(--p0) 60%, transparent); }
+.g-collect-hint { font-size: 0.8rem; color: var(--text-muted); }
+.g-bar {
+  position: relative;
+  height: 10px;
+  margin: 8px 0;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.g-bar > div { height: 100%; background: linear-gradient(90deg, var(--p0), var(--p5)); box-shadow: 0 0 16px var(--p5); transition: width .5s var(--ease); }
+.g-bar::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 10px, var(--bg) 10px 12px); opacity: .55; }
+
+/* ---------- แถบเครื่องมือ: ค้นหา กรอง โหมด ---------- */
+.g-toolbar {
+  position: sticky;
+  top: 8px;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 16px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+}
+.g-search { flex: 1 1 16rem; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.g-prompt { font-family: var(--font-mono); font-weight: 700; color: var(--p0); padding-left: 8px; }
 .glossary-search {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   font: inherit;
   color: var(--text);
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 0.55rem 0.9rem;
-  transition: border-color .2s;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 8px;
+  transition: border-color .3s var(--ease);
 }
-.glossary-search:focus-visible { outline: none; border-color: var(--p5); }
-.glossary-empty { color: var(--text-muted); margin-top: 1.2rem; }
+.glossary-search:focus-visible { outline: none; border-color: var(--p0); box-shadow: 0 0 16px -6px var(--p0); }
+.g-chips, .g-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.g-chip {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  color: var(--text-muted);
+  transition: border-color .3s var(--ease), color .3s var(--ease), box-shadow .3s var(--ease);
+}
+.g-chip:hover:not(:disabled) { color: var(--text); border-color: var(--text-muted); }
+.g-chip[aria-pressed='true'] { color: var(--p0); border-color: var(--p0); box-shadow: 0 0 16px -6px var(--p0); }
+.g-mode[aria-pressed='true'] { color: var(--p4); border-color: var(--p4); box-shadow: 0 0 16px -6px var(--p4); }
+.g-chip:focus-visible { outline: 2px solid var(--p5); outline-offset: 2px; }
+.g-count { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); padding: 0 4px; }
+.glossary-empty { color: var(--text-muted); margin-top: 20px; }
 
 /* ---------- ส่วน OSI ---------- */
-.osi-hint { color: var(--text-muted); margin: -0.4rem 0 0.8rem; }
+.osi-hint { color: var(--text-muted); margin: -8px 0 12px; }
 /* แถบ OSI (คอลัมน์ 1) กับกรอบ TCP/IP (คอลัมน์ 2) ใช้แถว grid ร่วมกัน กรอบจึงตรงกับชั้นที่มันครอบพอดี
    (grid-row ตั้งใน GlossaryPage.tsx ตามข้อมูลใน content/osi.ts) */
 .osi-grid {
@@ -64,29 +133,30 @@ main.glossary-wrap { max-width: 64rem; }
 }
 .osi-col-head {
   align-self: end;
-  font-family: var(--font-head);
-  font-weight: 800;
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  letter-spacing: 0.02em;
 }
 .osi-layer {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
   min-width: 0;
   text-align: left;
   color: var(--bg);
   border: 2px solid transparent;
   border-radius: 12px;
-  padding: 0.35rem 0.9rem;
+  padding: 6px 14px;
   font-family: var(--font-head);
-  transition: transform .25s var(--ease-bounce), box-shadow .25s var(--ease-out), border-color .2s;
+  transition: transform .5s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
 }
-.osi-layer:hover { transform: translateX(8px); }
-.osi-layer[aria-pressed='true'] { border-color: var(--text); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--text); }
+.osi-layer:hover { transform: translateX(8px); box-shadow: 0 0 24px -8px var(--text); }
+.osi-layer[aria-pressed='true'] { border-color: var(--text); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--text), 0 0 32px -6px var(--text); }
 .osi-layer:focus-visible { outline: 3px solid var(--p5); outline-offset: 4px; }
-.osi-no { font-weight: 900; font-size: 1.3rem; width: 1.4rem; flex-shrink: 0; }
+.osi-no { font-family: var(--font-mono); font-weight: 700; font-size: 1.2rem; width: 1.4rem; flex-shrink: 0; }
 .osi-en { font-weight: 800; font-size: 1.05rem; }
 .osi-short { margin-left: auto; font-family: 'Noto Sans Thai', system-ui, sans-serif; font-size: 0.9rem; font-weight: 700; text-align: right; }
 
@@ -103,74 +173,149 @@ main.glossary-wrap { max-width: 64rem; }
   background: transparent;
   border: 2px dashed var(--border);
   border-radius: 12px;
-  padding: 0.3rem 0.6rem;
+  padding: 4px 10px;
   overflow-wrap: anywhere;
-  transition: border-color .2s, background-color .2s;
+  transition: border-color .3s var(--ease), background-color .3s var(--ease);
 }
 .tcp-box:hover { border-color: var(--text-muted); background: var(--surface); }
-.tcp-box[aria-pressed='true'] { border-style: solid; border-color: var(--text); background: var(--surface); }
+.tcp-box[aria-pressed='true'] { border-style: solid; border-color: var(--p5); background: var(--surface); box-shadow: 0 0 24px -8px var(--p5); }
 .tcp-box:focus-visible { outline: 3px solid var(--p5); outline-offset: 3px; }
 
 .osi-detail {
-  margin-top: 1rem;
-  background: var(--surface);
+  margin-top: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
   color: var(--text);
-  border: 1px solid var(--border);
-  border-left: 6px solid var(--card-c, var(--text-muted));
+  border: 1px solid color-mix(in srgb, var(--card-c, var(--text-muted)) 55%, var(--border));
   border-radius: 14px;
-  padding: 0.8rem 1.1rem;
+  padding: 12px 18px;
+  box-shadow: 0 0 32px -14px var(--card-c, var(--text-muted)), inset 0 1px 0 color-mix(in srgb, var(--card-c, var(--text-muted)) 40%, transparent);
 }
-.osi-detail p { margin: 0.15rem 0; }
-.osi-detail-title strong { font-family: var(--font-head); font-weight: 800; font-size: 1.15rem; }
-.osi-detail-tag, .osi-detail-th { color: var(--text-muted); }
-.osi-detail-th { font-weight: 700; }
+.osi-detail p { margin: 2px 0; }
+.osi-detail-title strong { font-family: var(--font-head); font-weight: 800; font-size: 1.2rem; color: var(--card-c, var(--text)); }
+.osi-detail-tag { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); }
+.osi-detail-th { color: var(--text-muted); font-weight: 700; }
 
-.osi-sub { font-size: 1.1rem; margin: 1.6rem 0 0.8rem; color: var(--text-muted); }
+.osi-sub { font-size: 1.1rem; margin: 28px 0 12px; color: var(--text-muted); }
+
+/* ---------- หัวกลุ่ม ---------- */
+.g-head { display: flex; align-items: center; gap: 10px; }
+.g-head::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--card-c, var(--text-muted));
+  box-shadow: 0 0 12px var(--card-c, var(--text-muted));
+  flex-shrink: 0;
+  rotate: 45deg;
+}
+.g-head::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, color-mix(in srgb, var(--card-c, var(--border)) 50%, transparent), transparent); }
 
 /* ---------- การ์ดศัพท์ (2 คอลัมน์) ---------- */
-.g-head { display: flex; align-items: center; gap: 0.6rem; }
-.g-head::before { content: ''; width: 0.8rem; height: 0.8rem; border-radius: 99px; background: var(--card-c, var(--text-muted)); flex-shrink: 0; }
-.g-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
+.g-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .g-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   min-width: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 5px solid var(--card-c, var(--text-muted));
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-c, var(--text-muted)) 30%, var(--border));
   border-radius: 16px;
-  padding: 0.8rem 1rem 0.9rem;
+  padding: 16px 18px 14px;
+  overflow: hidden;
   overflow-wrap: anywhere;
-  /* ใช้ translate แยกจาก transform ของ .reveal จึงไม่ทับกัน (transition อยู่ใน .g-card.reveal ให้ชนะ .reveal ของ styles.css) */
 }
-.g-card.reveal { transition: opacity .6s var(--ease-out), transform .6s var(--ease-out), translate .3s var(--ease-bounce), border-color .2s; }
-.g-card.reveal:nth-child(2n) { transition-delay: .08s, .08s, 0s, 0s; }
-.g-card:hover { translate: 0 -3px; border-color: var(--card-c, var(--text-muted)); border-top-color: var(--card-c, var(--text-muted)); }
+/* เส้นเรืองแสงด้านบน (วาดด้วย ::before จึงไม่ใช่ขอบด้านเดียว) */
+.g-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--card-c, var(--text-muted)), transparent 85%);
+  box-shadow: 0 0 16px var(--card-c, var(--text-muted));
+}
+/* ใช้ translate แยกจาก transform ของ .reveal จึงไม่ทับกัน (transition อยู่ใน .g-card.reveal ให้ชนะ .reveal ของ styles.css) */
+.g-card.reveal { transition: opacity .6s var(--ease), transform .6s var(--ease), translate .5s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease); }
+.g-card.reveal:nth-child(2n) { transition-delay: .08s, .08s, 0s, 0s, 0s; }
+.g-card:hover {
+  translate: 0 -4px;
+  border-color: var(--card-c, var(--text-muted));
+  box-shadow: 0 16px 40px -20px var(--card-c, var(--text-muted));
+}
+.g-card.got { border-color: color-mix(in srgb, var(--card-c, var(--text-muted)) 55%, var(--border)); }
+.g-card.flash { animation: g-flash 1.8s var(--ease); }
+@keyframes g-flash {
+  0%, 60% { box-shadow: 0 0 0 2px var(--p4), 0 0 40px -4px var(--p4); }
+  100% { box-shadow: none; }
+}
+
+.g-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
 .g-badge {
-  display: inline-block;
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   font-weight: 700;
+  letter-spacing: 0.06em;
   line-height: 1.5;
-  color: var(--bg);
-  background: var(--card-c, var(--text-muted));
-  border-radius: 99px;
-  padding: 0.05rem 0.6rem;
-  margin-bottom: 0.3rem;
+  color: var(--card-c, var(--text-muted));
+  border: 1px solid color-mix(in srgb, var(--card-c, var(--text-muted)) 60%, transparent);
+  border-radius: 6px;
+  padding: 1px 8px;
 }
-.g-en { font-family: var(--font-head); font-weight: 800; font-size: 1.2rem; line-height: 1.25; margin: 0 0 0.15rem; }
-.g-th { margin: 0 0 0.35rem; color: var(--text-muted); font-weight: 700; }
-.g-explain { margin: 0; }
+.g-status {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.g-status.on { color: var(--ok); text-shadow: 0 0 10px color-mix(in srgb, var(--ok) 60%, transparent); }
+.g-en { font-family: var(--font-head); font-weight: 800; font-size: 1.3rem; line-height: 1.25; margin: 0; color: var(--text); }
+.g-th { margin: 0 0 4px; color: var(--card-c, var(--text-muted)); font-weight: 700; }
+.g-explain { margin: 0; line-height: 1.75; }
+
+/* โหมดทายศัพท์: ปุ่มปิดคำตอบ */
+.g-flip {
+  margin-top: 4px;
+  padding: 18px 12px;
+  border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--card-c, var(--text-muted)) 60%, var(--border));
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--card-c, var(--text-muted)) 8%, transparent) 0 10px, transparent 10px 20px);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: color .3s var(--ease), border-color .3s var(--ease);
+}
+.g-flip:hover { color: var(--text); border-style: solid; }
+.g-flip:focus-visible { outline: 2px solid var(--p5); outline-offset: 2px; }
+
+.g-lesson {
+  align-self: flex-start;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px dashed color-mix(in srgb, var(--link) 50%, transparent);
+}
+.g-lesson:hover { border-bottom-style: solid; }
+.g-lesson:focus-visible { outline: 2px solid var(--p5); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- จอแคบ ---------- */
 @media (max-width: 48rem) {
   .g-cards { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 40rem) {
+  .glossary h1 { font-size: 2.1rem; }
+  .g-toolbar { position: static; }
   .osi-grid { grid-template-columns: minmax(0, 1fr) 6.5rem; gap: 6px 8px; }
-  .osi-layer { flex-wrap: wrap; gap: 0 0.6rem; }
+  .osi-layer { flex-wrap: wrap; gap: 0 10px; }
   .osi-short { margin-left: 2rem; text-align: left; flex-basis: 100%; }
   .tcp-box { font-size: 0.85rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .osi-layer:hover, .g-card:hover { transform: none; translate: none; }
+  .g-card.flash { animation: none; outline: 2px solid var(--p4); }
 }
