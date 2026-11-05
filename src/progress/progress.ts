@@ -28,8 +28,13 @@ export function loadProgress(storage: Storage | undefined = defaultStorage(), ke
   }
 }
 
-export function saveProgress(p: Progress, storage: Storage | undefined = defaultStorage(), key: string = STORAGE_KEY): void {
-  try { storage?.setItem(key, JSON.stringify(p)) } catch { /* storage full/blocked: ignore */ }
+/** เขียนความคืบหน้า โดยรวมบทที่ผ่านแล้วใน storage เข้าไปด้วย
+ *  (อีกแท็บอาจเพิ่งผ่านบทใหม่ ข้อมูลที่แท็บนี้ถืออยู่จึงเก่ากว่า) คืนค่าที่เขียนจริง */
+export function saveProgress(p: Progress, storage: Storage | undefined = defaultStorage(), key: string = STORAGE_KEY): Progress {
+  const stored = loadProgress(storage, key).completed
+  const merged: Progress = { ...p, completed: [...stored, ...p.completed.filter((id) => !stored.includes(id))] }
+  try { storage?.setItem(key, JSON.stringify(merged)) } catch { /* storage full/blocked: ignore */ }
+  return merged
 }
 
 function readyLessonIds(parts: Part[]): LessonId[] {

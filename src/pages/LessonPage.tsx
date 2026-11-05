@@ -112,9 +112,7 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
   const step = steps[stepIdx].key
 
   useEffect(() => {
-    const p = { ...progressRef.current, lastLesson: lesson.id, lastStep: step }
-    progressRef.current = p
-    saveProgress(p, storage, course.storageKey)
+    progressRef.current = saveProgress({ ...progressRef.current, lastLesson: lesson.id, lastStep: step }, storage, course.storageKey)
   }, [lesson.id, step, storage, course.storageKey])
 
   // ขั้นที่บทไม่มีเนื้อหา ถือว่าผ่านเอง
@@ -127,9 +125,7 @@ function LessonBody({ lesson, course, parts, storage, initial }: { lesson: Lesso
   const onTryItDone = useCallback(() => setFin((f) => ({ ...f, tryIt: true })), [])
   const onLabDone = useCallback(() => markDone('lab'), [markDone])
   const onQuizPass = useCallback(() => {
-    const p = markCompleted(lesson.id, progressRef.current)
-    progressRef.current = p
-    saveProgress(p, storage, course.storageKey)
+    progressRef.current = saveProgress(markCompleted(lesson.id, progressRef.current), storage, course.storageKey)
     markDone('quiz')
     setPassed(true)
   }, [lesson.id, storage, markDone, course.storageKey])

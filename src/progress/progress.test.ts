@@ -117,6 +117,14 @@ describe('loadProgress / saveProgress', () => {
   it('saveProgress does not throw when setItem throws', () => {
     expect(() => saveProgress(empty, fakeStorage({}, { setThrows: true }))).not.toThrow()
   })
+  it('สองแท็บ: แท็บที่ถือข้อมูลเก่าเซฟทีหลัง บทที่อีกแท็บเพิ่งผ่านไม่หาย', () => {
+    const s = fakeStorage()
+    const tabA = loadProgress(s) // แท็บ A เปิดค้างไว้ ยังไม่มีบทไหนผ่าน
+    saveProgress(markCompleted('p0-l1', loadProgress(s)), s) // แท็บ B ผ่านบท p0-l1
+    const out = saveProgress({ ...tabA, lastLesson: 'p0-l2', lastStep: 'lab' }, s) // แท็บ A เปลี่ยนขั้น
+    expect(out.completed).toEqual(['p0-l1'])
+    expect(loadProgress(s)).toEqual({ version: 1, completed: ['p0-l1'], lastLesson: 'p0-l2', lastStep: 'lab' })
+  })
 })
 
 describe('ความคืบหน้าแยกวิชา', () => {

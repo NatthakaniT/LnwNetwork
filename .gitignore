@@ -7,3 +7,6 @@ tools/tts/narration.json
 .vite/
 tools/tts/.venv-omnivoice/
 tools/tts/ref/my_voice.*
+.claude/
+skills-lock.json
+*.tsbuildinfo
