@@ -15,6 +15,8 @@ describe('CoursePicker', () => {
     expect(screen.getByRole('link', { name: /Git & GitHub/ })).toHaveAttribute('href', '#/c/git')
     expect(screen.getByText('เรียนแล้ว 1 จาก 46 บท')).toBeInTheDocument()
     expect(screen.getByText('เรียนแล้ว 0 จาก 10 บท')).toBeInTheDocument()
+    expect(screen.getByText('⏱ 8–12 ชั่วโมง')).toBeInTheDocument()
+    expect(screen.getByText('⏱ 2–3 ชั่วโมง')).toBeInTheDocument()
   })
   it('แสดงข้อความแจ้งเตือนได้', () => {
     render(<CoursePicker storage={memoryStorage()} notice="ต้องเรียนบทก่อนหน้าก่อนนะ" />)

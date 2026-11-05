@@ -130,6 +130,8 @@
 }
 .part-card h2 { margin: 0.1rem 0 0.15rem; font-size: 1.35rem; line-height: 1.15; }
 .part-card .why { font-size: 0.8rem; font-weight: 700; margin-bottom: 0.7rem; }
+.part-card .why:has(+ .part-time) { margin-bottom: 0.15rem; }
+.part-card .part-time { font-size: 0.8rem; font-weight: 700; margin-bottom: 0.7rem; white-space: nowrap; }
 
 /* ---------- แถวบทเรียนในการ์ด ---------- */
 .ls { display: flex; flex-direction: column; gap: 6px; }
@@ -182,6 +184,8 @@ a.l:hover { transform: translateX(3px); box-shadow: 0 0 0 2px var(--bg); }
 
 /* ---------- หน้าเลือกวิชา: การ์ดทั้งใบเป็นลิงก์ ---------- */
 .course-card { display: block; text-decoration: none; }
+.course-card .course-meta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.25rem 0.75rem; }
 .course-card .course-count { margin: 0; font-weight: 700; }
+.course-card .course-time { margin: 0; font-size: 0.8rem; font-weight: 700; }
 .course-card .bar { background: color-mix(in srgb, var(--bg) 25%, transparent); margin-bottom: 0; }
 .course-card:focus-visible { outline: 3px solid var(--p5); outline-offset: 3px; }

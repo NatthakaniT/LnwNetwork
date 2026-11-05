@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { courses } from '../content/courses'
 import { countCompleted, loadProgress, percentComplete, totalLessons } from '../progress/progress'
 import { PART_COLORS } from '../ui/contrast'
+import { studyTime } from '../ui/studyTime'
 import './map.css'
 
 interface Props {
@@ -32,7 +33,10 @@ export function CoursePicker({ storage, notice, onDismissNotice }: Props) {
             <a key={c.id} className="part-card course-card rise" href={`#/c/${c.id}`} style={style}>
               <h2>{c.titleTh}</h2>
               <div className="why">{c.taglineTh}</div>
-              <p className="course-count">เรียนแล้ว {countCompleted(c.parts, p)} จาก {totalLessons(c.parts)} บท</p>
+              <div className="course-meta">
+                <p className="course-count">เรียนแล้ว {countCompleted(c.parts, p)} จาก {totalLessons(c.parts)} บท</p>
+                <p className="course-time">⏱ {studyTime(totalLessons(c.parts))}</p>
+              </div>
               <div className="bar" role="progressbar" aria-label={`ความคืบหน้า ${c.titleTh}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentComplete(c.parts, p)}>
                 <div style={{ width: `${percentComplete(c.parts, p)}%` }} />
               </div>

@@ -5,6 +5,7 @@ import type { Course, Lesson, Part } from '../content/types'
 import { countCompleted, firstOpenLesson, isUnlocked, loadProgress, percentComplete, totalLessons } from '../progress/progress'
 import { PART_COLORS } from '../ui/contrast'
 import { stickerText } from '../ui/sticker'
+import { studyTime } from '../ui/studyTime'
 import './map.css'
 
 interface Props {
@@ -71,6 +72,7 @@ export function CourseMap({ course = ccna, parts = course.parts, storage, notice
               </div>
               <h2>{p.titleTh}</h2>
               <div className="why">{p.examDomain}</div>
+              <div className="part-time">⏱ {studyTime(p.lessons.length)}</div>
               <div className="ls">
                 {p.lessons.map((l, i) => {
                   const s = states[i]
