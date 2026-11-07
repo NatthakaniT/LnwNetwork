@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { validateCourse } from '../../index'
 import type { ActivityLab } from '../../types'
@@ -15,14 +15,9 @@ const lab = lesson.lab as ActivityLab
 const textOf = (id: string) => lab.items.find((i) => i.id === id)!.textTh
 const narration = (id: string) => lesson.scenes!.scenes.find((s) => s.id === id)!.narrationTh
 
-async function solveWithButtons(u: ReturnType<typeof userEvent.setup>, root: HTMLElement) {
-  const answer = lab.answer as string[]
-  for (let i = 0; i < answer.length; i++) {
-    const want = textOf(answer[i])
-    const rows = () => within(root.querySelector('.activity-list') as HTMLElement).getAllByRole('listitem')
-    let pos = rows().findIndex((r) => r.textContent?.includes(want))
-    expect(pos).toBeGreaterThanOrEqual(0)
-    while (pos > i) { await u.click(screen.getByLabelText(`เลื่อนขึ้น ${want}`)); pos-- }
+async function solveMatch(u: ReturnType<typeof userEvent.setup>) {
+  for (const [l, r] of Object.entries(lab.answer as Record<string, string>)) {
+    await u.selectOptions(screen.getByLabelText(`จับคู่ ${textOf(l)}`), r)
   }
 }
 
@@ -88,11 +83,11 @@ describe('lesson g0-l1', () => {
     for (const later of ['GitHub', 'Git Bash', 'GitLab']) expect(all).not.toContain(later)
   })
 
-  it('ห้องทดลองเรียงลำดับ: 5-7 ข้อ คำตอบใช้ครบทุกข้อ ไม่ซ้ำ และคำอธิบายไม่ไล่คำตอบ', () => {
-    expect(lab.kind).toBe('order')
-    expect(lab.items.length).toBeGreaterThanOrEqual(5)
-    expect(lab.items.length).toBeLessThanOrEqual(7)
-    expect([...(lab.answer as string[])].sort()).toEqual(lab.items.map((i) => i.id).sort())
+  it('ห้องทดลองจับคู่ปัญหากับวิธีที่ Git แก้: 4 คู่ ใช้ครบทุกข้อ ไม่ซ้ำ และคำอธิบายไม่ไล่คำตอบ', () => {
+    expect(lab.kind).toBe('match')
+    const ans = lab.answer as Record<string, string>
+    expect(Object.keys(ans)).toHaveLength(4)
+    expect([...Object.keys(ans), ...Object.values(ans)].sort()).toEqual(lab.items.map((i) => i.id).sort())
     expect(new Set(lab.items.map((i) => i.textTh)).size).toBe(lab.items.length)
     expect(lab.items.filter((i) => lab.explainTh.includes(i.textTh))).toHaveLength(0)
   })
@@ -110,7 +105,7 @@ describe('lesson g0-l1', () => {
     beforeEach(() => { window.location.hash = ''; errSpy = vi.spyOn(console, 'error') })
     afterEach(() => { errSpy.mockRestore() })
 
-    it('คลิป → ภาพทบทวน → เรียงลำดับ → คำถาม', async () => {
+    it('คลิป → ภาพทบทวน → จับคู่ → คำถาม', async () => {
       const u = userEvent.setup()
       const { container } = render(<LessonPage id="g0-l1" course={git} storage={memoryStorage()} />)
 
@@ -125,7 +120,7 @@ describe('lesson g0-l1', () => {
       fireEvent.ended(container.querySelector('audio')!)
       await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))
 
-      await solveWithButtons(u, container)
+      await solveMatch(u)
       await u.click(screen.getByRole('button', { name: 'ตรวจคำตอบ' }))
       expect(screen.getByText(/ถูกต้อง!/)).toBeInTheDocument()
       await u.click(screen.getByRole('button', { name: 'ไปขั้นต่อไป' }))
