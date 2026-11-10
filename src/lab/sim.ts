@@ -49,7 +49,7 @@ export function simulateSend(t: Topology, fromId: string, toIp: string): SendRes
   if (!src) return fail('หาเครื่องต้นทางไม่เจอ เลยส่งไม่ได้')
   const srcIf = findIface(src, i => !!i.ip && i.prefix !== undefined)
   if (!srcIf || !srcIf.ip || srcIf.prefix === undefined) {
-    return fail(src.label + ' ยังไม่มี IP เลยไม่รู้ว่าตัวเองอยู่วงไหน ส่งอะไรไม่ได้ ลองตั้ง IP ให้ก่อน')
+    return fail(src.label + ' ยังไม่มี IP เลยไม่รู้ว่าตัวเองอยู่หมู่บ้านไหน ส่งอะไรไม่ได้ ลองตั้ง IP ให้ก่อน')
   }
 
   const counts = new Map<string, number>()
@@ -71,17 +71,17 @@ export function simulateSend(t: Topology, fromId: string, toIp: string): SendRes
   if (sameSubnet(srcIf.ip, toIp, srcIf.prefix)) {
     const p = path(t, src.id, srcIf.name, dst.id, dstIf.name)
     if (!p) {
-      return fail('อยู่วงเดียวกัน แต่ไม่มีสายต่อถึงกัน (หรือต้องข้าม Router) ข้อมูลเลยไปไม่ถึง ลองเช็กสายระหว่าง ' + src.label + ' กับ ' + dst.label)
+      return fail('อยู่หมู่บ้านเดียวกัน แต่ไม่มีสายต่อถึงกัน (หรือต้องข้าม Router) ข้อมูลเลยไปไม่ถึง ลองเช็กสายระหว่าง ' + src.label + ' กับ ' + dst.label)
     }
-    return { ok: true, hops: p, reasonTh: 'ส่งถึงแล้ว! ' + src.label + ' กับ ' + dst.label + ' อยู่วงเดียวกันและมีสายต่อถึงกัน' }
+    return { ok: true, hops: p, reasonTh: 'ส่งถึงแล้ว! ' + src.label + ' กับ ' + dst.label + ' อยู่หมู่บ้านเดียวกันและมีสายต่อถึงกัน' }
   }
 
   const gw = src.gateway
   if (!gw) {
-    return fail(dst.label + ' อยู่คนละวงกับ ' + src.label + ' ต้องผ่าน Router แต่ยังไม่ได้ตั้ง Gateway เลยไม่รู้ว่าจะฝากของไว้ที่ไหน')
+    return fail(dst.label + ' อยู่คนละหมู่บ้านกับ ' + src.label + ' ต้องผ่าน Router แต่ยังไม่ได้ตั้ง Gateway เลยไม่รู้ว่าจะฝากของไว้ที่ไหน')
   }
   if (!sameSubnet(srcIf.ip, gw, srcIf.prefix)) {
-    return fail('Gateway ' + gw + ' อยู่คนละวงกับ ' + src.label + ' เลยเอื้อมไม่ถึง Gateway ต้องเป็น IP ของ Router ที่อยู่วงเดียวกับเครื่องนี้')
+    return fail('Gateway ' + gw + ' อยู่คนละหมู่บ้านกับ ' + src.label + ' เลยเอื้อมไม่ถึง Gateway ต้องเป็น IP ของ Router ที่อยู่หมู่บ้านเดียวกับเครื่องนี้')
   }
   const router = t.devices.find(d => d.kind === 'router' && d.ifaces.some(i => i.ip === gw))
   const gwIf = router && findIface(router, i => i.ip === gw)
@@ -94,15 +94,15 @@ export function simulateSend(t: Topology, fromId: string, toIp: string): SendRes
   }
   const outIf = findIface(router, i => !!i.ip && i.prefix !== undefined && sameSubnet(i.ip, toIp, i.prefix))
   if (!outIf) {
-    return fail(router.label + ' ไม่มีทางไปวงของ ' + toIp + ' เพราะไม่ได้ต่ออยู่กับวงนั้นเลย ต้องต่อสายหรือตั้ง IP ที่ขาของ Router ให้ตรงวงปลายทาง')
+    return fail(router.label + ' ไม่มีทางไปหมู่บ้านของ ' + toIp + ' เพราะไม่ได้ต่ออยู่กับหมู่บ้านนั้นเลย ต้องต่อสายหรือตั้ง IP ที่ขาของ Router ให้ตรงหมู่บ้านปลายทาง')
   }
   const fromRouter = path(t, router.id, outIf.name, dst.id, dstIf.name)
   if (!fromRouter) {
-    return fail(router.label + ' มีช่องสำหรับวงของ ' + toIp + ' แล้ว แต่ช่องนั้นยังไม่มีสายต่อไปถึง ' + dst.label + ' ของเลยไปต่อไม่ได้ ลองต่อสายจากช่องนั้นไปทาง ' + dst.label)
+    return fail(router.label + ' มีช่องสำหรับหมู่บ้านของ ' + toIp + ' แล้ว แต่ช่องนั้นยังไม่มีสายต่อไปถึง ' + dst.label + ' ของเลยไปต่อไม่ได้ ลองต่อสายจากช่องนั้นไปทาง ' + dst.label)
   }
   return {
     ok: true,
     hops: [...toRouter, ...fromRouter.slice(1)],
-    reasonTh: 'ส่งถึงแล้ว! อยู่คนละวง เลยฝากให้ ' + router.label + ' ช่วยส่งต่อผ่าน Gateway',
+    reasonTh: 'ส่งถึงแล้ว! อยู่คนละหมู่บ้าน เลยฝากให้ ' + router.label + ' ช่วยส่งต่อผ่าน Gateway',
   }
 }

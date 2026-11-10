@@ -28,7 +28,7 @@ export function parseIPv4(input: string): Ok<string> | Err {
 }
 
 export function parsePrefix(input: string): Ok<number> | Err {
-  const bad: Err = { ok: false, reasonTh: 'ขนาดวงต้องเป็นเลข 0 ถึง 32 (เช่น 24) หรือซับเน็ตมาสก์ที่ถูกต้อง (เช่น 255.255.255.0)' }
+  const bad: Err = { ok: false, reasonTh: 'ขนาดหมู่บ้านต้องเป็นเลข 0 ถึง 32 (เช่น 24) หรือซับเน็ตมาสก์ที่ถูกต้อง (เช่น 255.255.255.0)' }
   const s = toAsciiDigits(input.trim()).replace(/^\//, '')
   if (s === '') return bad
   if (/^\d+$/.test(s)) {

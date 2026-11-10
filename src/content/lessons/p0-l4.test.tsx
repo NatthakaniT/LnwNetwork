@@ -203,7 +203,7 @@ describe('lesson p0-l4', () => {
       const lines = lab.introTh.split('\n')
       expect(lines.length).toBeGreaterThanOrEqual(3)
       expect(lab.introTh).toMatch(/กดที่รูปคอม[\s\S]*ช่อง IP[\s\S]*บันทึก/)
-      expect(lab.introTh).toContain('วง')
+      expect(lab.introTh).toContain('ขนาดหมู่บ้าน') // ชื่อช่องต้องตรงกับที่เห็นในห้องทดลอง
     })
 
     it('reasonIncludes ของเป้าหมาย 1 เป็นส่วนหนึ่งของข้อความจริงจาก sim.ts', () => {

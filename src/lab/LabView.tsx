@@ -108,7 +108,7 @@ function DevicePanel({ device, onSave }: { device: Device; onSave: (d: Device) =
         <div key={i.name} className="lab-iface">
           <strong>{i.name}</strong>
           <label>IP <input aria-label={`IP ของ ${i.name}`} value={ips[k]} onChange={e => setIps(ips.map((v, j) => (j === k ? e.target.value : v)))} /></label>
-          <label>ขนาดวง <input aria-label={`ขนาดวงของ ${i.name}`} value={prefixes[k]} placeholder="24 หรือ 255.255.255.0" onChange={e => setPrefixes(prefixes.map((v, j) => (j === k ? e.target.value : v)))} /></label>
+          <label>ขนาดหมู่บ้าน <input aria-label={`ขนาดหมู่บ้านของ ${i.name}`} value={prefixes[k]} placeholder="24 หรือ 255.255.255.0" onChange={e => setPrefixes(prefixes.map((v, j) => (j === k ? e.target.value : v)))} /></label>
         </div>
       ))}
       {isEnd(device.kind) && (

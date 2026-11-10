@@ -102,7 +102,7 @@ describe('LabView', () => {
     render(<LabView lab={lab} onDone={() => {}} />)
     fireEvent.click(screen.getByTestId('device-pc2'))
     fireEvent.change(screen.getByLabelText('IP ของ eth0'), { target: { value: '192.168.1.30' } })
-    fireEvent.change(screen.getByLabelText('ขนาดวงของ eth0'), { target: { value: '255.255.255.0' } })
+    fireEvent.change(screen.getByLabelText('ขนาดหมู่บ้านของ eth0'), { target: { value: '255.255.255.0' } })
     fireEvent.click(screen.getByText('บันทึก'))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getByText('บันทึกแล้ว')).toBeInTheDocument()
@@ -114,7 +114,7 @@ describe('LabView', () => {
     fireEvent.change(screen.getByLabelText('ไป IP'), { target: { value: '192.168.1.30' } })
     fireEvent.click(screen.getByText('ส่งข้อมูล'))
     flush()
-    expect(screen.getByText('ส่งถึงแล้ว! คอม 1 กับ คอม 2 อยู่วงเดียวกันและมีสายต่อถึงกัน')).toBeInTheDocument()
+    expect(screen.getByText('ส่งถึงแล้ว! คอม 1 กับ คอม 2 อยู่หมู่บ้านเดียวกันและมีสายต่อถึงกัน')).toBeInTheDocument()
     expect(screen.getByLabelText('IP ของ eth0')).toHaveValue('192.168.1.30')
   })
 

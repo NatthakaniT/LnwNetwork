@@ -99,7 +99,7 @@ describe('simulateSend', () => {
     t.links = t.links.filter((l) => !(l.a.device === 'r1' && l.a.iface === 'g1'))
     const r = simulateSend(t, 'pc1', '192.168.2.10')
     expect(r.ok).toBe(false)
-    expect(r.reasonTh).toBe('r1 มีช่องสำหรับวงของ 192.168.2.10 แล้ว แต่ช่องนั้นยังไม่มีสายต่อไปถึง pc3 ของเลยไปต่อไม่ได้ ลองต่อสายจากช่องนั้นไปทาง pc3')
+    expect(r.reasonTh).toBe('r1 มีช่องสำหรับหมู่บ้านของ 192.168.2.10 แล้ว แต่ช่องนั้นยังไม่มีสายต่อไปถึง pc3 ของเลยไปต่อไม่ได้ ลองต่อสายจากช่องนั้นไปทาง pc3')
   })
   it('does not pass through a router in the same-subnet case', () => {
     const t: Topology = {
