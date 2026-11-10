@@ -62,7 +62,7 @@ export const lesson: Lesson = {
   analogyTh: 'ปุ่มเซฟในเกม กับสมุดจดของร้านค้า',
   ciscoModules: [],
   videos: [
-    { youtubeId: 'pe9GU7yNYiE', titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 1 ทำไมต้อง Git + commit แรก', channel: 'Panutat Tejasen',
+    { youtubeId: 'pe9GU7yNYiE', durationSec: 283, titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 1 ทำไมต้อง Git + commit แรก', channel: 'Panutat Tejasen',
       noteTh: 'คลิปสั้น เปิดด้วยปัญหาไฟล์ชื่อซ้ำซ้อนแบบ train_final_v2_really_final ตรงกับภาพในบทนี้เลย ฟังว่าทำไมเขาถึงอยากได้เครื่องมือจดประวัติงาน ช่วงท้ายคลิปจะมีการพิมพ์คำสั่งให้ดู ยังไม่ต้องจำ เดี๋ยวบทหน้า ๆ ค่อยมาทำทีละคำสั่ง' },
   ],
   terms: ['git', 'version-control'],

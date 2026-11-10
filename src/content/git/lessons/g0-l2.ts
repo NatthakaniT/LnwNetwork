@@ -102,7 +102,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'oxoIr7TyGMs', titleTh: 'Git CLI vs GitHub Desktop', channel: 'BorntoDev',
+    { youtubeId: 'oxoIr7TyGMs', durationSec: 1098, titleTh: 'Git CLI vs GitHub Desktop', channel: 'BorntoDev',
       noteTh: 'คลิปยาวราวสิบแปดนาที เทียบการพิมพ์คำสั่ง กับการใช้แอป GitHub Desktop ที่กดปุ่ม ตรงกับสองวิธีสั่งในบทนี้ ลองฟังว่าพิมพ์กับกดต่างกันตรงไหน คลิปไม่น่าจะพูดถึง GitLab และไม่ได้แยกเป็นหัวข้อว่าอะไรจดประวัติ อะไรเป็นวิธีสั่ง อะไรเป็นที่ฝากงาน ส่วนนี้ภาพเคลื่อนไหวในบทจะเติมให้ ช่วงไหนฟังไม่ทัน ข้ามได้ ไม่ต้องจำ' },
   ],
   terms: ['command-line', 'git-bash', 'github-desktop', 'github', 'gitlab'],

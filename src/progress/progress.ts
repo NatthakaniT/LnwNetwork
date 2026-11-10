@@ -105,20 +105,28 @@ export function markStudied(p: Progress, today: string = dayKey()): Progress {
   return { ...p, days: mergeDays(p.days, [today]) }
 }
 
-function allLessonIds(parts: Part[]): LessonId[] {
-  return parts.flatMap(pt => pt.lessons).map(l => l.id)
-}
-
+/** จำนวนบทที่เรียนได้จริงตอนนี้ (บทที่ยังทำไม่เสร็จไม่นับ ไม่งั้นแถบความคืบหน้าไม่มีทางเต็ม) */
 export function totalLessons(parts: Part[]): number {
-  return allLessonIds(parts).length
+  return readyLessonIds(parts).length
 }
 
-/** จำนวนบทที่เรียนผ่านแล้ว (นับเฉพาะบทที่มีในแผนที่) */
+/** จำนวนบทที่ยังทำไม่เสร็จ */
+export function buildingLessons(parts: Part[]): number {
+  return parts.flatMap(pt => pt.lessons).length - totalLessons(parts)
+}
+
+/** ข้อความความคืบหน้าบนการ์ดวิชาและแผนที่ */
+export function progressText(parts: Part[], p: Progress): string {
+  const building = buildingLessons(parts)
+  return `เรียนแล้ว ${countCompleted(parts, p)} จาก ${totalLessons(parts)} บท` + (building ? ` · อีก ${building} บทกำลังทำ` : '')
+}
+
+/** จำนวนบทที่เรียนผ่านแล้ว (นับเฉพาะบทที่เรียนได้จริงในแผนที่) */
 export function countCompleted(parts: Part[], p: Progress): number {
-  return allLessonIds(parts).filter(id => p.completed.includes(id)).length
+  return readyLessonIds(parts).filter(id => p.completed.includes(id)).length
 }
 
-/** แถบความคืบหน้า = บทที่ผ่านแล้ว / ทุกบท (รวมบทที่ยังทำไม่เสร็จ) */
+/** แถบความคืบหน้า = บทที่ผ่านแล้ว / บทที่เรียนได้จริง */
 export function percentComplete(parts: Part[], p: Progress): number {
   const total = totalLessons(parts)
   if (total === 0) return 0

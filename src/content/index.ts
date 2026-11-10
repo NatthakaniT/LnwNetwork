@@ -61,6 +61,7 @@ const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 function validateReady(l: Lesson, glossaryIds: Set<string>, errs: string[], requireEnglishQuiz: boolean): void {
   const id = l.id
   if (l.videos.length === 0) errs.push(`บท ${id}: ยังไม่มีคลิปวิดีโอ`)
+  else if (!l.videos[0].durationSec) errs.push(`บท ${id}: คลิปหลักไม่มีความยาว (durationSec) เวลาเรียนบนการ์ดจะน้อยเกินจริง`)
   if (!l.scenes || l.scenes.scenes.length === 0) errs.push(`บท ${id}: ยังไม่มีภาพเคลื่อนไหว (scenes)`)
   if (!l.lab) errs.push(`บท ${id}: ยังไม่มีห้องทดลอง (lab)`)
   if (l.lab?.kind === 'network') {

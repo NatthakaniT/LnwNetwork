@@ -107,7 +107,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'u7dDKe7cYgs', titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 5 Branch: ลองของใหม่โดยไม่พังของเดิม', channel: 'Panutat Tejasen',
+    { youtubeId: 'u7dDKe7cYgs', durationSec: 358, titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 5 Branch: ลองของใหม่โดยไม่พังของเดิม', channel: 'Panutat Tejasen',
       noteTh: 'คลิปสั้น แตกสายไปลองของใหม่บน terminal โดยไม่แตะสายหลัก ตรงกับภาพแยกกันทำคนละห้องของบทนี้ ถ้าในคลิปเห็นคำสั่ง git checkout นั่นทำงานเหมือน git switch ที่เราเรียน ส่วนช่วงท้ายที่เป็นการรวมสายกลับ ยังไม่ต้องจำ เรียนในบทหลัง ตัวอย่างเป็นงาน AI ไม่ต้องสนใจเนื้อหางาน' },
   ],
   terms: ['branch', 'head'],

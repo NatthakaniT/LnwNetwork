@@ -84,7 +84,7 @@ const scenes = (over: Partial<SceneSet> = {}): SceneSet => ({
   scenes: [scene()],
   ...over,
 })
-const video = { youtubeId: 'abc', titleTh: 'v', channel: 'c' }
+const video = { youtubeId: 'abc', titleTh: 'v', channel: 'c', durationSec: 60 }
 const lab = { kind: 'order' as const, introTh: 'i', items: [{ id: 'a', textTh: 'a' }], answer: ['a'], explainTh: 'e' }
 const readyOk = (over: Partial<Lesson> = {}): Lesson =>
   lesson({

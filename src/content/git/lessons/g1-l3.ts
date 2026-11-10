@@ -115,7 +115,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'u5TfPXI8AOo', titleTh: 'สอน Git ตอนที่8# - Merge Conflict', channel: 'CMDev',
+    { youtubeId: 'u5TfPXI8AOo', durationSec: 394, titleTh: 'สอน Git ตอนที่8# - Merge Conflict', channel: 'CMDev',
       noteTh: 'คลิปสั้นที่เลือกจากชื่อเรื่อง คำอธิบายคลิปไม่บอกรายละเอียด เรายังไม่ได้ตรวจเนื้อหาจริง จึงยังไม่รู้ว่าคลิปแก้ปัญหาใน Git Bash หรือในโปรแกรมแก้โค้ด ถ้าเห็นเครื่องหมายหัวลูกศรหลายตัวในไฟล์ นั่นคือตัวเดียวกับที่เราเรียนในบทนี้ ถ้าคลิปใช้ปุ่มกดในโปรแกรมอื่น ให้ดูแค่ว่าเกิดอะไร แล้วกลับมาทำตามบทนี้' },
   ],
   terms: ['conflict', 'merge-commit'],

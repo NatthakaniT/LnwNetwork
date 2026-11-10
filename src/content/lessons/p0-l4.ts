@@ -187,7 +187,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'u6W4u0R5P0w', titleTh: 'Basic Network ตอนที่ 2 : ทำความรู้จักกับ IP Address Version 4', channel: '9hua Training',
+    { youtubeId: 'u6W4u0R5P0w', durationSec: 3201, titleTh: 'Basic Network ตอนที่ 2 : ทำความรู้จักกับ IP Address Version 4', channel: '9hua Training',
       noteTh: 'ตอนนี้จับแค่ว่า IPv4 เป็นเลข 4 ชุด คั่นด้วยจุด แต่ละชุดคือ 1 byte เลยเป็น 0 ถึง 255 ช่วงที่คลิปแปลงเลข 0 กับ 1 ดูตามได้ เหมือนแผงสวิตช์ที่เพิ่งลองกด ส่วนเรื่อง Class A B C หรือ Subnet ดูผ่าน ๆ ได้เลย ภาค 1 เล่าให้ฟังทีละขั้น' },
     { youtubeId: 'iAecBW8rflc', titleTh: 'ARP (Address Resolution Protocol)', channel: '9hua Training',
       noteTh: 'ถ้าคลิปพูดเรื่องการแบ่งเป็นชั้น หรือเปิดโปรแกรมดูข้อมูล ดูผ่าน ๆ ได้ บทหน้าเล่าเรื่องชั้น จับแค่ว่า ARP = ตะโกนถามหา MAC ในหมู่บ้าน' },

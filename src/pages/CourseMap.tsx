@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ccna } from '../content/courses'
 import type { Course, Lesson, Part } from '../content/types'
-import { countCompleted, firstOpenLesson, isUnlocked, loadProgress, percentComplete, totalLessons } from '../progress/progress'
+import { firstOpenLesson, isUnlocked, loadProgress, percentComplete, progressText, totalLessons } from '../progress/progress'
 import { PART_COLORS } from '../ui/contrast'
 import { stickerText } from '../ui/sticker'
 import { studyTime } from '../ui/studyTime'
@@ -31,12 +31,11 @@ type ChipState = 'done' | 'now' | 'lock' | 'building'
 export function CourseMap({ course = ccna, parts = course.parts, storage, notice, onDismissNotice }: Props) {
   const [progress] = useState(() => loadProgress(storage, course.storageKey))
   const pct = percentComplete(parts, progress)
-  const total = totalLessons(parts)
-  const doneCount = countCompleted(parts, progress)
   const started = !!progress.lastLesson || progress.completed.length > 0
   const continueId = started ? firstOpenLesson(parts, progress) : undefined
   const lv = levelOf(courseXp(parts, progress))
-  const readyCount = parts.flatMap((p) => p.lessons).filter((l) => l.status === 'ready').length
+  const readyIn = (p: Part) => p.lessons.filter((l) => l.status === 'ready').length
+  const readyCount = totalLessons(parts)
   const starCount = progress.completed
     .filter((id) => parts.some((p) => p.lessons.some((l) => l.id === id)))
     .reduce((s, id) => s + stars(progress.scores?.[id]), 0)
@@ -48,6 +47,8 @@ export function CourseMap({ course = ccna, parts = course.parts, storage, notice
   }
 
   const label = (l: Lesson) => (l.analogyTh ? `${l.titleTh} (${l.analogyTh})` : l.titleTh)
+
+  const time = (l: Lesson) => <small className="l-time">⏱ {studyTime([l])}</small>
 
   const partStyle = (n: number) => {
     const c = PART_COLORS[n] ?? PART_COLORS[((n % 7) + 7) % 7]
@@ -66,7 +67,7 @@ export function CourseMap({ course = ccna, parts = course.parts, storage, notice
         <span className="sticker">{stickerText(parts, progress)}</span>
         <p className="hud-tag rise"><span className="dot" aria-hidden="true" />Stage select // {course.id}</p>
         <h1 className="rise">เรียน {course.titleTh} <span className="h1-line">{course.taglineTh}</span></h1>
-        <p className="map-progress-text rise d1">เรียนแล้ว {doneCount} จาก {total} บท</p>
+        <p className="map-progress-text rise d1">{progressText(parts, progress)}</p>
         <div className="bar rise d1" role="progressbar" aria-label="ความคืบหน้า" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
           <div style={{ width: `${pct}%` }} />
         </div>
@@ -89,7 +90,7 @@ export function CourseMap({ course = ccna, parts = course.parts, storage, notice
         </div>
         <div className="stat">
           <span className="stat-label">Stages cleared</span>
-          <strong className="stat-value">{clearedParts(parts, progress)}/{parts.length}</strong>
+          <strong className="stat-value">{clearedParts(parts, progress)}/{parts.filter(readyIn).length}</strong>
           <span className="stat-sub">ภาคที่ผ่านครบทุกบทที่เปิดแล้ว</span>
         </div>
       </section>
@@ -107,16 +108,16 @@ export function CourseMap({ course = ccna, parts = course.parts, storage, notice
               </div>
               <h2>{p.titleTh}</h2>
               <div className="why">{p.examDomain}</div>
-              <div className="part-time">⏱ {studyTime(p.lessons.length)}</div>
+              {readyIn(p) > 0 && <div className="part-time">⏱ {studyTime(p.lessons)}</div>}
               <div className="ls">
                 {p.lessons.map((l, i) => {
                   const s = states[i]
-                  if (s === 'done') return <a key={l.id} className="l done" href={`#/lesson/${l.id}`}>✅ {label(l)} <Stars n={stars(progress.scores?.[l.id])} /></a>
-                  if (s === 'now') return <a key={l.id} className="l now" href={`#/lesson/${l.id}`}>▶ {label(l)}</a>
+                  if (s === 'done') return <a key={l.id} className="l done" href={`#/lesson/${l.id}`}>✅ {label(l)} <Stars n={stars(progress.scores?.[l.id])} />{time(l)}</a>
+                  if (s === 'now') return <a key={l.id} className="l now" href={`#/lesson/${l.id}`}>▶ {label(l)}{time(l)}</a>
                   if (s === 'building') {
                     return <span key={l.id} className="l building">{label(l)} <small>กำลังทำ</small></span>
                   }
-                  return <span key={l.id} className="l lock">🔒 {label(l)}</span>
+                  return <span key={l.id} className="l lock">🔒 {label(l)}{time(l)}</span>
                 })}
               </div>
             </section>

@@ -103,7 +103,7 @@ export const lesson: Lesson = {
   titleTh: 'Network คืออะไร',
   analogyTh: 'ถนนกับรถส่งของ',
   ciscoModules: ['ITN 1'],
-  videos: [{ youtubeId: '-0zk67Z__18', titleTh: 'Basic Network ตอนที่ 1 : ทำความรู้จักกับ Network', channel: '9hua Training' }],
+  videos: [{ youtubeId: '-0zk67Z__18', durationSec: 3248, titleTh: 'Basic Network ตอนที่ 1 : ทำความรู้จักกับ Network', channel: '9hua Training' }],
   terms: ['network', 'data', 'lan', 'wan', 'internet'],
 
   scenes: {

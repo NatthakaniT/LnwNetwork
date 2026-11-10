@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { courses } from '../content/courses'
-import { countCompleted, dayKey, loadProgress, percentComplete, totalLessons } from '../progress/progress'
+import { dayKey, loadProgress, percentComplete, progressText, totalLessons } from '../progress/progress'
 import { badges, courseXp, levelOf, playerStats } from '../game/game'
 import { PART_COLORS } from '../ui/contrast'
 import { studyTime } from '../ui/studyTime'
@@ -76,8 +76,8 @@ export function CoursePicker({ storage, notice, onDismissNotice, today = dayKey(
               <h2>{c.titleTh}</h2>
               <div className="why">{c.taglineTh}</div>
               <div className="course-meta">
-                <p className="course-count">เรียนแล้ว {countCompleted(c.parts, p)} จาก {totalLessons(c.parts)} บท</p>
-                <p className="course-time">⏱ {studyTime(totalLessons(c.parts))}</p>
+                <p className="course-count">{progressText(c.parts, p)}</p>
+                <p className="course-time">⏱ {studyTime(c.parts.flatMap((pt) => pt.lessons))}</p>
               </div>
               <div className="bar" role="progressbar" aria-label={`ความคืบหน้า ${c.titleTh}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentComplete(c.parts, p)}>
                 <div style={{ width: `${percentComplete(c.parts, p)}%` }} />

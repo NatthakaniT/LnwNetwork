@@ -105,7 +105,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: '4Z8fGcx5N2A', titleTh: 'เรียนรู้พื้นฐานการใช้งาน Git & Github (git init, add, commit, remote, push)', channel: 'MilerDev',
+    { youtubeId: '4Z8fGcx5N2A', durationSec: 869, titleTh: 'เรียนรู้พื้นฐานการใช้งาน Git & Github (git init, add, commit, remote, push)', channel: 'MilerDev',
       noteTh: 'คลิปนี้ตรงกับบทนี้บางส่วน คือตั้งแต่ commit ไปจนถึง remote และ push ครั้งแรก ส่วนหน้าต่างล็อกอินของ Git Credential Manager และการเชิญเพื่อนเป็น collaborator ไม่มีคลิปภาษาไทยที่อธิบายตรง ๆ บทนี้จึงสอนสองเรื่องนั้นเองในแอป อย่าลืมว่าในคลิปอาจใช้โปรแกรมหรือชื่อสายไม่เหมือนเรา ให้ทำตามที่แอปบอก' },
     { youtubeId: 'BDoNSr3rMf4', titleTh: 'สอน git เบื้องต้น: การใช้ git push ไปยัง remote repository บน github', channel: 'prasertcbs',
       noteTh: 'เสริม ดูเฉพาะช่วงที่ push ไปยัง GitHub ได้เห็นผลลัพธ์จริงของคำสั่ง ยาวสิบสี่นาที ไม่ต้องดูหมด' },

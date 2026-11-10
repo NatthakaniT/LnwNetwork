@@ -115,7 +115,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'fkF5WA01fXs', titleTh: 'อะไรคือ Bit ? แบบขอสั้นๆ', channel: '9arm',
+    { youtubeId: 'fkF5WA01fXs', durationSec: 464, titleTh: 'อะไรคือ Bit ? แบบขอสั้นๆ', channel: '9arm',
       noteTh: 'คลิปสั้น เล่าว่าทำไมคอมใช้แค่ 0 กับ 1 ฟังให้เห็นภาพรวมก่อน ช่วงไหนเร็วไป ไม่เป็นไร เดี๋ยวภาพทบทวนเล่าทีละขั้น ด้วยสวิตช์ไฟกับการทอนเงิน' },
   ],
   terms: ['bit', 'byte', 'binary', 'bits', 'ipv4', 'ip-address', 'switch'],

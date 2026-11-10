@@ -30,7 +30,10 @@ describe('CourseMap', () => {
     expect(document.querySelectorAll('.part')).toHaveLength(7)
     const notReady = course.flatMap((p) => p.lessons).filter((l) => l.status !== 'ready').length
     expect(screen.queryAllByText('กำลังทำ')).toHaveLength(notReady)
-    expect(screen.getByText(`เรียนแล้ว 0 จาก ${course.flatMap((p) => p.lessons).length} บท`)).toBeInTheDocument()
+    const all = course.flatMap((p) => p.lessons).length
+    expect(screen.getByText(`เรียนแล้ว 0 จาก ${all - notReady} บท · อีก ${notReady} บทกำลังทำ`)).toBeInTheDocument()
+    expect(screen.getByText('0/1')).toBeInTheDocument() // เคลียร์ได้เฉพาะภาคที่มีบทพร้อม
+    expect(document.querySelectorAll('.part-time')).toHaveLength(1) // ภาคที่ยังไม่มีบทพร้อมไม่บอกเวลาเรียน
     expect(screen.getByRole('link', { name: /คลังศัพท์/ })).toHaveAttribute('href', '#/c/ccna/glossary')
     expect(screen.queryByRole('link', { name: 'เรียนต่อ' })).toBeNull()
   })
@@ -38,13 +41,14 @@ describe('CourseMap', () => {
   it('shows done / current / locked / building states and progress', () => {
     saveProgress({ version: 1, completed: ['f1'] }, storage)
     render(<CourseMap parts={fixture} storage={storage} />)
-    expect(screen.getByText('เรียนแล้ว 1 จาก 4 บท')).toBeInTheDocument()
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '25')
+    expect(screen.getByText('เรียนแล้ว 1 จาก 3 บท · อีก 1 บทกำลังทำ')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '33')
     const done = screen.getByRole('link', { name: /✅ บท f1/ })
     expect(done).toHaveClass('done')
     const now = screen.getByRole('link', { name: /▶ บท f2/ })
     expect(now).toHaveClass('now')
     expect(now).toHaveAttribute('href', '#/lesson/f2')
+    expect(document.querySelectorAll('.l-time')).toHaveLength(3) // บทที่เรียนได้บอกเวลา บทที่กำลังทำไม่บอก
     const lock = screen.getByText(/🔒 บท f3/).closest('.l') as HTMLElement
     expect(lock.tagName).not.toBe('A')
     expect(within(lock).queryByRole('button', { name: 'สอบข้ามบท' })).toBeNull()

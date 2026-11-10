@@ -154,7 +154,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'WunDlV89wpQ', titleTh: 'Basic Network ตอนที่ 3 ทำความรู้จักกับ Router', channel: '9hua Training' },
+    { youtubeId: 'WunDlV89wpQ', durationSec: 2991, titleTh: 'Basic Network ตอนที่ 3 ทำความรู้จักกับ Router', channel: '9hua Training' },
     { youtubeId: 'q0t7Wtux-VM', titleTh: 'Basic Network ตอนที่ 5 ทำความรู้จักกับ Switch', channel: '9hua Training' },
   ],
   terms: ['end-device', 'cable', 'switch', 'router', 'gateway', 'ip-address', 'network', 'lan', 'internet'],

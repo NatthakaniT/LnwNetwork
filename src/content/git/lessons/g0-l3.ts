@@ -107,7 +107,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'MX9OUXV45B0', titleTh: 'สอน Git ตอนที่ 2 Create Local Repository', channel: 'CMDev',
+    { youtubeId: 'MX9OUXV45B0', durationSec: 882, titleTh: 'สอน Git ตอนที่ 2 Create Local Repository', channel: 'CMDev',
       noteTh: 'คลิปนี้สร้างโฟลเดอร์ที่ให้ Git ดูแลในเครื่องแล้วทำตามทีละขั้น ตรงกับสิ่งที่บทนี้สอน คำอธิบายคลิปไม่ได้บอกรายละเอียด เลือกจากชื่อและลำดับของซีรีส์ ผู้สอนอาจใช้โปรแกรมพิมพ์คำสั่งอื่น ไม่ใช่ Git Bash แต่คำสั่งเหมือนกัน ฟังว่าเขาพิมพ์อะไรก่อนหลัง ไม่ต้องจำ ช่วงไหนฟังไม่ทัน ข้ามได้' },
   ],
   terms: ['repository', 'commit'],

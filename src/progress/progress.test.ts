@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { Lesson, Part } from '../content/types'
 import { course } from '../content'
 import {
-  STORAGE_KEY, loadProgress, saveProgress, isUnlocked, markCompleted, markStudied, dayKey, percentComplete, countCompleted, totalLessons, firstOpenLesson, type Progress,
+  STORAGE_KEY, loadProgress, saveProgress, isUnlocked, markCompleted, markStudied, dayKey, percentComplete, countCompleted, totalLessons, progressText, firstOpenLesson, type Progress,
 } from './progress'
 
 const lesson = (id: string, part: number, order: number, status: 'ready' | 'building'): Lesson => ({
@@ -74,12 +74,14 @@ describe('markCompleted', () => {
 })
 
 describe('percentComplete / countCompleted / totalLessons', () => {
-  it('bar is completed / ALL lessons (building ones included)', () => {
-    expect(totalLessons(parts)).toBe(5)
+  it('bar is completed / READY lessons (building ones are not counted, so it can reach 100)', () => {
+    expect(totalLessons(parts)).toBe(4)
     expect(percentComplete(parts, empty)).toBe(0)
-    expect(percentComplete(parts, { version: 1, completed: ['p0-l1'] })).toBe(20)
-    expect(percentComplete(parts, { version: 1, completed: ['p0-l1', 'p0-l2', 'p1-l1', 'p1-l3'] })).toBe(80)
-    expect(countCompleted(parts, { version: 1, completed: ['p0-l1', 'nope'] })).toBe(1)
+    expect(percentComplete(parts, { version: 1, completed: ['p0-l1'] })).toBe(25)
+    expect(percentComplete(parts, { version: 1, completed: ['p0-l1', 'p0-l2', 'p1-l1', 'p1-l3'] })).toBe(100)
+    expect(countCompleted(parts, { version: 1, completed: ['p0-l1', 'nope', 'p1-l2'] })).toBe(1)
+    expect(progressText(parts, { version: 1, completed: ['p0-l1'] })).toBe('เรียนแล้ว 1 จาก 4 บท · อีก 1 บทกำลังทำ')
+    expect(progressText([parts[0]], empty)).toBe('เรียนแล้ว 0 จาก 2 บท')
   })
   it('is 0 when there are no lessons', () => {
     expect(percentComplete([], empty)).toBe(0)

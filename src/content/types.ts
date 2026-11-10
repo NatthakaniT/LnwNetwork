@@ -3,7 +3,8 @@ export type LessonId = string // 'p0-l1' … 'p6-l4'
 export type LessonStatus = 'ready' | 'building'
 
 // noteTh = คำแนะนำสั้น ๆ ก่อนดูคลิป (โชว์เหนือคลิป)
-export interface VideoRef { youtubeId: string; titleTh: string; channel: string; startSec?: number; noteTh?: string }
+// durationSec = ความยาวคลิปจริงจาก YouTube (วินาที) คลิปหลักของบทที่พร้อมต้องมี ใช้คิดเวลาเรียน
+export interface VideoRef { youtubeId: string; titleTh: string; channel: string; startSec?: number; durationSec?: number; noteTh?: string }
 
 export type ActorKind = 'house' | 'pc' | 'laptop' | 'switch' | 'router' | 'server' | 'cloud'
   | 'envelope' | 'box' | 'truck' | 'person' | 'label' | 'cable' | 'card' | 'table'

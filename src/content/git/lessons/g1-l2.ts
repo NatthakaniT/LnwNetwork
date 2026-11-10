@@ -122,7 +122,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'gZEjfT2TsVM', titleTh: 'สอน Git & GitHub หยุดทำบาปต่อเพื่อนในทีมด้วยการ... Git The Series Part 2/3', channel: 'Superdev Academy',
+    { youtubeId: 'gZEjfT2TsVM', durationSec: 2309, titleTh: 'สอน Git & GitHub หยุดทำบาปต่อเพื่อนในทีมด้วยการ... Git The Series Part 2/3', channel: 'Superdev Academy',
       noteTh: 'คลิปนี้ยาวสามสิบกว่านาที และครอบคลุมเรื่องอื่นด้วย จากคำอธิบายคลิปมีทั้งการแยกสาย การเปิด Pull Request และการรวมงาน แต่คำอธิบายไม่บอกช่วงเวลา ต้องเลื่อนหาตอนที่เปิด Pull Request บนเว็บ ตอนนี้ไม่มีคลิปไทยสั้นที่สอนเฉพาะเรื่อง Pull Request จึงใช้คลิปนี้แทน ถ้าหาช่วงนั้นไม่เจอ ข้ามได้ บทนี้อธิบายครบแล้ว และหน้าตาเว็บในคลิปอาจต่างจากปัจจุบันเล็กน้อย' },
   ],
   terms: ['pull-request', 'review', 'merge'],

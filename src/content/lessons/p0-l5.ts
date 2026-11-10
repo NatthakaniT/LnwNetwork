@@ -140,7 +140,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: '4DkRRKjFCsk', titleTh: 'OSI 7 Layers (Short Version with Video Graphics)', channel: '9hua Training',
+    { youtubeId: '4DkRRKjFCsk', durationSec: 229, titleTh: 'OSI 7 Layers (Short Version with Video Graphics)', channel: '9hua Training',
       noteTh: 'คลิปนี้สั้น เล่า OSI ครบ 7 ชั้น ดูให้เห็นภาพรวมก่อน จำชื่อชั้นไม่ได้ ไม่เป็นไร เดี๋ยวภาพทบทวนเล่าทีละชั้น ด้วยเรื่องห่อพัสดุ' },
     { youtubeId: 'e7s_D4YZznA', titleTh: 'TCP IP Model and OSI Model ฉบับคนทำงานจริง EP.1', channel: '9hua Training',
       noteTh: 'คลิปเสริมนี้ยาว เล่าแบบคนทำงานจริง ช่วงไหนที่บทนี้ยังไม่ได้สอน ดูผ่าน ๆ ได้ จับแค่ว่า OSI มี 7 ชั้น TCP/IP มี 4 ชั้น ฝั่งส่งห่อจากในออกนอก ฝั่งรับแกะย้อนกลับ' },

@@ -107,9 +107,9 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'clYb3xng5Zw', titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 3 .gitignore: อะไรไม่ควรเข้า Git', channel: 'Panutat Tejasen',
+    { youtubeId: 'clYb3xng5Zw', durationSec: 277, titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 3 .gitignore: อะไรไม่ควรเข้า Git', channel: 'Panutat Tejasen',
       noteTh: 'คลิปนี้ครอบคลุมเฉพาะ .gitignore คือสามกลุ่มไฟล์ที่ไม่ควรเข้า Git พร้อมเหตุผล ส่วน GitHub Flow และการเขียนข้อความ commit ที่ดีไม่ได้อยู่ในคลิปนี้ ดูคลิปเสริมด้านล่างแทน คลิปแรกยาวมาก ดูตอนที่เล่าการทำงานเป็นทีมเท่านั้น ส่วนคลิปของนครโค้ดสอนข้อความ commit แบบ Conventional Commits ซึ่งเป็นรูปแบบเฉพาะที่บางทีมใช้ ดูเป็นตัวอย่างได้ ไม่ต้องทำตามทุกอย่าง' },
-    { youtubeId: 'gZEjfT2TsVM', titleTh: 'สอน Git & GitHub หยุดทำบาปต่อเพื่อนในทีมด้วยการ... Git The Series Part 2/3', channel: 'Superdev Academy',
+    { youtubeId: 'gZEjfT2TsVM', durationSec: 2309, titleTh: 'สอน Git & GitHub หยุดทำบาปต่อเพื่อนในทีมด้วยการ... Git The Series Part 2/3', channel: 'Superdev Academy',
       noteTh: 'คลิปเดียวกับบท Pull Request ยาวสามสิบกว่านาที ใช้ดูภาพรวมวงรอบทำงานเป็นทีม แยกสาย เปิด Pull Request แล้วรวมงาน เลื่อนหาช่วงที่สนใจเอง ดูไม่หมดก็ได้' },
     { youtubeId: 'P-J8c9LBzic', titleTh: 'การใช้ข้อความ Conventional Commits ของ Git', channel: 'นครโค้ด',
       noteTh: 'เป็นรูปแบบข้อความ commit แบบเฉพาะ ที่ขึ้นต้นด้วยคำบอกประเภท เช่น feat หรือ fix บางทีมใช้ บางทีมไม่ใช้ ดูเพื่อเห็นตัวอย่างว่าทีมจริงตกลงรูปแบบกันยังไง ยังไม่ต้องทำตาม' },

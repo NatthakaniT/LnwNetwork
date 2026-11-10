@@ -236,6 +236,8 @@ a.l:hover { transform: translateX(4px); border-color: var(--glow); }
 .l.lock { color: var(--text-muted); }
 .l.building { color: var(--text-muted); background: transparent; border-style: dashed; }
 .l.building small { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em; }
+/* เวลาเรียนของบท: ใช้สีตัวหนังสือของชิป จึงอ่านออกทุกสถานะ */
+.l .l-time { display: block; flex-basis: 100%; font-size: 0.72rem; font-weight: 700; opacity: 0.8; white-space: nowrap; }
 .stars { margin-left: auto; color: var(--p4); letter-spacing: 2px; font-size: 0.8rem; }
 .stars .off { color: var(--disabled-fg); }
 .part-card .l:focus-visible, .part-card .btn:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }

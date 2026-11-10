@@ -95,7 +95,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'eSzam5vabTQ', titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 2 วงจรทำงานประจำวัน แก้ ดู add commit', channel: 'Panutat Tejasen',
+    { youtubeId: 'eSzam5vabTQ', durationSec: 296, titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 2 วงจรทำงานประจำวัน แก้ ดู add commit', channel: 'Panutat Tejasen',
       noteTh: 'คลิปสั้น เริ่มด้วยภาพสามที่ของไฟล์ ตรงกับภาพในบทนี้ แล้วทำให้ดูบน terminal จริง ฟังว่า add กับ commit ย้ายการแก้ไขไปที่ไหน ตัวอย่างเป็นงาน AI ไม่ต้องสนใจเนื้อหางาน สนใจแค่ลำดับ แก้ ดู add commit ช่วงไหนฟังไม่ทัน ข้ามได้' },
   ],
   terms: ['staging'],

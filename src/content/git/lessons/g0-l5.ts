@@ -99,7 +99,7 @@ export const lesson: Lesson = {
     },
   ],
   videos: [
-    { youtubeId: 'K3LG7U9uu-U', titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 6 Remote clone push pull', channel: 'Panutat Tejasen',
+    { youtubeId: 'K3LG7U9uu-U', durationSec: 345, titleTh: 'Git พื้นฐานสำหรับงาน AI Server · บทที่ 6 Remote clone push pull', channel: 'Panutat Tejasen',
       noteTh: 'คลิปสั้น อธิบายที่เก็บกลางเป็น repository อีกก้อน แล้วทำ clone push pull บน terminal ให้ดู ในคลิปจะมีคำสั่ง git remote add origin ซึ่งใช้ตอนผูกโปรเจกต์ที่มีอยู่แล้วกับ GitHub ยังไม่ต้องใช้ในบทนี้ ตัวอย่างเป็นงาน AI ไม่ต้องสนใจเนื้อหางาน ฟังว่าทิศทางของ push กับ pull ต่างกันยังไง ช่วงไหนฟังไม่ทัน ข้ามได้' },
   ],
   terms: ['remote', 'origin', 'clone', 'push', 'pull'],

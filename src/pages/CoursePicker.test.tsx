@@ -13,10 +13,10 @@ describe('CoursePicker', () => {
     expect(cards).toHaveLength(2)
     expect(screen.getByRole('link', { name: /CCNA/ })).toHaveAttribute('href', '#/c/ccna')
     expect(screen.getByRole('link', { name: /Git & GitHub/ })).toHaveAttribute('href', '#/c/git')
-    expect(screen.getByText('เรียนแล้ว 1 จาก 46 บท')).toBeInTheDocument()
+    expect(screen.getByText('เรียนแล้ว 1 จาก 6 บท · อีก 40 บทกำลังทำ')).toBeInTheDocument()
     expect(screen.getByText('เรียนแล้ว 0 จาก 10 บท')).toBeInTheDocument()
-    expect(screen.getByText('⏱ 8–12 ชั่วโมง')).toBeInTheDocument()
-    expect(screen.getByText('⏱ 2–3 ชั่วโมง')).toBeInTheDocument()
+    expect(screen.getByText('⏱ ประมาณ 5 ชั่วโมงครึ่ง')).toBeInTheDocument()
+    expect(screen.getByText('⏱ ประมาณ 3 ชั่วโมงครึ่ง')).toBeInTheDocument()
   })
   it('แสดงข้อความแจ้งเตือนได้', () => {
     render(<CoursePicker storage={memoryStorage()} notice="ต้องเรียนบทก่อนหน้าก่อนนะ" />)
