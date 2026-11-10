@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { badges, clearedParts, courseXp, currentStreak, levelOf, longestStreak, playerStats, stars } from './game'
+import { badges, clearedParts, courseXp, currentStreak, levelOf, longestStreak, playerStats, stars, studyCalendar } from './game'
 import type { Course, Part } from '../content/types'
 import { mk } from '../pages/fixture'
 
@@ -29,7 +29,20 @@ describe('game', () => {
     expect(longestStreak(['2026-02-27', '2026-02-28', '2026-03-01', '2026-03-05'])).toBe(3)
     expect(longestStreak([])).toBe(0)
   })
-  it('เคลียร์ภาค = ผ่านทุกบทที่พร้อม (ภาคที่ไม่มีบทพร้อมไม่นับ)', () => {
+  it('ตารางวันเรียน: แถวละสัปดาห์เริ่มวันจันทร์ แถวสุดท้ายคือสัปดาห์นี้ ข้ามเดือนได้', () => {
+    // 2026-11-05 เป็นวันพฤหัส สัปดาห์นี้คือ จ 2 ถึง อา 8
+    const cal = studyCalendar(['2026-10-31', '2026-11-04', '2026-11-05', '2020-01-01'], '2026-11-05', 2)
+    expect(cal.map((w) => w.map((c) => c.day))).toEqual([
+      ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31', '2026-11-01'],
+      ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08'],
+    ])
+    expect(cal.flat().filter((c) => c.studied).map((c) => c.day)).toEqual(['2026-10-31', '2026-11-04', '2026-11-05'])
+    expect(cal.flat().filter((c) => c.today).map((c) => c.date)).toEqual([5])
+    expect(cal.flat().filter((c) => c.future).map((c) => c.date)).toEqual([6, 7, 8])
+    // วันนี้เป็นวันอาทิตย์ ต้องเป็นช่องสุดท้ายของแถว ไม่ใช่ช่องแรกของสัปดาห์ถัดไป
+    expect(studyCalendar([], '2026-11-08', 1)[0][6]).toMatchObject({ day: '2026-11-08', today: true })
+  })
+  it('เคลียร์ภาค =ผ่านทุกบทที่พร้อม (ภาคที่ไม่มีบทพร้อมไม่นับ)', () => {
     const withBuilding: Part[] = [...parts, { part: 2, titleTh: 'ค', examDomain: 'C', lessons: [mk('c1', 2, 1, { status: 'building' })] }]
     expect(clearedParts(withBuilding, { version: 1, completed: ['b1'] })).toBe(1)
     expect(clearedParts(withBuilding, { version: 1, completed: ['a1'] })).toBe(0)

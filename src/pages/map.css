@@ -285,6 +285,30 @@ a.l:hover { transform: translateX(4px); border-color: var(--glow); }
 .badge-item.on .badge-icon { filter: none; opacity: 1; }
 .badge-item.on .badge-code { color: var(--p4); }
 
+/* ---------- ตารางวันที่เข้ามาเรียน ---------- */
+.study-log {
+  padding: 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid var(--border);
+  max-width: 26rem;
+}
+.study-cal { width: 100%; border-collapse: separate; border-spacing: 6px; table-layout: fixed; font-family: var(--font-mono); }
+.study-cal caption { caption-side: top; text-align: left; padding: 0 6px 8px; font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.study-cal th { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); }
+.study-cal td {
+  height: 2.25rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.study-cal td small { font-size: 0.6rem; }
+.study-cal td.on { background: var(--p0); border-color: var(--p0); color: var(--bg); font-weight: 700; }
+.study-cal td.today { outline: 2px solid var(--p4); outline-offset: 1px; }
+.study-cal td.future { border-style: dashed; color: var(--disabled-fg); }
+
 /* ---------- จอแคบ ---------- */
 @media (max-width: 62rem) {
   .map { grid-template-columns: repeat(2, minmax(0, 1fr)); }

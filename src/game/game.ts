@@ -1,5 +1,5 @@
 import type { Course, LessonId, Part } from '../content/types'
-import type { Progress } from '../progress/progress'
+import { dayKey, type Progress } from '../progress/progress'
 
 /** ระบบเกม: คิดจากความคืบหน้าที่เก็บไว้แล้วทั้งหมด ไม่มีข้อมูลเกมแยก */
 
@@ -49,6 +49,22 @@ export function longestStreak(days: string[]): number {
     best = Math.max(best, run)
   })
   return best
+}
+
+export interface CalendarDay { day: string; date: number; studied: boolean; today: boolean; future: boolean }
+
+/** ตารางวันเรียนย้อนหลัง: แถวละสัปดาห์ เริ่มวันจันทร์ แถวสุดท้ายคือสัปดาห์นี้
+ *  shortcut: ดูได้แค่ไม่กี่สัปดาห์ล่าสุด พอให้เห็น streak ถ้าจะเลื่อนดูเดือนเก่าต้องเพิ่มปุ่มเลื่อน */
+export function studyCalendar(days: string[], today: string, weeks = 5): CalendarDay[][] {
+  const set = new Set(days)
+  const [y, m, d] = today.split('-').map(Number)
+  const mondayOffset = (new Date(y, m - 1, d).getDay() + 6) % 7 // จันทร์ = 0 … อาทิตย์ = 6
+  return Array.from({ length: weeks }, (_, w) =>
+    Array.from({ length: 7 }, (_, i) => {
+      const t = new Date(y, m - 1, d - mondayOffset - (weeks - 1 - w) * 7 + i)
+      const day = dayKey(t)
+      return { day, date: t.getDate(), studied: set.has(day), today: day === today, future: day > today }
+    }))
 }
 
 /** ภาคที่ผ่านครบทุกบทที่พร้อมเรียนแล้ว (ภาคที่ยังไม่มีบทพร้อมไม่นับ) */

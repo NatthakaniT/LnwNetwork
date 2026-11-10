@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { courses } from '../content/courses'
 import { dayKey, loadProgress, percentComplete, progressText, totalLessons } from '../progress/progress'
-import { badges, courseXp, levelOf, playerStats } from '../game/game'
+import { badges, courseXp, levelOf, playerStats, studyCalendar } from '../game/game'
 import { PART_COLORS } from '../ui/contrast'
 import { studyTime } from '../ui/studyTime'
 import './map.css'
@@ -14,10 +14,14 @@ interface Props {
   today?: string
 }
 
-/** หน้าแรก: สถานะผู้เล่น (เลเวล XP streak เหรียญ) แล้วตามด้วยการ์ดเลือกวิชา */
+// ชื่อเดือนย่อ ติดไว้ที่วันที่ 1 ในตารางวันเรียน ให้รู้ว่าข้ามเดือนตรงไหน
+const MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.']
+
+/** หน้าแรก:สถานะผู้เล่น (เลเวล XP streak เหรียญ) แล้วตามด้วยการ์ดเลือกวิชา */
 export function CoursePicker({ storage, notice, onDismissNotice, today = dayKey() }: Props) {
   const list = courses.map((course) => ({ course, progress: loadProgress(storage, course.storageKey) }))
   const stats = playerStats(list, today)
+  const calendar = studyCalendar(list.flatMap((x) => x.progress.days ?? []), today)
   const lv = levelOf(stats.xp)
   const allBadges = badges(stats)
   const got = allBadges.filter((b) => b.unlocked).length
@@ -87,6 +91,33 @@ export function CoursePicker({ storage, notice, onDismissNotice, today = dayKey(
           )
         })}
       </div>
+
+      <h2 className="hud-section">Study log</h2>
+      <section className="study-log rise" aria-label="วันที่เข้ามาเรียน">
+        <table className="study-cal">
+          <caption>
+            🔥 เรียนติดกัน {stats.streak} วัน · {calendar.flat().filter((c) => c.studied).length} วันใน {calendar.length} สัปดาห์ล่าสุด
+          </caption>
+          <thead>
+            <tr>{['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'].map((d) => <th key={d} scope="col">{d}</th>)}</tr>
+          </thead>
+          <tbody>
+            {calendar.map((week) => (
+              <tr key={week[0].day}>
+                {week.map((c) => (
+                  <td
+                    key={c.day}
+                    className={`${c.studied ? 'on' : ''}${c.today ? ' today' : ''}${c.future ? ' future' : ''}`}
+                    aria-label={`${c.day}${c.today ? ' วันนี้' : ''} ${c.studied ? 'เรียนแล้ว' : c.future ? 'ยังไม่ถึง' : 'ไม่ได้เรียน'}`}
+                  >
+                    {c.date}{c.date === 1 && <small> {MONTHS[Number(c.day.slice(5, 7)) - 1]}</small>}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
 
       <h2 className="hud-section">Achievements</h2>
       <ul className="badges" aria-label="เหรียญรางวัล">

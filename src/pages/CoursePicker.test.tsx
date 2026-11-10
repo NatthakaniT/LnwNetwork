@@ -33,5 +33,12 @@ describe('CoursePicker', () => {
     expect(hud).toHaveTextContent('2/8') // ด่านแรก + ไร้ที่ติ
     const unlocked = [...document.querySelectorAll('.badge-item.on')].map((b) => b.querySelector('.badge-title')?.textContent)
     expect(unlocked).toEqual(['ด่านแรก', 'ไร้ที่ติ'])
+    // ตารางวันเรียน: 5 สัปดาห์ วันที่เรียนถูกระบาย และบอกวันนี้
+    const log = screen.getByRole('region', { name: 'วันที่เข้ามาเรียน' })
+    expect(log.querySelectorAll('td')).toHaveLength(35)
+    expect([...log.querySelectorAll('td.on')].map((c) => c.textContent)).toEqual(['5', '6'])
+    expect(screen.getByLabelText('2026-11-01 ไม่ได้เรียน')).toHaveTextContent('1 พ.ย.') // วันที่ 1 บอกเดือน
+    expect(log.querySelector('td.today')).toHaveAttribute('aria-label', '2026-11-06 วันนี้ เรียนแล้ว')
+    expect(log).toHaveTextContent('เรียนติดกัน 2 วัน · 2 วันใน 5 สัปดาห์ล่าสุด')
   })
 })
